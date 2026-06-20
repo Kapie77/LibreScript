@@ -1,4 +1,20 @@
+# LINGUAGEM
+| Linguagem | Para que serve | 
+|-----|------|
+| TypeScript | Linguagem principal do projeto. |
+| React | Biblioteca de interface. | Responsável por: Componentes, Atualização da tela, Estados (useState), Efeitos (useEffect)
+| Vite | Ferramenta de desenvolvimento. | Responsável por: Criar projeto, Servidor local, Build de produção
+| Node.js | Ambiente de execução usado para desenvolvimento. | Necessário para: npm, instalar pacotes, executar Vite
+| npm | Gerenciador de pacotes. | Usado para instalar dependências.
+| React Router | Sistema de navegação entre páginas. | Usado em: Editor, Guia, Repositório. Não faz parte do LibreScript final.
+
 # ESPECIFICAÇÕES
+| Pasta | Para que serve | 
+|-----|------|
+| components | Componentes reutilizáveis. |
+| pages | Páginas da aplicação. |
+| types | Tipos TypeScript. |
+| data | Dados de exemplo. |
 
 | Arquivo | Para que serve | Especificações | Local |
 |-----|------|------|------|
@@ -11,11 +27,3 @@
 | scripts.ts | Define os blocos do roteiro. | scene, action, character, dialogue, transition | src/types |
 | project.ts | Define um projeto completo. | title, author, blocks | src/types |
 | sampleScript.ts | Roteiro inicial usado para testes. |  | src/data |
-
-
-| Página | Para que serve | 
-|-----|------|
-| components | Componentes reutilizáveis. |
-| pages | Páginas da aplicação. |
-| types | Tipos TypeScript. |
-| data | Dados de exemplo. |
