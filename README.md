@@ -37,3 +37,18 @@
 ```bash
 npm install jspdf
 ```
+
+* Vite
+```bash
+npm create vite@latest .
+```
+```bash
+npm install
+```
+Em "Select a framework" desce e selecione "React". No "Select a variant" escolha "TypeScript".
+
+## Como iniciar o projeto no servidor
+Digite no terminal do Visual Studio Code:
+```bash
+npm run dev
+```
