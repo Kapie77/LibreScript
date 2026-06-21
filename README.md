@@ -15,6 +15,7 @@
 | pages | Páginas da aplicação. |
 | types | Tipos TypeScript. |
 | data | Dados de exemplo. |
+| utils | Funções auxiliares reutilizáveis do sistema. Não possuem interface visual nem estado React. |
 
 | Arquivo | Para que serve | Especificações | Local |
 |-----|------|------|------|
@@ -27,3 +28,13 @@
 | scripts.ts | Define os blocos do roteiro. | scene, action, character, dialogue, transition | src/types |
 | project.ts | Define um projeto completo. | title, author, blocks | src/types |
 | sampleScript.ts | Roteiro inicial usado para testes. |  | src/data |
+
+| HistoryPage.tsx | Exibe o histórico de alterações do projeto. | Mostra eventos como criação, exclusão, movimentação e abertura de projetos. Permite limpar o histórico. | src/pages |
+| history.ts | Define a estrutura de uma entrada de histórico. | id, timestamp, action, details, snapshot | src/types |
+| pdfExporter.ts | Exporta o projeto para PDF formatado. | Gera capa, formatação de roteiro, Courier, negrito, conversão automática para maiúsculas e paginação. | src/utils |
+
+# EXTENSÕES A SEREM INSTALADAS
+* Biblioteca que cria os PDFs:
+```bash
+npm install jspdf
+```
