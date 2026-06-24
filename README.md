@@ -19,7 +19,7 @@
 
 | Arquivo | Para que serve | Especificações | Local |
 |-----|------|------|------|
-| Toolbar.tsx | Barra de ferramentas do editor. | Botões: Cena, Ação, Personagem, Diálogo, Fade | src/components |
+| Toolbar.tsx | Barra de ferramentas do editor. | Botões: Scene, Action, Character, Dialogue, Parenthetical, Shot e Transition. Shot e Transition possuem menus suspensos com opções rápidas | src/components |
 | ScriptBlock.tsx | Renderiza e edita um bloco do roteiro. | Exemplo: INT. CASA - NOITE | src/components |
 | FileBar.tsx | Barra de gerenciamento de projeto. | Botões: Novo, Salvar, Abrir | src/components |
 | EditorPage.tsx | Página principal do editor. | Responsável por: Exibir roteiro, Adicionar blocos, Editar blocos, Salvar projeto, Abrir projeto | src/pages |
@@ -31,10 +31,14 @@
 | HistoryPage.tsx | Exibe o histórico de alterações do projeto. | Mostra eventos como criação, exclusão, movimentação e abertura de projetos. Permite limpar o histórico. | src/pages |
 | history.ts | Define a estrutura de uma entrada de histórico. | id, timestamp, action, details, snapshot | src/types |
 | pdfExporter.ts | Exporta o projeto para PDF formatado. | Gera capa, formatação de roteiro, Courier, negrito, conversão automática para maiúsculas e paginação. | src/utils |
-| Toolbar.tsx | Barra de ferramentas do editor. | Botões: Scene, Action, Character, Dialogue, Parenthetical, Shot e Transition. Shot e Transition possuem menus suspensos com opções rápidas | src/components |
 | StatisticsPage.tsx | Exibe estatísticas do roteiro. | Quantidade de blocos, cenas, ações, personagens, diálogos, transições, shots, parentheticals, palavras, caracteres e ranking de personagens. | src/pages |
 | SettingsPage.tsx | Página de configurações do LibreScript. | Permite alterar tema, idioma e ativar/desativar recursos do editor. | src/pages |
 | theme.css | Define as variáveis globais dos temas. | Tema Dark e Light através de CSS Variables. | src |
+
+| StatusBar.tsx | Barra inferior fixa do editor. | Exibe páginas, palavras, caracteres e atalhos para Histórico e Estatísticas. | src/components |
+| FileBar.tsx | Barra superior fixa do editor. | Menu Arquivo (Novo, Abrir, Salvar, Exportar PDF), Desfazer/Refazer, Busca de termos, Navegação entre resultados. | src/components |
+| ScriptBlock.tsx | Renderiza e edita um bloco do roteiro. | Edição de conteúdo, exclusão, movimentação e suporte à busca. | src/components |
+| layoutEngine.ts | Responsável pela paginação do roteiro. | Calcula distribuição dos blocos em páginas virtuais. | src/utils |
 
 # EXTENSÕES A SEREM INSTALADAS
 * Biblioteca que cria os PDFs:
