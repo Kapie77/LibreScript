@@ -20,7 +20,7 @@
 | Arquivo | Para que serve | Especificações | Local |
 |-----|------|------|------|
 | Toolbar.tsx | Barra de ferramentas do editor. | Botões: Scene, Action, Character, Dialogue, Parenthetical, Shot e Transition. Shot e Transition possuem menus suspensos com opções rápidas | src/components |
-| ScriptBlock.tsx | Renderiza e edita um bloco do roteiro. | Exemplo: INT. CASA - NOITE | src/components |
+| ScriptBlock.tsx | Renderiza e edita um bloco do roteiro. | Edição de conteúdo, exclusão, movimentação e suporte à busca. | src/components |
 | EditorPage.tsx | Página principal do editor. | Responsável por: Exibir roteiro, Adicionar blocos, Editar blocos, Salvar projeto, Abrir projeto | src/pages |
 | GuidePage.tsx | Página futura de ajuda. | Contém: INT., EXT., FADE IN, FADE OUT, CUT TO, etc. | src/pages |
 | RepositoryPage.tsx | Página com informações do projeto. | Possivelmente: GitHub, Licença, Contribuição | src/pages |
@@ -35,8 +35,8 @@
 | theme.css | Define as variáveis globais dos temas. | Tema Dark e Light através de CSS Variables. | src |
 | StatusBar.tsx | Barra inferior fixa do editor. | Exibe páginas, palavras, caracteres e atalhos para Histórico e Estatísticas. | src/components |
 | FileBar.tsx | Barra superior fixa do editor. | Menu Arquivo (Novo, Abrir, Salvar, Exportar PDF), Desfazer/Refazer, Busca de termos, Navegação entre resultados. | src/components |
-| ScriptBlock.tsx | Renderiza e edita um bloco do roteiro. | Edição de conteúdo, exclusão, movimentação e suporte à busca. | src/components |
 | layoutEngine.ts | Responsável pela paginação do roteiro. | Calcula distribuição dos blocos em páginas virtuais. | src/utils |
+| scriptMetrics.ts | Calcula métricas do roteiro. | Contagem de palavras, caracteres, cenas, diálogos, personagens, transições, páginas e estatísticas gerais utilizadas pelo StatusBar e StatisticsPage. | src/utils |
 
 # EXTENSÕES A SEREM INSTALADAS
 * Biblioteca que cria os PDFs:
