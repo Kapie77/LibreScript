@@ -21,7 +21,6 @@
 |-----|------|------|------|
 | Toolbar.tsx | Barra de ferramentas do editor. | Botões: Scene, Action, Character, Dialogue, Parenthetical, Shot e Transition. Shot e Transition possuem menus suspensos com opções rápidas | src/components |
 | ScriptBlock.tsx | Renderiza e edita um bloco do roteiro. | Exemplo: INT. CASA - NOITE | src/components |
-| FileBar.tsx | Barra de gerenciamento de projeto. | Botões: Novo, Salvar, Abrir | src/components |
 | EditorPage.tsx | Página principal do editor. | Responsável por: Exibir roteiro, Adicionar blocos, Editar blocos, Salvar projeto, Abrir projeto | src/pages |
 | GuidePage.tsx | Página futura de ajuda. | Contém: INT., EXT., FADE IN, FADE OUT, CUT TO, etc. | src/pages |
 | RepositoryPage.tsx | Página com informações do projeto. | Possivelmente: GitHub, Licença, Contribuição | src/pages |
@@ -34,7 +33,6 @@
 | StatisticsPage.tsx | Exibe estatísticas do roteiro. | Quantidade de blocos, cenas, ações, personagens, diálogos, transições, shots, parentheticals, palavras, caracteres e ranking de personagens. | src/pages |
 | SettingsPage.tsx | Página de configurações do LibreScript. | Permite alterar tema, idioma e ativar/desativar recursos do editor. | src/pages |
 | theme.css | Define as variáveis globais dos temas. | Tema Dark e Light através de CSS Variables. | src |
-
 | StatusBar.tsx | Barra inferior fixa do editor. | Exibe páginas, palavras, caracteres e atalhos para Histórico e Estatísticas. | src/components |
 | FileBar.tsx | Barra superior fixa do editor. | Menu Arquivo (Novo, Abrir, Salvar, Exportar PDF), Desfazer/Refazer, Busca de termos, Navegação entre resultados. | src/components |
 | ScriptBlock.tsx | Renderiza e edita um bloco do roteiro. | Edição de conteúdo, exclusão, movimentação e suporte à busca. | src/components |
