@@ -11,11 +11,12 @@
 # ESPECIFICAÇÕES
 | Pasta | Para que serve | 
 |-----|------|
-| components | Componentes reutilizáveis. |
+| components | Componentes reutilizáveis da interface. |
 | pages | Páginas da aplicação. |
 | types | Tipos TypeScript. |
 | data | Dados de exemplo. |
 | utils | Funções auxiliares reutilizáveis do sistema. Não possuem interface visual nem estado React. |
+| layout | Sistema responsável pela paginação e medição do roteiro. Centraliza toda a lógica de layout utilizada pelo editor e pela exportação em PDF. |
 
 | Arquivo | Para que serve | Especificações | Local |
 |-----|------|------|------|
@@ -35,8 +36,13 @@
 | theme.css | Define as variáveis globais dos temas. | Tema Dark e Light através de CSS Variables. | src |
 | StatusBar.tsx | Barra inferior fixa do editor. | Exibe páginas, palavras, caracteres e atalhos para Histórico e Estatísticas. | src/components |
 | FileBar.tsx | Barra superior fixa do editor. | Menu Arquivo (Novo, Abrir, Salvar, Exportar PDF), Desfazer/Refazer, Busca de termos, Navegação entre resultados. | src/components |
-| layoutEngine.ts | Responsável pela paginação do roteiro. | Calcula distribuição dos blocos em páginas virtuais. | src/utils |
-| scriptMetrics.ts | Calcula métricas do roteiro. | Contagem de palavras, caracteres, cenas, diálogos, personagens, transições, páginas e estatísticas gerais utilizadas pelo StatusBar e StatisticsPage. | src/utils |
+| MeasuredBlock.tsx | Mede automaticamente a altura de cada bloco. | Utiliza ResizeObserver para informar mudanças de altura ao sistema de paginação. | src/components |
+| Pagination.ts | Divide os blocos em páginas utilizando as alturas medidas no editor. |  | src/layout |
+| Page.ts | Define as dimensões físicas da página (altura útil, largura e margens). |  | src/layout |
+| scriptBlockLayout.ts | Centraliza as regras visuais dos blocos para o editor e para o PDF. |  | src/layout |
+| LayoutManager.ts | Classe responsável por coordenar o sistema de layout. Preparada para futuras otimizações (cache, virtualização etc.). |  | src/layout |
+| Measurements.ts | Armazena e gerencia as alturas medidas de cada bloco. |  | src/layout |
+| types.ts | Tipos compartilhados pelo sistema de layout. |  | src/layout |
 
 # EXTENSÕES A SEREM INSTALADAS
 * Biblioteca que cria os PDFs:
