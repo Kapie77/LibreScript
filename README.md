@@ -1,73 +1,66 @@
-# React + TypeScript + Vite
+# LINGUAGEM
+| Linguagem | Para que serve | 
+|-----|------|
+| TypeScript | Linguagem principal do projeto. |
+| React | Biblioteca de interface. | Responsável por: Componentes, Atualização da tela, Estados (useState), Efeitos (useEffect)
+| Vite | Ferramenta de desenvolvimento. | Responsável por: Criar projeto, Servidor local, Build de produção
+| Node.js | Ambiente de execução usado para desenvolvimento. | Necessário para: npm, instalar pacotes, executar Vite
+| npm | Gerenciador de pacotes. | Usado para instalar dependências.
+| React Router | Sistema de navegação entre páginas. | Usado em: Editor, Guia, Repositório. Não faz parte do LibreScript final.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+# ESPECIFICAÇÕES
+| Pasta | Para que serve | 
+|-----|------|
+| components | Componentes reutilizáveis da interface. |
+| pages | Páginas da aplicação. |
+| types | Tipos TypeScript. |
+| data | Dados de exemplo. |
+| utils | Funções auxiliares reutilizáveis do sistema. Não possuem interface visual nem estado React. |
+| layout | Sistema responsável pela paginação e medição do roteiro. Centraliza toda a lógica de layout utilizada pelo editor e pela exportação em PDF. |
 
-Currently, two official plugins are available:
+| Arquivo | Para que serve | Especificações | Local |
+|-----|------|------|------|
+| Toolbar.tsx | Barra de ferramentas do editor. | Botões: Scene, Action, Character, Dialogue, Parenthetical, Shot e Transition. Shot e Transition possuem menus suspensos com opções rápidas | src/components |
+| ScriptBlock.tsx | Renderiza e edita um bloco do roteiro. | Edição de conteúdo, exclusão, movimentação e suporte à busca. | src/components |
+| EditorPage.tsx | Página principal do editor. | Responsável por: Exibir roteiro, Adicionar blocos, Editar blocos, Salvar projeto, Abrir projeto | src/pages |
+| GuidePage.tsx | Página futura de ajuda. | Contém: INT., EXT., FADE IN, FADE OUT, CUT TO, etc. | src/pages |
+| RepositoryPage.tsx | Página com informações do projeto. | Possivelmente: GitHub, Licença, Contribuição | src/pages |
+| scripts.ts | Define os blocos do roteiro. | scene, action, character, dialogue, parenthetical, shot, transition | src/types |
+| project.ts | Define um projeto completo. | title, author, blocks | src/types |
+| sampleScript.ts | Roteiro inicial usado para testes. |  | src/data |
+| HistoryPage.tsx | Exibe o histórico de alterações do projeto. | Mostra eventos como criação, exclusão, movimentação e abertura de projetos. Permite limpar o histórico. | src/pages |
+| history.ts | Define a estrutura de uma entrada de histórico. | id, timestamp, action, details, snapshot | src/types |
+| pdfExporter.ts | Exporta o projeto para PDF formatado. | Gera capa, formatação de roteiro, Courier, negrito, conversão automática para maiúsculas e paginação. | src/utils |
+| StatisticsPage.tsx | Exibe estatísticas do roteiro. | Quantidade de blocos, cenas, ações, personagens, diálogos, transições, shots, parentheticals, palavras, caracteres e ranking de personagens. | src/pages |
+| SettingsPage.tsx | Página de configurações do LibreScript. | Permite alterar tema, idioma e ativar/desativar recursos do editor. | src/pages |
+| theme.css | Define as variáveis globais dos temas. | Tema Dark e Light através de CSS Variables. | src |
+| StatusBar.tsx | Barra inferior fixa do editor. | Exibe páginas, palavras, caracteres e atalhos para Histórico e Estatísticas. | src/components |
+| FileBar.tsx | Barra superior fixa do editor. | Menu Arquivo (Novo, Abrir, Salvar, Exportar PDF), Desfazer/Refazer, Busca de termos, Navegação entre resultados. | src/components |
+| MeasuredBlock.tsx | Mede automaticamente a altura de cada bloco. | Utiliza ResizeObserver para informar mudanças de altura ao sistema de paginação. | src/components |
+| Pagination.ts | Divide os blocos em páginas utilizando as alturas medidas no editor. |  | src/layout |
+| Page.ts | Define as dimensões físicas da página (altura útil, largura e margens). |  | src/layout |
+| scriptBlockLayout.ts | Centraliza as regras visuais dos blocos para o editor e para o PDF. |  | src/layout |
+| LayoutManager.ts | Classe responsável por coordenar o sistema de layout. Preparada para futuras otimizações (cache, virtualização etc.). |  | src/layout |
+| Measurements.ts | Armazena e gerencia as alturas medidas de cada bloco. |  | src/layout |
+| types.ts | Tipos compartilhados pelo sistema de layout. |  | src/layout |
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+# EXTENSÕES A SEREM INSTALADAS
+* Biblioteca que cria os PDFs:
+```bash
+npm install jspdf
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+* Vite
+```bash
+npm create vite@latest .
+```
+```bash
+npm install
+```
+Em "Select a framework" desce e selecione "React". No "Select a variant" escolha "TypeScript".
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Como iniciar o projeto no servidor
+Digite no terminal do Visual Studio Code:
+```bash
+npm run dev
 ```
