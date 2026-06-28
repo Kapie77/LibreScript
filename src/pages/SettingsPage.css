@@ -1,0 +1,91 @@
+.settings-page {
+  max-width: 900px;
+  margin: 0 auto;
+
+  color: var(--text-main);
+
+  height: calc(100vh - 120px);
+
+  display: flex;
+  flex-direction: column;
+}
+
+.settings-content {
+  flex: 1;
+
+  overflow-y: auto;
+
+  padding-right: 10px;
+}
+
+/* =====================
+      SCROLLBAR
+======================== */
+.settings-content::-webkit-scrollbar {
+  width: 10px;
+}
+
+.settings-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.settings-content::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 999px;
+}
+
+.settings-content::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
+
+/* =======================
+          TÍTULO
+========================= */
+.settings-page h1 {
+  margin-bottom: 20px;
+  flex-shrink: 0;
+}
+
+/* ======================= */
+.settings-section {
+  background: var(--bg-card);
+
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+
+  padding: 20px;
+
+  margin-bottom: 20px;
+}
+
+.settings-section h2 {
+  margin-top: 0;
+}
+
+.setting-row {
+  display: flex;
+
+  justify-content: space-between;
+  align-items: center;
+
+  margin-top: 12px;
+}
+
+.setting-row select {
+  padding: 8px 12px;
+
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+
+  background: var(--bg-main);
+  color: var(--text-main);
+}
+
+.checkbox-row {
+  display: flex;
+
+  align-items: center;
+  gap: 10px;
+
+  margin-top: 12px;
+}

@@ -1,0 +1,39 @@
+.statusbar{
+    flex-shrink: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 1400px;
+    margin: 24px auto 0 auto;
+    padding: 12px 20px;
+    background:var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+
+}
+
+.statusbar span {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.statusbar button {
+  border: none;
+  background: transparent;
+  color: var(--text-main);
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.statusbar button:hover {
+  color: var(--accent-color);
+}
+
+.statusbar-left,
+.statusbar-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
