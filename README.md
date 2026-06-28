@@ -44,8 +44,10 @@
 | Measurements.ts | Armazena e gerencia as alturas medidas de cada bloco. |  | src/layout |
 | types.ts | Tipos compartilhados pelo sistema de layout. |  | src/layout |
 
-# EXTENSÕES A SEREM INSTALADAS
-* Biblioteca que cria os PDFs:
+### DEPENDÊNCIAS
+Instalar todas as dependências do projeto.
+
+Exportação de PDF:
 ```bash
 npm install jspdf
 ```
