@@ -1,0 +1,89 @@
+:root {
+
+  /* =====================
+         TEMA ESCURO
+  ====================== */
+
+  /* Fundo principal */
+  --bg-main: #181a1b;
+
+  /* Topbar */
+  --bg-header: #202225;
+
+  /* Cards, painéis e containers */
+  --bg-card: #2b2d31;
+
+  /* Hover */
+  --bg-hover: #36393f;
+
+  /* Textos */
+  --text-main: #f5f5f5;
+  --text-secondary: #b5bac1;
+
+  /* Bordas */
+  --border-color: #444;
+
+  /* Destaques */
+  --accent: #4caf50;
+  --danger: #c62828;
+
+  /* Sombras */
+  --shadow:
+    0 4px 20px rgba(0,0,0,.25);
+
+  /* Histórico */
+  --history-created: #4caf50;
+  --history-deleted: #f44336;
+  --history-moved: #2196f3;
+  --history-restored: #eeff00;
+
+  --history-created-bg: #203526;
+  --history-deleted-bg: #3a2222;
+  --history-moved-bg: #1f2f46;
+  --history-restored-bg: #584511;
+}
+
+/* =====================
+        TEMA CLARO
+===================== */
+
+[data-theme="light"] {
+
+  /* Fundo principal */
+  --bg-main: #f5f5f5;
+
+  /* Topbar */
+  --bg-header: #ffffff;
+
+  /* Cards */
+  --bg-card: #ffffff;
+
+  /* Hover */
+  --bg-hover: #ececec;
+
+  /* Textos */
+  --text-main: #222222;
+  --text-secondary: #666666;
+
+  /* Bordas */
+  --border-color: #d5d5d5;
+
+  /* Destaques */
+  --accent: #4caf50;
+  --danger: #c62828;
+
+  /* Sombras */
+  --shadow:
+    0 4px 15px rgba(0,0,0,.08);
+
+  /* Histórico */
+  --history-created: #2e7d32;
+  --history-deleted: #c62828;
+  --history-moved: #1565c0;
+  --history-restored: #eeff00;
+
+  --history-created-bg: #d0f0d6;
+  --history-deleted-bg: #e44141;
+  --history-moved-bg: #d8e9ff;
+  --history-restored-bg: #dde93cd0;
+}
