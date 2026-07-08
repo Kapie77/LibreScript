@@ -1,0 +1,105 @@
+/* ==========================
+          PÁGINA
+========================== */
+
+.statistics-page {
+  max-width: 1100px;
+  margin: 0 auto;
+
+  color: var(--text-main);
+}
+
+/* ==========================
+         TÍTULO
+========================== */
+
+.statistics-page h1 {
+  margin-bottom: 24px;
+}
+
+/* ==========================
+        GRID PRINCIPAL
+========================== */
+
+.stats-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(auto-fit, minmax(220px, 1fr));
+
+  gap: 16px;
+
+  margin-bottom: 30px;
+}
+
+/* ==========================
+          CARDS
+========================== */
+
+.stat-card {
+  background: var(--bg-card);
+
+  border: 1px solid var(--border-color);
+
+  border-radius: 12px;
+
+  padding: 20px;
+
+  transition: .2s;
+}
+
+.stat-card:hover {
+  border-color: var(--accent);
+
+  transform: translateY(-2px);
+}
+
+.stat-card h3 {
+  margin-top: 0;
+
+  color: var(--text-secondary);
+}
+
+.stat-value {
+  font-size: 28px;
+  font-weight: bold;
+
+  margin-top: 10px;
+}
+
+/* ==========================
+       RANKING
+========================== */
+
+.character-ranking {
+  background: var(--bg-card);
+
+  border: 1px solid var(--border-color);
+
+  border-radius: 12px;
+
+  padding: 20px;
+}
+
+.character-row {
+  display: flex;
+
+  justify-content: space-between;
+
+  padding: 10px 0;
+
+  border-bottom: 1px solid
+    var(--border-color);
+}
+
+.character-row:last-child {
+  border-bottom: none;
+}
+
+.character-name {
+  font-weight: bold;
+}
+
+.character-count {
+  color: var(--text-secondary);
+}

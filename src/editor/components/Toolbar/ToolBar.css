@@ -1,0 +1,65 @@
+/* ===================================
+       PAINEL INFERIOR FLUTUANTE
+  (scene, character, transition, etc)
+====================================== */
+.toolbar {
+  position: fixed;
+  bottom: 75px;
+
+  left: 50%;
+  transform: translateX(-50%);
+  justify-content: center;
+  display: flex;
+  gap: 10px;
+  padding: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+
+}
+
+.toolbar button {
+  padding: 10px 16px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-hover);
+  color: var(--text-main);
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.toolbar button:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+}
+.toolbar-dropdown {
+  position: relative;
+}
+
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  bottom: 110%;
+  left: 0;
+  min-width: 180px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 6px;
+  z-index: 2000;
+  box-shadow: var(--shadow);
+}
+
+.toolbar-dropdown:hover .dropdown-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dropdown-menu button {
+  width: 100%;
+  text-align: left;
+}

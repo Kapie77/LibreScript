@@ -1,0 +1,271 @@
+.editor-layout {
+  background: var(--bg-main);
+  color: var(--text-main);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* ========================
+      NAVEGAÇÃO CENAS
+======================== */
+.scene-list {
+  position: fixed;
+  left: 75px;
+  top: 180px; /* mantém alinhamento com a folha */
+  width: 260px;
+  height: calc(100vh - 260px);
+  overflow-y: auto;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: var(--shadow);
+  z-index: 3000;
+  animation: slideIn 0.15s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.scene-list h3 {
+  margin-top: 0;
+  color: var(--text-color);
+}
+
+.scene-item {
+  padding: 10px;
+  margin-bottom: 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.scene-item:hover {
+  transform: translateX(4px);
+}
+
+.scene-title {
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.scene-item.active {
+  border-left: 4px solid var(--accent-color);
+  background: rgba(76, 175, 80, 0.15);
+}
+
+/* ========================
+        ÁREA EDITOR
+======================== */
+.editor-area {
+  flex: 1;
+  padding: 90px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ========================
+      INPUTS
+======================== */
+.script-input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  padding: 0px;
+  flex: 1;
+  resize: none;
+  overflow: hidden;
+
+  display: block;
+  min-height: 22px;
+  height: auto;
+  line-height: 22px;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
+.script-input-wrapper {
+  position: relative;
+}
+
+.highlight-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  white-space: pre-wrap;
+  color: transparent;
+}
+
+.highlight-layer mark {
+  background: rgba(255, 235, 59, 0.4);
+  color: black;
+}
+
+/* ========================
+      CABEÇALHO
+======================== */
+.project-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 60px;
+  text-align: center;
+}
+
+.project-title {
+  width: 500px;
+  font-size: 28px;
+  font-weight: bold;
+  text-align: center;
+  background: var(--bg-card);
+
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+}
+
+.project-author {
+  width: 300px;
+  margin-top: 10px;
+  text-align: center;
+  background: var(--bg-card);
+
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  height: 28px;
+}
+/* ==================================
+             BOTÕES BLOCO
+    (deletar e mover pra cima/baixo)
+===================================== */
+.block-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.block-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: 10px;
+}
+
+.delete-block,
+.move-block {
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 16px;
+}
+
+/* ========================
+    BOTÕES FLUTUANTES
+======================== */
+.floating-tools {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  display: flex;
+  gap: 10px;
+  z-index: 1000;
+}
+
+.floating-tools button {
+  padding: 10px 14px;
+  border: none;
+  border-radius: 8px;
+  background: var(--accent-color);
+  color: var(--text-color);
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,.25);
+  transition: 0.2s;
+}
+
+.floating-tools button:hover {
+  transform: translateY(-2px);
+}
+
+/* ========================
+      PAINEL
+======================== */
+.floating-panel {
+  position: fixed;
+  right: 20px;
+  bottom: 80px;
+  width: 320px;
+  max-height: 400px;
+  overflow-y: auto;
+  background: var(--card-color);
+  color: var(--text-color);
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  box-shadow:
+    0 4px 15px rgba(0,0,0,.25);
+  z-index: 1000;
+}
+
+/* ========================
+        PÁGINAS
+======================== */
+.pages-container {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 30px;
+  padding-bottom: 30px;
+}
+
+.script-page {
+  width: 850px;
+  min-height: 1100px;
+  padding:
+    60px
+    60px
+    80px
+    60px;
+  background: var(--bg-card);
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  position: relative;
+  font-family:
+    "Courier Prime",
+    monospace;
+}
+
+.page-number {
+  position: absolute;
+  bottom: 20px;
+  right: 40px;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
