@@ -1,0 +1,81 @@
+.app {
+  min-height: 100vh;
+}
+
+/* ======================
+        TOPBAR
+====================== */
+.topbar {
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  background: var(--bg-header);
+  color: var(--text-main);
+  border-bottom: 1px solid var(--border-color);
+  box-sizing: border-box;
+}
+
+.topbar h1 {
+  margin: 0;
+}
+
+/* ======================
+       NAVEGAÇÃO
+====================== */
+.topbar nav {
+  display: flex;
+  gap: 12px;
+}
+
+.topbar a {
+  padding: 10px 14px;
+
+  border-radius: 6px;
+
+  text-decoration: none;
+
+  background: var(--bg-card);
+  color: var(--text-main);
+
+  transition: 0.2s;
+}
+
+.topbar a:hover {
+  background: var(--bg-hover);
+}
+
+/* ======================
+       CONTEÚDO
+====================== */
+.content {
+  padding: 0;
+  background: var(--bg-main);
+
+  height: calc(100vh - 70px);
+
+  overflow: hidden;
+}
+
+/* ==========================
+    BOTÃO TROCAR DE TEMA
+============================ */
+.theme-toggle {
+  border: none;
+
+  background: var(--bg-card);
+  color: var(--text-main);
+
+  padding: 10px 12px;
+
+  border-radius: 8px;
+
+  cursor: pointer;
+
+  transition: .2s;
+}
+
+.theme-toggle:hover {
+  background: var(--bg-hover);
+}
