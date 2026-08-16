@@ -1,0 +1,229 @@
+/* ============= 
+GuidePage.css
+src/editor/pages/Guide/
+===============*/
+
+html {
+  scroll-behavior: smooth;
+}
+
+.guide-page {
+  height: 100%;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  overflow-y: auto; /* ✅ SCROLL AQUI */
+
+  padding: 30px 20px;
+  box-sizing: border-box;
+}
+
+/* FOLHA */
+.guide-content {
+  width: 100%;
+  max-width: 1100px;
+
+  /* ❌ REMOVE ISSO */
+  /* flex-shrink: 0; */
+
+  /* ❌ NÃO usar flex: 1 aqui */
+
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+
+  box-shadow: var(--shadow);
+
+  padding: 25px;
+}
+
+/* SCROLL IGUAL SETTINGS */
+.guide-content::-webkit-scrollbar {
+  width: 10px;
+}
+
+.guide-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.guide-content::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 999px;
+}
+
+.guide-content::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
+
+/* TÍTULO */
+.guide-page h1 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* DESCRIÇÃO */
+.guide-description {
+  color: var(--text-secondary);
+  margin-bottom: 25px;
+}
+
+/* SEÇÕES */
+.guide-section {
+  margin-bottom: 35px;
+}
+
+.guide-section h3 {
+  margin-bottom: 12px;
+}
+
+/* GRID */
+.guide-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 15px;
+}
+
+/* CARDS */
+.guide-card {
+  background: var(--bg-main); /* leve contraste com a folha */
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+
+  padding: 15px;
+
+  transition: 0.2s;
+}
+
+.guide-card:hover {
+  background: var(--bg-hover);
+  transform: translateY(-2px);
+}
+
+.guide-card h4 {
+  margin-bottom: 8px;
+}
+
+.guide-card p {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+/* ==========================
+   SCRIPT (ESTILO HOLLYWOOD)
+========================== */
+.script {
+  font-family: "Courier Prime", "Courier New", monospace;
+  background: #f4f4f4;
+  padding: 24px;
+  border-radius: 10px;
+  line-height: 1.6;
+}
+
+/* SCENE HEADING */
+.scene-heading {
+  text-transform: uppercase;
+  font-weight: bold;
+  margin: 20px 0 10px;
+  letter-spacing: 0.5px;
+}
+
+/* ACTION */
+.action {
+  margin: 10px 0;
+  max-width: 700px;
+}
+
+/* CHARACTER */
+.character {
+  text-align: center;
+  font-weight: bold;
+  margin-top: 20px;
+  letter-spacing: 1px;
+}
+
+/* DIALOGUE */
+.dialogue {
+  text-align: center;
+  margin: 5px auto 15px;
+  max-width: 400px; /* 🎯 MUITO IMPORTANTE */
+}
+
+/* PARENTHETICAL */
+.parenthetical {
+  text-align: center;
+  font-style: italic;
+  font-size: 0.9rem;
+  margin: 2px auto;
+  max-width: 300px;
+}
+
+/* SHOTS */
+.shot {
+  margin: 12px 0;
+  font-style: italic;
+}
+
+/* TRANSITIONS */
+.transition {
+  text-align: right;
+  font-weight: bold;
+  margin: 25px 0;
+  text-transform: uppercase;
+}
+
+
+/* ===================
+        BOTÕES
+====================== */
+.guide-btn {
+  margin-left: 4px;
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: none;
+  background: #ddd;
+  cursor: pointer;
+  vertical-align: middle;
+}
+
+.guide-btn:hover {
+  background: #bbb;
+}
+
+/* BOTÃO menor em slugline */
+.scene-heading .guide-btn {
+  transform: scale(0.75);
+  margin-left: 2px;
+}
+
+/* NÃO QUEBRAR LINHA COM BOTÃO */
+.scene-heading,
+.character,
+.dialogue,
+.parenthetical,
+.transition {
+  white-space: normal;
+}
+
+.scene-heading button,
+.character button,
+.dialogue button,
+.parenthetical button,
+.transition button {
+  display: inline-block;
+}
+
+/* =====================
+        HIGHLIGHT
+======================== */
+.guide-card {
+  transition: all 0.3s ease;
+}
+
+.guide-card.highlight {
+  border: 2px solid #4f46e5;
+  background: #eef2ff;
+  transform: scale(1.03);
+}

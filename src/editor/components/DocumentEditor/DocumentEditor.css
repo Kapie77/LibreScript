@@ -1,0 +1,165 @@
+/* DocumentEditor.css */
+/* src/editor/components/ */
+.document-editor {
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    /*background: #6d6d6d;*/
+    background: transparent;
+    display: flex;
+    justify-content: center;
+    padding: 8px 0 24px;
+    box-sizing: border-box;
+}
+
+.document-page {
+    width: 816px;
+    min-height: 1122px;
+    background: white;
+    box-shadow: 0 8px 24px rgba(0,0,0,.12);
+    padding: 96px;
+    box-sizing: border-box;
+
+    border-radius: 16px;
+    overflow: hidden;
+
+    font-family: "Courier Prime", monospace;
+}
+
+.document-page p {
+    display: block;
+
+    width: 100%;
+
+    margin: 0;
+    padding: 0;
+
+    line-height: 22px;
+    min-height: 22px;
+
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* remover a caixa de seleção dos navegadores das linhas */
+.document-page p:focus {
+    outline: none;
+    box-shadow: none; /* garante que nenhum navegador esteja usando sombra de foco */
+}
+
+/* =========================================================
+   CONTROLES DOS BLOCOS
+   ========================================================= */
+/* =========================================================
+   WRAPPER DE CADA PARÁGRAFO
+   ========================================================= */
+
+.editor-paragraph-wrapper {
+    position: relative;
+
+    width: 100%;
+
+    display: block;
+}
+
+
+/* =========================================================
+   AÇÕES DO PARÁGRAFO
+   ========================================================= */
+
+.paragraph-actions {
+    position: absolute;
+
+    left: calc(100% + 8px);
+
+    top: 50%;
+
+    transform: translateY(-50%);
+
+    display: flex;
+
+    flex-direction: row;
+
+    align-items: center;
+
+    gap: 4px;
+
+    opacity: 0;
+
+    transition: opacity 0.15s ease;
+
+    z-index: 10;
+}
+
+
+/* Mostra os botões quando o mouse passa pelo bloco */
+
+.editor-paragraph-wrapper:hover .paragraph-actions {
+    opacity: 1;
+}
+
+
+/* =========================================================
+   BOTÕES
+   ========================================================= */
+
+.paragraph-action-button {
+    width: 24px;
+    height: 24px;
+
+    padding: 0;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border: none;
+
+    border-radius: 5px;
+
+    background: #e5e5e5;
+
+    cursor: pointer;
+
+    font-size: 15px;
+
+    line-height: 1;
+}
+
+
+.paragraph-action-button:hover {
+    background: #d5d5d5;
+}
+
+
+.paragraph-action-button:active {
+    background: #c8c8c8;
+}
+
+/* botão delete */
+.paragraph-delete-button { 
+    margin-left: 2px; 
+}
+
+/* =========================================================
+   DESTAQUE DA BUSCA
+   ========================================================= */
+
+.search-highlight {
+    background: #fff3a3;
+    color: inherit;
+    border-radius: 3px;
+    padding: 0 1px;
+}
+.search-highlight-current {
+    background: #ffb84d;
+    border-radius: 2px;
+}
+
+/* Resultado atualmente selecionado */
+.search-highlight-active {
+
+    background: #ffd21c;
+
+}
