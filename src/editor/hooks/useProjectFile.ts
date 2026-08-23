@@ -118,11 +118,6 @@ export function useProjectFile({
                 "Projeto aberto"
             );
 
-            console.log(
-                "[OPEN] arquivo:",
-                path
-            );
-
         } catch (error) {
 
             console.error(
@@ -271,11 +266,6 @@ export function useProjectFile({
                 "Projeto salvo como"
             );
 
-            console.log(
-                "[SAVE AS] arquivo:",
-                selectedPath
-            );
-
         } catch (error) {
 
             console.error(
@@ -303,11 +293,6 @@ export function useProjectFile({
         if (filePathRef.current) {
 
             try {
-
-                console.log(
-                    "[SAVE] salvando no arquivo atual:",
-                    filePathRef.current
-                );
 
                 await writeProjectFile(
                     filePathRef.current

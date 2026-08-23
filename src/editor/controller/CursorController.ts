@@ -216,73 +216,484 @@ export class CursorController {
 
     };
 
-    // Quando aperta "seta para cima" //
+    // ================================================================
+    // SETA PARA CIMA
+    // ================================================================
+
     private onArrowUp(
-
         event: KeyboardEvent
-
     ) {
-
-        const previous =
-
-            this.selection.getPreviousParagraph();
-
-        if (!previous) {
-
-            return;
-
-        }
 
         event.preventDefault();
 
-        const column =
+        this.selection.syncControllerFromDOM();
 
-            this.selection.getCaretColumn();
+        const paragraphId =
+            this.selection.getCurrentParagraphId();
+
+        if (paragraphId === null) {
+            return;
+        }
+
+        const offset =
+            this.selection.getCaretOffset();
+
+        const currentFragment =
+            this.selection.getVisualFragmentForOffset(
+                paragraphId,
+                offset
+            );
+
+        if (!currentFragment) {
+            return;
+        }
+
+        const line =
+            this.selection.getCaretLinePosition(
+                currentFragment
+            );
+
+        if (!line) {
+            return;
+        }
+
+        console.log("[ARROW UP LINE]", {
+            paragraphId,
+            offset,
+            lineIndex: line.lineIndex,
+            lineCount: line.lineCount
+        });
+
+        const caretPosition =
+            this.selection.getCaretVisualPosition();
+
+        if (!caretPosition) {
+            return;
+        }
+
+        const lineHeight =
+            parseFloat(
+                getComputedStyle(
+                    currentFragment
+                ).lineHeight
+            ) || 20;
+
+
+        // ============================================================
+        // AINDA EXISTE UMA LINHA ACIMA NO MESMO FRAGMENTO
+        // ============================================================
+
+        if (line.lineIndex > 0) {
+
+            const localOffset =
+                this.selection.getClosestOffsetInFragment(
+                    currentFragment,
+                    caretPosition.x,
+                    caretPosition.y - lineHeight
+                );
+
+            const fragmentStart =
+                Number(
+                    currentFragment.dataset.startOffset ?? 0
+                );
+
+            const fragmentEnd =
+                Number(
+                    currentFragment.dataset.endOffset ??
+                    fragmentStart +
+                    (
+                        currentFragment.textContent?.length ??
+                        0
+                    )
+                );
+
+            const newOffset =
+                Math.max(
+                    fragmentStart,
+                    Math.min(
+                        fragmentStart + localOffset,
+                        fragmentEnd
+                    )
+                );
+
+            this.selection.setCaret(
+                paragraphId,
+                newOffset
+            );
+
+            return;
+        }
+
+
+        // ============================================================
+        // PRIMEIRA LINHA DO FRAGMENTO
+        // ============================================================
+
+        const previousFragment =
+            this.selection.getPreviousVisualFragment(
+                paragraphId,
+                offset
+            );
+
+
+        // ============================================================
+        // EXISTE FRAGMENTO ANTERIOR DO MESMO BLOCO
+        // ============================================================
+
+        if (previousFragment) {
+
+            const localOffset =
+                this.selection.getClosestOffsetInFragment(
+                    previousFragment,
+                    caretPosition.x,
+                    caretPosition.y - lineHeight
+                );
+
+            const fragmentStart =
+                Number(
+                    previousFragment.dataset.startOffset ?? 0
+                );
+
+            const fragmentEnd =
+                Number(
+                    previousFragment.dataset.endOffset ??
+                    fragmentStart +
+                    (
+                        previousFragment.textContent?.length ??
+                        0
+                    )
+                );
+
+            const newOffset =
+                Math.max(
+                    fragmentStart,
+                    Math.min(
+                        fragmentStart + localOffset,
+                        fragmentEnd
+                    )
+                );
+
+            this.selection.setCaret(
+                paragraphId,
+                newOffset
+            );
+
+            return;
+        }
+
+
+        // ============================================================
+        // NÃO EXISTE FRAGMENTO ANTERIOR
+        // → VAMOS PARA O BLOCO ANTERIOR
+        // ============================================================
+
+        const previousParagraph =
+            this.selection.getPreviousParagraphFrom(
+                paragraphId
+            );
+
+        if (!previousParagraph) {
+            return;
+        }
+
+        const previousParagraphId =
+            Number(
+                previousParagraph.dataset.paragraphId ??
+                previousParagraph.dataset.id
+            );
+
+        if (!Number.isFinite(previousParagraphId)) {
+            return;
+        }
+
+        const previousBlock =
+            this.selection.getLastVisualFragment(
+                previousParagraphId
+            );
+
+        if (!previousBlock) {
+            return;
+        }
+
+        const previousBlockStart =
+            Number(
+                previousBlock.dataset.startOffset ?? 0
+            );
+
+        const previousBlockEnd =
+            Number(
+                previousBlock.dataset.endOffset ??
+                previousBlockStart +
+                (
+                    previousBlock.textContent?.length ??
+                    0
+                )
+            );
+
+        const localOffset =
+            this.selection.getClosestOffsetInFragment(
+                previousBlock,
+                caretPosition.x,
+                caretPosition.y - lineHeight
+            );
+
+        const newOffset =
+            Math.max(
+                previousBlockStart,
+                Math.min(
+                    previousBlockStart + localOffset,
+                    previousBlockEnd
+                )
+            );
 
         this.selection.setCaret(
+            previousParagraphId,
+            newOffset
+        );
 
-            Number(previous.dataset.id),
+    }
 
-            column
 
+    // ================================================================
+    // SETA PARA BAIXO
+    // ================================================================
+
+    private onArrowDown(
+        event: KeyboardEvent
+    ) {
+
+        event.preventDefault();
+
+        this.selection.syncControllerFromDOM();
+
+        const paragraphId =
+            this.selection.getCurrentParagraphId();
+
+        if (paragraphId === null) {
+            return;
+        }
+
+        const offset =
+            this.selection.getCaretOffset();
+
+        const currentFragment =
+            this.selection.getVisualFragmentForOffset(
+                paragraphId,
+                offset
+            );
+
+        if (!currentFragment) {
+            return;
+        }
+
+        const line =
+            this.selection.getCaretLinePosition(
+                currentFragment
+            );
+
+        if (!line) {
+            return;
+        }
+
+        console.log("[ARROW DOWN LINE]", {
+            paragraphId,
+            offset,
+            lineIndex: line.lineIndex,
+            lineCount: line.lineCount
+        });
+
+        const caretPosition =
+            this.selection.getCaretVisualPosition();
+
+        if (!caretPosition) {
+            return;
+        }
+
+        const lineHeight =
+            parseFloat(
+                getComputedStyle(
+                    currentFragment
+                ).lineHeight
+            ) || 20;
+
+
+        // ============================================================
+        // AINDA EXISTE UMA LINHA ABAIXO NO MESMO FRAGMENTO
+        // ============================================================
+
+        if (
+            line.lineIndex <
+            line.lineCount - 1
+        ) {
+
+            const localOffset =
+                this.selection.getClosestOffsetInFragment(
+                    currentFragment,
+                    caretPosition.x,
+                    caretPosition.y + lineHeight
+                );
+
+            const fragmentStart =
+                Number(
+                    currentFragment.dataset.startOffset ?? 0
+                );
+
+            const fragmentEnd =
+                Number(
+                    currentFragment.dataset.endOffset ??
+                    fragmentStart +
+                    (
+                        currentFragment.textContent?.length ??
+                        0
+                    )
+                );
+
+            const newOffset =
+                Math.max(
+                    fragmentStart,
+                    Math.min(
+                        fragmentStart + localOffset,
+                        fragmentEnd
+                    )
+                );
+
+            this.selection.setCaret(
+                paragraphId,
+                newOffset
+            );
+
+            return;
+        }
+
+
+        // ============================================================
+        // ÚLTIMA LINHA DO FRAGMENTO
+        // ============================================================
+
+        const nextFragment =
+            this.selection.getNextVisualFragment(
+                paragraphId,
+                offset
+            );
+
+
+        // ============================================================
+        // EXISTE FRAGMENTO SEGUINTE DO MESMO BLOCO
+        // ============================================================
+
+        if (nextFragment) {
+
+            const localOffset =
+                this.selection.getClosestOffsetInFragment(
+                    nextFragment,
+                    caretPosition.x,
+                    caretPosition.y + lineHeight
+                );
+
+            const fragmentStart =
+                Number(
+                    nextFragment.dataset.startOffset ?? 0
+                );
+
+            const fragmentEnd =
+                Number(
+                    nextFragment.dataset.endOffset ??
+                    fragmentStart +
+                    (
+                        nextFragment.textContent?.length ??
+                        0
+                    )
+                );
+
+            const newOffset =
+                Math.max(
+                    fragmentStart,
+                    Math.min(
+                        fragmentStart + localOffset,
+                        fragmentEnd
+                    )
+                );
+
+            this.selection.setCaret(
+                paragraphId,
+                newOffset
+            );
+
+            return;
+        }
+
+
+        // ============================================================
+        // NÃO EXISTE FRAGMENTO SEGUINTE
+        // → VAMOS PARA O PRÓXIMO BLOCO
+        // ============================================================
+
+        const nextParagraph =
+            this.selection.getNextParagraphFrom(
+                paragraphId
+            );
+
+        if (!nextParagraph) {
+            return;
+        }
+
+        const nextParagraphId =
+            Number(
+                nextParagraph.dataset.paragraphId ??
+                nextParagraph.dataset.id
+            );
+
+        if (!Number.isFinite(nextParagraphId)) {
+            return;
+        }
+
+        const nextBlock =
+            this.selection.getFirstVisualFragment(
+                nextParagraphId
+            );
+
+        if (!nextBlock) {
+            return;
+        }
+
+        const nextBlockStart =
+            Number(
+                nextBlock.dataset.startOffset ?? 0
+            );
+
+        const nextBlockEnd =
+            Number(
+                nextBlock.dataset.endOffset ??
+                nextBlockStart +
+                (
+                    nextBlock.textContent?.length ??
+                    0
+                )
+            );
+
+        const localOffset =
+            this.selection.getClosestOffsetInFragment(
+                nextBlock,
+                caretPosition.x,
+                caretPosition.y + lineHeight
+            );
+
+        const newOffset =
+            Math.max(
+                nextBlockStart,
+                Math.min(
+                    nextBlockStart + localOffset,
+                    nextBlockEnd
+                )
+            );
+
+        this.selection.setCaret(
+            nextParagraphId,
+            newOffset
         );
 
     }
     // ------------------------------- //
-
-    // Quando aperta "seta pra baixo" //
-    private onArrowDown(
-
-        event: KeyboardEvent
-
-    ) {
-
-        const next =
-
-            this.selection.getNextParagraph();
-
-        if (!next) {
-
-            return;
-
-        }
-
-        event.preventDefault();
-
-        const column =
-
-            this.selection.getCaretColumn();
-
-        this.selection.setCaret(
-
-            Number(next.dataset.id),
-
-            column
-
-        );
-
-    }
-    // ---------------------------- //
 
     // Quando aperta "home" //
     private onHome(
@@ -360,17 +771,10 @@ export class CursorController {
             return;
         }
 
-        const paragraph =
-            document.querySelector(
-                `p[data-id="${paragraphId}"]`
-            ) as HTMLParagraphElement | null;
-
-        if (!paragraph) {
-            return;
-        }
-
         const length =
-            paragraph.textContent?.length ?? 0;
+            this.selection.getParagraphLogicalLength(
+                paragraphId
+            );
 
         if (event.shiftKey) {
 
@@ -472,7 +876,10 @@ export class CursorController {
         const offset =
             this.selection.getCaretOffset();
 
-        // ainda existe caractere à esquerda
+        // ---------------------------------------------
+        // AINDA EXISTE CARACTERE À ESQUERDA
+        // ---------------------------------------------
+
         if (offset > 0) {
 
             this.selection.setCaret(
@@ -484,9 +891,14 @@ export class CursorController {
 
         }
 
-        // início do parágrafo → vai para o anterior
+        // ---------------------------------------------
+        // INÍCIO DO PARÁGRAFO
+        // ---------------------------------------------
+
         const previous =
-            this.selection.getPreviousParagraph();
+            this.selection.getPreviousParagraphFrom(
+                paragraphId
+            );
 
         if (!previous) {
             return;
@@ -496,7 +908,9 @@ export class CursorController {
             Number(previous.dataset.id);
 
         const previousLength =
-            previous.textContent?.length ?? 0;
+            this.selection.getParagraphLogicalLength(
+                previousId
+            );
 
         this.selection.setCaret(
             previousId,
@@ -504,6 +918,7 @@ export class CursorController {
         );
 
     }
+    // ----------------------------------------------------- //
 
     // Quando aperta "right" //
     public moveRight() {
@@ -517,22 +932,18 @@ export class CursorController {
             return;
         }
 
-        const paragraph =
-            document.querySelector(
-                `p[data-id="${paragraphId}"]`
-            ) as HTMLParagraphElement | null;
-
-        if (!paragraph) {
-            return;
-        }
-
-        const length =
-            paragraph.textContent?.length ?? 0;
-
         const offset =
             this.selection.getCaretOffset();
 
-        // ainda existe caractere à direita
+        const length =
+            this.selection.getParagraphLogicalLength(
+                paragraphId
+            );
+
+        // ---------------------------------------------
+        // AINDA EXISTE TEXTO À DIREITA
+        // ---------------------------------------------
+
         if (offset < length) {
 
             this.selection.setCaret(
@@ -544,9 +955,14 @@ export class CursorController {
 
         }
 
-        // fim do parágrafo → vai para o próximo
+        // ---------------------------------------------
+        // FIM DO PARÁGRAFO
+        // ---------------------------------------------
+
         const next =
-            this.selection.getNextParagraph();
+            this.selection.getNextParagraphFrom(
+                paragraphId
+            );
 
         if (!next) {
             return;
@@ -558,28 +974,28 @@ export class CursorController {
         );
 
     }
+    // ----------------------------------------------------- //
 
     // Extend Left //
     private extendLeft() {
 
         this.selection.syncControllerFromDOM();
 
-        const paragraphId = this.selection.getFocusParagraphId()
+        const paragraphId =
+            this.selection.getFocusParagraphId();
 
         if (paragraphId === null) {
             return;
         }
 
-        const offset = this.selection.getFocusOffset();
+        const offset =
+            this.selection.getFocusOffset();
 
         if (offset > 0) {
 
             this.selection.setFocus(
-
                 paragraphId,
-
                 offset - 1
-
             );
 
             return;
@@ -587,79 +1003,81 @@ export class CursorController {
         }
 
         const previous =
-            this.selection.getPreviousParagraph();
+            this.selection.getPreviousParagraphFrom(
+                paragraphId
+            );
 
         if (!previous) {
             return;
         }
 
+        const previousId =
+            Number(previous.dataset.id);
+
         const previousLength =
-            previous.textContent?.length ?? 0;
+            this.selection.getParagraphLogicalLength(
+                previousId
+            );
 
         this.selection.setFocus(
-
-            Number(previous.dataset.id),
-
+            previousId,
             previousLength
-
         );
 
     }
+    // ----------------------------------------------- //
 
     // Extend Right //
     private extendRight() {
 
         this.selection.syncControllerFromDOM();
 
-        const paragraphId = this.selection.getFocusParagraphId();
+        const paragraphId =
+            this.selection.getFocusParagraphId();
 
         if (paragraphId === null) {
             return;
         }
 
-        const paragraph =
-            document.querySelector(
-
-                `p[data-id="${paragraphId}"]`
-
-            ) as HTMLParagraphElement | null;
-
-        if (!paragraph) {
-            return;
-        }
-
-        const offset = this.selection.getFocusOffset();
+        const offset =
+            this.selection.getFocusOffset();
 
         const length =
-            paragraph.textContent?.length ?? 0;
+            this.selection.getParagraphLogicalLength(
+                paragraphId
+            );
+
+        // ---------------------------------------------
+        // EXISTE TEXTO À DIREITA
+        // ---------------------------------------------
 
         if (offset < length) {
 
             this.selection.setFocus(
-
                 paragraphId,
-
                 offset + 1
-
             );
 
             return;
 
         }
 
+        // ---------------------------------------------
+        // FIM DO PARÁGRAFO
+        // ---------------------------------------------
+
         const next =
-            this.selection.getNextParagraph();
+            this.selection.getNextParagraphFrom(
+                paragraphId
+            );
 
         if (!next) {
             return;
         }
 
         this.selection.setFocus(
-
             Number(next.dataset.id),
-
             0
-
         );
 
     }

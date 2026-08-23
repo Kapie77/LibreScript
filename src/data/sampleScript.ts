@@ -1,3 +1,6 @@
+// sampleScript.ts
+// src/data/
+
 import type { ScriptBlock } from "../types/script";
 
 export const sampleScript: ScriptBlock[] = [

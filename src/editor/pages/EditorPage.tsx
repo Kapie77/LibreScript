@@ -107,10 +107,6 @@ export default function EditorPage({
       engine.setDirtyHandler(
           () => {
 
-            console.log(
-                "[DIRTY] documento modificado"
-            );
-
               setIsDirty(true);
 
           }
@@ -126,7 +122,6 @@ export default function EditorPage({
       };
 
   }, [engine]);
-  console.log("[DIRTY STATE]", isDirty);
 
   // filePath
   // (mostra o arquivo que está sendo editado)
@@ -137,6 +132,8 @@ export default function EditorPage({
   } = useEngineState(
       engine
   );
+
+  const pageCount = engine.getPageCount();
 
 
   // Função do scroll
@@ -447,7 +444,7 @@ export default function EditorPage({
         {/* Painel Flutuante para Histórico e Estátisticas */}
         {showStatusBar && (
           <StatusBar
-              pageCount={1}
+              pageCount={pageCount}
               wordCount={wordCount}
               charCount={charCount}
               onHistory={() => navigate("/history")}

@@ -87,11 +87,8 @@ export default function DocumentEditor({
         <div className="document-editor">
 
             <div
-
                 ref={rootRef}
-
-                className="document-page"
-
+                className="document-document"
             />
 
         </div>

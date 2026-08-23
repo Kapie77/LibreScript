@@ -1,13 +1,10 @@
+/* ScriptEditor.css */
+/* src/editor/components/ScriptEditor/ */
+
 .content-editor{
-
     border: 1px solid red;
-
     min-height: 32px;
-
     padding: 4px;
-
     white-space: pre-wrap;
-
     outline: none;
-
 }

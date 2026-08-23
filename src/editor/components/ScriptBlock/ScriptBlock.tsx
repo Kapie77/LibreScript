@@ -1,10 +1,12 @@
-import type { PreparedBlock } from "../../../layout/core/PreparedBlock";
+// ScriptBlock.tsx
+// sr/ceditor/components/ScriptBlock/
 
 import ScriptEditor from "../ScriptEditor/ScriptEditor";
+import type { PreparedBlockFragment } from "../../../layout/core/PreparedBlockFragment";
 // ------------------------------------------- //
 
 type Props = {
-  prepared: PreparedBlock;
+  fragment: PreparedBlockFragment;
 
   onChange: (id: number, content: string) => void;
   onDelete: (id: number) => void;
@@ -19,41 +21,50 @@ type Props = {
 };
 
 export default function ScriptBlock({
-    prepared,
+    fragment,
     onChange,
     onDelete,
     onMoveUp,
     onMoveDown,
     searchTerm,
-
     setActiveBlockId,
 }: Props) {
 
-    const {
-        block,
-        layout,
-        contentHeight,
-    } = prepared;
+  const prepared = fragment.prepared;
+
+  const {
+      block,
+      editorLayout,
+  } = prepared;
+
+  const fragmentLines =
+    prepared.composition.lines.slice(
+          fragment.startLine,
+          fragment.endLine
+      );
+
+  const fragmentText =
+      fragmentLines.join("\n");
   
 // -------------------------------------------------- //
   return (
 
     <div
-      className={`script-block ${layout.editor.className}`}
+      className={`script-block ${editorLayout.className}`}
       style={{
-        width: layout.editor.width,
+        width: editorLayout.width,
 
-        marginLeft: layout.editor.marginLeft,
+        marginLeft: editorLayout.marginLeft,
 
-        paddingBottom: layout.editor.marginBottom,
+        paddingBottom: editorLayout.marginBottom,
 
-        textAlign: layout.editor.align,
+        textAlign: editorLayout.align,
 
-        fontWeight: layout.editor.bold
+        fontWeight: editorLayout.bold
           ? "bold"
           : "normal",
 
-        fontStyle: layout.editor.italic
+        fontStyle: editorLayout.italic
           ? "italic"
           : "normal",
       }}
@@ -64,7 +75,8 @@ export default function ScriptBlock({
       <div className="editor-layer">
 
         <ScriptEditor
-            value={block.content}
+            value={fragmentText}
+            fragmentText={fragmentText}
             onChange={(value) =>
                 onChange(block.id, value)
             }

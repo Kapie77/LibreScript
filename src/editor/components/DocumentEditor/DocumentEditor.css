@@ -1,165 +1,192 @@
 /* DocumentEditor.css */
 /* src/editor/components/ */
+
+/*=========================================================
+   ÁREA DO EDITOR
+=========================================================*/
 .document-editor {
     width: 100%;
     height: 100%;
     overflow-y: auto;
-    /*background: #6d6d6d;*/
-    background: transparent;
+    background: var(--bg-main);
     display: flex;
     justify-content: center;
     padding: 8px 0 24px;
     box-sizing: border-box;
+    color: var(--text-main);
 }
 
-.document-page {
-    width: 816px;
-    min-height: 1122px;
-    background: white;
-    box-shadow: 0 8px 24px rgba(0,0,0,.12);
-    padding: 96px;
-    box-sizing: border-box;
-
-    border-radius: 16px;
-    overflow: hidden;
-
-    font-family: "Courier Prime", monospace;
-}
-
-.document-page p {
-    display: block;
-
+/*=========================================================
+   CONTAINER DO DOCUMENTO
+=========================================================*/
+.document-document {
     width: 100%;
-
-    margin: 0;
-    padding: 0;
-
-    line-height: 22px;
-    min-height: 22px;
-
-    white-space: pre-wrap;
-    word-break: break-word;
-}
-
-/* remover a caixa de seleção dos navegadores das linhas */
-.document-page p:focus {
-    outline: none;
-    box-shadow: none; /* garante que nenhum navegador esteja usando sombra de foco */
-}
-
-/* =========================================================
-   CONTROLES DOS BLOCOS
-   ========================================================= */
-/* =========================================================
-   WRAPPER DE CADA PARÁGRAFO
-   ========================================================= */
-
-.editor-paragraph-wrapper {
-    position: relative;
-
-    width: 100%;
-
-    display: block;
-}
-
-
-/* =========================================================
-   AÇÕES DO PARÁGRAFO
-   ========================================================= */
-
-.paragraph-actions {
-    position: absolute;
-
-    left: calc(100% + 8px);
-
-    top: 50%;
-
-    transform: translateY(-50%);
 
     display: flex;
 
-    flex-direction: row;
+    flex-direction: column;
 
     align-items: center;
 
+    gap: 24px;
+}
+
+/* =========================================================
+   PÁGINA
+========================================================= */
+
+.document-editor-page {
+    width: 850px;
+    height: 1100px;
+    flex: 0 0 auto;
+    background: var(--bg-card);
+    color: var(--text-main);
+    box-shadow: var(--shadow);
+    box-sizing: border-box;
+    position: relative;
+    overflow: hidden;
+    font-family:
+        "Courier Prime",
+        monospace;
+}
+
+/*=========================================================
+   ÁREA INTERNA DA PÁGINA
+=========================================================*/
+
+/*
+    A página possui:
+
+        topo    = 60px
+        fundo   = 80px
+        esquerda/direita = 60px
+
+    Portanto:
+
+        conteúdo vertical = 960px
+        conteúdo horizontal = 730px
+*/
+
+/*=========================================================
+   PARÁGRAFOS
+=========================================================*/
+.document-editor-page p {
+    display: block;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    line-height: 22px;
+    min-height: 22px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    color: var(--text-main);
+}
+
+/*=========================================================
+   FOCO
+=========================================================*/
+.document-editor-page p:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+/*=========================================================
+   CONTROLES DOS BLOCOS
+=========================================================*/
+/*=====  WRAPPER DE CADA PARÁGRAFO =====*/
+.editor-paragraph-wrapper {
+    position: relative;
+    width: 100%;
+    display: flow-root;
+}
+
+/*===== AÇÕES DO PARÁGRAFO =====*/
+.paragraph-actions {
+    position: absolute;
+    right: 8px;
+    left: auto;
+    top: 0;
+    transform: translateY(-50%);
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
     gap: 4px;
 
     opacity: 0;
-
-    transition: opacity 0.15s ease;
+    transition:
+        opacity 0.15s ease;
 
     z-index: 10;
 }
 
-
-/* Mostra os botões quando o mouse passa pelo bloco */
-
-.editor-paragraph-wrapper:hover .paragraph-actions {
+.editor-paragraph-wrapper:hover
+.paragraph-actions {
     opacity: 1;
 }
 
-
-/* =========================================================
+/* =======================================================
    BOTÕES
-   ========================================================= */
-
+=========================================================*/
 .paragraph-action-button {
     width: 24px;
     height: 24px;
-
     padding: 0;
-
     display: flex;
-
     align-items: center;
     justify-content: center;
-
-    border: none;
-
+    border: 1px solid var(--border-color);
     border-radius: 5px;
-
-    background: #e5e5e5;
-
+    background: var(--bg-card);
+    color: var(--text-main);
     cursor: pointer;
-
     font-size: 15px;
-
     line-height: 1;
+    box-shadow: none;
 }
-
-
 .paragraph-action-button:hover {
-    background: #d5d5d5;
+    background: var(--bg-hover);
 }
-
-
 .paragraph-action-button:active {
-    background: #c8c8c8;
+    background: var(--bg-hover);
 }
 
 /* botão delete */
-.paragraph-delete-button { 
-    margin-left: 2px; 
+.paragraph-delete-button {
+    margin-left: 2px;
 }
 
-/* =========================================================
+/*=========================================================
    DESTAQUE DA BUSCA
-   ========================================================= */
-
+========================================================= */
 .search-highlight {
-    background: #fff3a3;
-    color: inherit;
+    background: var(--search-highlight);
+    color: var(--search-highlight-text);
     border-radius: 3px;
     padding: 0 1px;
 }
 .search-highlight-current {
-    background: #ffb84d;
+    background: var(--search-highlight-current);
+    color: var(--search-highlight-text);
     border-radius: 2px;
 }
-
-/* Resultado atualmente selecionado */
 .search-highlight-active {
+    background: var(--search-highlight-active);
+    color: var(--search-highlight-text);
+}
 
-    background: #ffd21c;
-
+/*=========================================================
+   NÚMERO DA PÁGINA
+========================================================= */
+.document-page-number {
+    position: absolute;
+    top: 24px;
+    right: 60px;
+    font-family:
+        "Courier Prime",
+        monospace;
+    font-size: 12px;
+    line-height: 1;
+    color: var(--text-main);
+    pointer-events: none;
 }

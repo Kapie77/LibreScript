@@ -1,3 +1,6 @@
+// StatusBar.tsx
+// src/editor/components/StatusBar/
+
 type Props = {
   pageCount: number;
   wordCount: number;
@@ -22,7 +25,7 @@ export default function StatusBar({
     <div className="statusbar-left">
 
       <span>
-        📄 {pageCount} páginas
+          📄 {pageCount} {pageCount === 1 ? "página" : "páginas"}
       </span>
 
       <span>

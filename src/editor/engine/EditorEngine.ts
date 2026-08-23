@@ -328,6 +328,14 @@ saveProject() {
 
     }
 
+    // get page count //
+    public getPageCount(): number {
+
+        return this.documentView?.getPageCount() ?? 0;
+
+    }
+    // ---------------- //
+
     // render //
     render() {
 

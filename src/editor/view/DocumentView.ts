@@ -12,35 +12,23 @@ import type { SelectionSnapshot } from "../history/UndoData";
 import { ClipboardManager } from "../clipboard/ClipboardManager";
 
 import { getEditorBlockLayout } from "../../layout";
+import { PAGE_EDITOR } from "../../layout/config/PageEditor";
 
 // --------------------------------------------------------- //
 
 export class DocumentView {
 
     private paragraphs: Paragraph[] = [];
-
-    private elements =
-        new Map<number, HTMLParagraphElement>();
-
-    private wrappers =
-        new Map<number, HTMLDivElement>();
-
+    private elements = new Map<number, HTMLParagraphElement>();
+    private wrappers = new Map<number, HTMLDivElement>();
+    private pages: HTMLDivElement[] = [];
     private root: HTMLDivElement;
-
     private engine: EditorEngine;
-
     private rendering = false;
-
     private cursor: CursorController;
-
-    private selection =
-        new SelectionManager();
-
-    private clipboard =
-        new ClipboardManager();
-
+    private selection = new SelectionManager();
+    private clipboard = new ClipboardManager();
     private editor: EditController;
-
     private allowMoveBlocks: boolean;
     private allowDeleteBlocks: boolean;
     private onSave: () => void;
@@ -140,6 +128,81 @@ export class DocumentView {
     }
 
     // =========================================================
+    // CREATE PAGE
+    // =========================================================
+    private createPage(
+        pageNumber: number
+    ): HTMLDivElement {
+
+        const page =
+            document.createElement("div");
+
+        page.className =
+            "document-editor-page";
+
+        page.style.width =
+            `${PAGE_EDITOR.width}px`;
+
+        page.style.height =
+            `${PAGE_EDITOR.height}px`;
+
+        page.style.paddingTop =
+            `${PAGE_EDITOR.paddingTop}px`;
+
+        page.style.paddingBottom =
+            `${PAGE_EDITOR.paddingBottom}px`;
+
+        page.style.paddingLeft =
+            `${PAGE_EDITOR.paddingLeft}px`;
+
+        page.style.paddingRight =
+            `${PAGE_EDITOR.paddingRight}px`;
+
+        page.style.boxSizing =
+            "border-box";
+
+        page.style.position =
+            "relative";
+
+        // -----------------------------------------------------
+        // NÚMERO DA PÁGINA
+        // -----------------------------------------------------
+
+        if (pageNumber > 1) {
+
+            const pageNumberElement =
+                document.createElement("div");
+
+            pageNumberElement.className =
+                "document-page-number";
+
+            pageNumberElement.textContent =
+                `${pageNumber}.`;
+
+            page.appendChild(
+                pageNumberElement
+            );
+
+        }
+
+        this.pages.push(page);
+
+        this.root.appendChild(page);
+
+        return page;
+
+    }
+
+    // =========================================================
+    // PAGE COUNT
+    // =========================================================
+    public getPageCount(): number {
+
+        return this.pages.length;
+
+    }
+
+    // =========================================================
     // CREATE PARAGRAPH
     // =========================================================
 
@@ -183,6 +246,9 @@ export class DocumentView {
 
         p.style.marginLeft =
             `${layout.marginLeft}px`;
+
+        p.style.marginTop =
+            `${layout.marginTop}px`;
 
         p.style.marginBottom =
             `${layout.marginBottom}px`;
@@ -397,6 +463,43 @@ export class DocumentView {
     }
 
     // =========================================================
+    // POSICIONA AÇÕES NO CENTRO DO PARÁGRAFO
+    // =========================================================
+
+    private positionParagraphActions(
+        wrapper: HTMLDivElement,
+        paragraph: HTMLParagraphElement
+    ) {
+
+        const actions =
+            wrapper.querySelector(
+                ".paragraph-actions"
+            ) as HTMLDivElement | null;
+
+        if (!actions) {
+            return;
+        }
+
+        const wrapperRect =
+            wrapper.getBoundingClientRect();
+
+        const paragraphRect =
+            paragraph.getBoundingClientRect();
+
+        const paragraphCenter =
+            paragraphRect.top +
+            paragraphRect.height / 2;
+
+        const top =
+            paragraphCenter -
+            wrapperRect.top;
+
+        actions.style.top =
+            `${top}px`;
+
+    }
+
+    // =========================================================
     // UPDATE PARAGRAPH
     // =========================================================
 
@@ -421,6 +524,9 @@ export class DocumentView {
 
         element.style.marginLeft =
             `${layout.marginLeft}px`;
+
+        element.style.marginTop =
+            `${layout.marginTop}px`;
 
         element.style.marginBottom =
             `${layout.marginBottom}px`;
@@ -531,21 +637,503 @@ export class DocumentView {
     };
 
     // =========================================================
+    // QUEBRA DE LINHA
+    // =========================================================
+    private getLineBreakOffsets(
+        element: HTMLParagraphElement
+    ): number[] {
+
+        const text =
+            element.textContent ?? "";
+
+        if (!text) {
+            return [0];
+        }
+
+        const textNode =
+            document.createTextNode(text);
+
+        const temp =
+            document.createElement("span");
+
+        temp.style.position =
+            "absolute";
+
+        temp.style.visibility =
+            "hidden";
+
+        temp.style.whiteSpace =
+            "pre-wrap";
+
+        temp.style.width =
+            `${element.clientWidth}px`;
+
+        temp.style.font =
+            getComputedStyle(element).font;
+
+        temp.style.lineHeight =
+            getComputedStyle(element).lineHeight;
+
+        temp.appendChild(
+            textNode
+        );
+
+        document.body.appendChild(
+            temp
+        );
+
+        const offsets: number[] = [];
+
+        let lastTop =
+            -Infinity;
+
+        for (
+            let i = 0;
+            i < text.length;
+            i++
+        ) {
+
+            const range =
+                document.createRange();
+
+            range.setStart(
+                textNode,
+                i
+            );
+
+            range.setEnd(
+                textNode,
+                Math.min(
+                    i + 1,
+                    text.length
+                )
+            );
+
+            const rect =
+                range.getBoundingClientRect();
+
+            if (
+                rect.height > 0 &&
+                rect.top !== lastTop
+            ) {
+
+                offsets.push(i);
+
+                lastTop =
+                    rect.top;
+
+            }
+
+            range.detach();
+
+        }
+
+        document.body.removeChild(
+            temp
+        );
+
+        return offsets;
+
+    }
+    
+    // =========================================================
+    // CRIA UM FRAGMENTO VISUAL DE UM PARÁGRAFO
+    // =========================================================
+    private createParagraphFragment(
+        original: HTMLParagraphElement,
+        startOffset: number,
+        endOffset: number,
+        isFirstFragment: boolean
+    ): HTMLParagraphElement {
+
+        const fragment =
+            document.createElement("p");
+
+        fragment.className =
+            original.className;
+
+        fragment.style.cssText =
+            original.style.cssText;
+
+        fragment.contentEditable =
+            "true";
+
+        fragment.dataset.paragraphId =
+            original.dataset.id ?? "";
+
+        if (isFirstFragment) {
+
+            fragment.dataset.id =
+                original.dataset.id ?? "";
+
+        }
+
+        fragment.dataset.startOffset =
+            String(startOffset);
+
+        fragment.dataset.endOffset =
+            String(endOffset);
+
+        // -----------------------------------------------------
+        // COPIA O CONTEÚDO DO RANGE
+        // -----------------------------------------------------
+
+        const walker =
+            document.createTreeWalker(
+                original,
+                NodeFilter.SHOW_TEXT
+            );
+
+        let currentOffset = 0;
+
+        let node:
+            Node | null;
+
+        while (
+            node = walker.nextNode()
+        ) {
+
+            const textNode =
+                node as Text;
+
+            const textLength =
+                textNode.textContent?.length ?? 0;
+
+            const nodeStart =
+                currentOffset;
+
+            const nodeEnd =
+                currentOffset +
+                textLength;
+
+            // Nenhuma parte deste nó pertence ao fragmento
+            if (
+                nodeEnd <= startOffset ||
+                nodeStart >= endOffset
+            ) {
+
+                currentOffset =
+                    nodeEnd;
+
+                continue;
+
+            }
+
+            const localStart =
+                Math.max(
+                    0,
+                    startOffset - nodeStart
+                );
+
+            const localEnd =
+                Math.min(
+                    textLength,
+                    endOffset - nodeStart
+                );
+
+            const clonedNode =
+                textNode.cloneNode(true) as Text;
+
+            clonedNode.textContent =
+                textNode.textContent?.slice(
+                    localStart,
+                    localEnd
+                ) ?? "";
+
+            // -------------------------------------------------
+            // PRESERVA O SPAN ORIGINAL
+            // -------------------------------------------------
+
+            const parent =
+                textNode.parentElement;
+
+            if (
+                parent &&
+                parent !== original
+            ) {
+
+                const clonedParent =
+                    parent.cloneNode(false) as HTMLElement;
+
+                clonedParent.appendChild(
+                    clonedNode
+                );
+
+                fragment.appendChild(
+                    clonedParent
+                );
+
+            } else {
+
+                fragment.appendChild(
+                    clonedNode
+                );
+
+            }
+
+            currentOffset =
+                nodeEnd;
+
+        }
+
+        return fragment;
+
+    }
+
+    // =========================================================
+    // CREATE FRAGMENT WRAPPER
+    // =========================================================
+    private createFragmentWrapper(
+        paragraph: Paragraph,
+        isFirstFragment: boolean
+    ): HTMLDivElement {
+
+        const wrapper =
+            document.createElement("div");
+
+        wrapper.className =
+            "editor-paragraph-wrapper";
+
+        wrapper.dataset.id =
+            String(paragraph.id);
+
+        // -------------------------------------------------
+        // ACTIONS
+        // -------------------------------------------------
+
+        if (
+            isFirstFragment &&
+            (
+                this.allowMoveBlocks ||
+                this.allowDeleteBlocks
+            )
+        ) {
+
+            const actions =
+                this.createParagraphActions(
+                    paragraph.id
+                );
+
+            wrapper.appendChild(
+                actions
+            );
+
+        }
+
+        return wrapper;
+
+    }
+
+    // =========================================================
+    // DESCOBRE OS OFFSETS DAS LINHAS
+    // =========================================================
+    private getLineOffsets(
+        element: HTMLParagraphElement
+    ) {
+
+        const text =
+            element.textContent ?? "";
+
+        const offsets: {
+            start: number;
+            end: number;
+        }[] = [];
+
+        if (!text.length) {
+
+            return offsets;
+
+        }
+
+        const walker =
+            document.createTreeWalker(
+                element,
+                NodeFilter.SHOW_TEXT
+            );
+
+        const textNodes: {
+            node: Text;
+            start: number;
+            end: number;
+        }[] = [];
+
+        let offset = 0;
+
+        let node:
+            Node | null;
+
+        while (
+            node = walker.nextNode()
+        ) {
+
+            const textNode =
+                node as Text;
+
+            const length =
+                textNode.textContent?.length ?? 0;
+
+            textNodes.push({
+                node: textNode,
+                start: offset,
+                end: offset + length,
+            });
+
+            offset += length;
+
+        }
+
+        // -----------------------------------------------------
+        // PEGA A POSIÇÃO VERTICAL DE CADA CARACTERE
+        // -----------------------------------------------------
+
+        const characterTops: number[] = [];
+
+        for (
+            let i = 0;
+            i < text.length;
+            i++
+        ) {
+
+            const info =
+                textNodes.find(
+                    item =>
+                        i >= item.start &&
+                        i < item.end
+                );
+
+            if (!info) {
+
+                continue;
+
+            }
+
+            const localOffset =
+                i - info.start;
+
+            const range =
+                document.createRange();
+
+            range.setStart(
+                info.node,
+                localOffset
+            );
+
+            range.setEnd(
+                info.node,
+                Math.min(
+                    localOffset + 1,
+                    info.node.textContent?.length ?? 0
+                )
+            );
+
+            const rect =
+                range.getBoundingClientRect();
+
+            characterTops.push(
+                rect.top
+            );
+
+        }
+
+        // -----------------------------------------------------
+        // AGRUPA OS CARACTERES PELA LINHA
+        // -----------------------------------------------------
+
+        if (
+            characterTops.length === 0
+        ) {
+
+            return offsets;
+
+        }
+
+        let lineStart = 0;
+        let currentTop =
+            characterTops[0];
+
+        const tolerance = 2;
+
+        for (
+            let i = 1;
+            i < characterTops.length;
+            i++
+        ) {
+
+            const top =
+                characterTops[i];
+
+            if (
+                Math.abs(
+                    top - currentTop
+                ) > tolerance
+            ) {
+
+                offsets.push({
+                    start: lineStart,
+                    end: i,
+                });
+
+                lineStart =
+                    i;
+
+                currentTop =
+                    top;
+
+            }
+
+        }
+
+        offsets.push({
+            start: lineStart,
+            end: characterTops.length,
+        });
+
+        return offsets;
+
+    }
+
+    // =========================================================
     // RENDER
     // =========================================================
-
     render(paragraphs: Paragraph[]) {
-
-        /*const caret = this.cursor.saveCaret();*/
 
         this.rendering = true;
 
-        this.paragraphs = paragraphs;
-
-        const validIds = new Set<number>();
+        this.paragraphs =
+            paragraphs;
 
         // -----------------------------------------------------
-        // ATUALIZA / CRIA
+        // REMOVE PÁGINAS ANTIGAS
+        // -----------------------------------------------------
+
+        for (
+            const page of this.pages
+        ) {
+
+            page.remove();
+
+        }
+
+        this.pages = [];
+
+        // -----------------------------------------------------
+        // PRIMEIRA PÁGINA
+        // -----------------------------------------------------
+
+        let currentPage =
+            this.createPage(1);
+
+        let currentHeight = 0;
+
+        // -----------------------------------------------------
+        // IDS VÁLIDOS
+        // -----------------------------------------------------
+
+        const validIds =
+            new Set<number>();
+
+        // -----------------------------------------------------
+        // PROCESSA PARÁGRAFOS
         // -----------------------------------------------------
 
         for (
@@ -577,10 +1165,269 @@ export class DocumentView {
 
             }
 
+            const wrapper =
+                this.wrappers.get(
+                    paragraph.id
+                );
+
+            if (!wrapper) {
+
+                continue;
+
+            }
+
+            // -------------------------------------------------
+            // COLOCA TEMPORARIAMENTE O BLOCO NO DOM
+            // -------------------------------------------------
+
+            currentPage.appendChild(
+                wrapper
+            );
+
+            // -------------------------------------------------
+            // POSICIONA OS BOTÕES NO CENTRO REAL DO <p>
+            // -------------------------------------------------
+
+            this.positionParagraphActions(
+                wrapper,
+                element
+            );
+
+            // -------------------------------------------------
+            // AGORA O <p> ESTÁ CONECTADO
+            // -------------------------------------------------
+
+            const lineOffsets =
+                this.getLineOffsets(
+                    element
+                );
+
+            wrapper.remove();
+
+            // -------------------------------------------------
+            // BLOCO VAZIO
+            // -------------------------------------------------
+
+            if (
+                lineOffsets.length === 0
+            ) {
+
+                currentPage.appendChild(
+                    wrapper
+                );
+
+                currentHeight +=
+                    wrapper.getBoundingClientRect()
+                        .height;
+
+                continue;
+
+            }
+
+            // -------------------------------------------------
+            // PROCESSA CADA LINHA
+            // -------------------------------------------------
+
+            let lineIndex = 0;
+
+            while (
+                lineIndex <
+                lineOffsets.length
+            ) {
+
+                const remaining =
+                    lineOffsets.length -
+                    lineIndex;
+
+                const layout =
+                    getEditorBlockLayout(
+                        paragraph.type
+                    );
+
+                // Começamos tentando colocar
+                // todas as linhas restantes.
+                // Se não couber, vamos diminuindo.
+                let linesToTake =
+                    remaining;
+
+                let fragmentAccepted =
+                    false;
+
+                while (
+                    linesToTake > 0
+                ) {
+
+                    const start =
+                        lineOffsets[
+                            lineIndex
+                        ].start;
+
+                    const end =
+                        lineOffsets[
+                            lineIndex +
+                            linesToTake -
+                            1
+                        ].end;
+
+                    const isFirstFragment =
+                        lineIndex === 0;
+
+                    const isLastFragment =
+                        lineIndex +
+                        linesToTake >=
+                        lineOffsets.length;
+
+                    // -------------------------------------------------
+                    // CRIA FRAGMENTO
+                    // -------------------------------------------------
+                    const fragment =
+                        this.createParagraphFragment(
+                            element,
+                            start,
+                            end,
+                            isFirstFragment
+                        );
+
+                    // -------------------------------------------------
+                    // ESTILO
+                    // -------------------------------------------------
+
+                    fragment.style.marginTop =
+                        isFirstFragment
+                            ? `${layout.marginTop}px`
+                            : "0px";
+
+                    fragment.style.marginBottom =
+                        isLastFragment
+                            ? `${layout.marginBottom}px`
+                            : "0px";
+
+                    fragment.style.lineHeight =
+                        `${layout.lineHeight}px`;
+
+                    fragment.style.width =
+                        `${layout.width}px`;
+
+                    fragment.style.maxWidth =
+                        `${layout.maxWidth}px`;
+
+                    fragment.style.marginLeft =
+                        `${layout.marginLeft}px`;
+
+                    fragment.style.textAlign =
+                        layout.align;
+
+                    // -------------------------------------------------
+                    // WRAPPER DO FRAGMENTO
+                    // -------------------------------------------------
+
+                    const fragmentWrapper =
+                        this.createFragmentWrapper(
+                            paragraph,
+                            isFirstFragment
+                        );
+
+                    fragmentWrapper.appendChild(
+                        fragment
+                    );
+
+                    // -------------------------------------------------
+                    // COLOCA NO DOM PARA MEDIR
+                    // -------------------------------------------------
+
+                    currentPage.appendChild(
+                        fragmentWrapper
+                    );
+
+                    // -------------------------------------------------
+                    // POSICIONA AS AÇÕES NO CENTRO DO FRAGMENTO
+                    // -------------------------------------------------
+
+                    this.positionParagraphActions(
+                        fragmentWrapper,
+                        fragment
+                    );
+
+                    // -------------------------------------------------
+                    // MEDE O TAMANHO REAL
+                    // -------------------------------------------------
+
+                    const fragmentHeight = fragmentWrapper.getBoundingClientRect().height;
+                        
+                    const PAGINATION_SAFETY = 4;
+
+                    const availableHeight =
+                        PAGE_EDITOR.contentHeight -
+                        currentHeight -
+                        PAGINATION_SAFETY;
+
+                    const fits =
+                        fragmentHeight <=
+                        availableHeight;
+
+                    // -------------------------------------------------
+                    // COUBE
+                    // -------------------------------------------------
+
+                    if (fits) {
+                        currentHeight += fragmentHeight;
+
+                        console.log("[PAGINATION ACCEPT]", {
+                            paragraphId: paragraph.id,
+                            page: this.pages.length,
+                            lineIndex,
+                            linesToTake,
+                            totalLines: lineOffsets.length,
+                            fragmentHeight,
+                            currentHeight,
+                            available: PAGE_EDITOR.contentHeight,
+                            remainingLines:
+                                lineOffsets.length -
+                                (lineIndex + linesToTake),
+                        });
+
+                        lineIndex += linesToTake;
+                        fragmentAccepted = true;
+                        break;
+                    }
+
+
+                    // -------------------------------------------------
+                    // NÃO COUBE
+                    // -------------------------------------------------
+
+                    currentPage.removeChild(
+                        fragmentWrapper
+                    );
+
+                    linesToTake--;
+
+                }
+
+
+                if (!fragmentAccepted) {
+
+                    // Isso só deveria acontecer
+                    // se nem uma única linha couber.
+
+                    currentPage =
+                        this.createPage(
+                            this.pages.length + 1
+                        );
+
+                    currentHeight = 0;
+
+                    continue;
+
+                }
+
+
+            }
+
         }
 
         // -----------------------------------------------------
-        // REMOVE APAGADOS
+        // REMOVE PARÁGRAFOS APAGADOS
         // -----------------------------------------------------
 
         for (
@@ -605,67 +1452,21 @@ export class DocumentView {
 
                 }
 
-                this.elements.delete(id);
+                this.elements.delete(
+                    id
+                );
 
-                this.wrappers.delete(id);
+                this.wrappers.delete(
+                    id
+                );
 
             }
 
         }
 
-        // -----------------------------------------------------
-        // MANTÉM ORDEM
-        // -----------------------------------------------------
-
-        paragraphs.forEach(
-            (
-                paragraph,
-                index
-            ) => {
-
-                const wrapper =
-                    this.wrappers.get(
-                        paragraph.id
-                    );
-
-                if (!wrapper) {
-
-                    return;
-
-                }
-
-                const current =
-                    this.root.children[index];
-
-                if (
-                    current !== wrapper
-                ) {
-
-                    this.root.insertBefore(
-
-                        wrapper,
-
-                        current ?? null
-
-                    );
-
-                }
-
-            }
-        );
-
         this.rendering = false;
 
-        /*if (caret) {
-
-            this.cursor.restoreCaret(
-                caret
-            );
-
-        }*/
-
     }
-
     // =========================================================
     // DOCUMENT PARAGRAPHS
     // =========================================================
@@ -871,7 +1672,6 @@ export class DocumentView {
             );
 
     }
-
 
     // =========================================================
     // HIGHLIGHT SEARCH RESULT

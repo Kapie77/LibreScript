@@ -1,3 +1,6 @@
+// EditorCanvas.tsx
+// src/editor/components/EditorCanvas/
+
 // Responsável por:
 // - desenhar páginas;
 // - desenhar blocos;
@@ -5,12 +8,12 @@
 // - registrar refs.
 
 import ScriptBlock from "../ScriptBlock/ScriptBlock";
-import type { PreparedBlock } from "../../../layout/core/PreparedBlock";
+import type { PreparedBlockFragment } from "../../../layout/core/PreparedBlockFragment";
 // ----------------------------------------------------- //
 
 type Props = {
 
-    pages: PreparedBlock[][];
+    pages: PreparedBlockFragment[][];
 
     searchTerm: string;
 
@@ -60,71 +63,82 @@ export default function EditorCanvas({
 
 }: Props) {
 
-// ----------------------------------------------------- //
     return (
 
         <div className="pages-container">
 
             {pages.map(
                 (page, pageIndex) => (
-        
+
                     <div
                         key={pageIndex}
                         className="script-page"
-                      >
-        
-                        {page.map((prepared) => {
-        
-                            const block = prepared.block;
-        
+                    >
+
+                        {page.map((fragment) => {
+
+                            const prepared =
+                                fragment.prepared;
+
+                            const block =
+                                prepared.block;
+
                             const isMatch =
                                 searchTerm.trim() !== "" &&
                                 block.content
                                     .toLowerCase()
-                                    .includes(searchTerm.toLowerCase());
-        
+                                    .includes(
+                                        searchTerm.toLowerCase()
+                                    );
+
                             return (
-        
                                 <div
-                                    key={block.id}
+                                    key={`${block.id}-${fragment.startLine}`}
                                     className={
                                         isMatch
                                             ? "search-match"
                                             : ""
                                     }
                                     ref={(el) => {
-        
-                                        blockRefs.current[block.id] = el;
-        
+
+                                        // Só precisamos de uma referência
+                                        // para o bloco original.
+                                        if (el) {
+                                            blockRefs.current[block.id] = el;
+                                        }
+
                                     }}
                                 >
-        
+
                                     <ScriptBlock
-                                        prepared={prepared}
+                                        fragment={fragment}
+
                                         onChange={updateBlock}
                                         onDelete={deleteBlock}
                                         onMoveUp={moveBlockUp}
                                         onMoveDown={moveBlockDown}
+
                                         searchTerm={searchTerm}
 
-                                        setActiveBlockId={setActiveBlockId}
+                                        setActiveBlockId={
+                                            setActiveBlockId
+                                        }
                                     />
-        
+
                                 </div>
-        
                             );
-        
+
                         })}
-        
+
                         <div className="page-number">
-                          {pageIndex + 1}
+                            {pageIndex + 1}
                         </div>
-        
-                      </div>
-        
-                    )
-                  )}
-        
+
+                    </div>
+
+                )
+            )}
+
         </div>
 
     );

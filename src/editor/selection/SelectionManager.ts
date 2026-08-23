@@ -24,16 +24,126 @@ export class SelectionManager {
     // PARÁGRAFOS / DOM
     // ================================================================
 
+    // getParagraphElement //
     private getParagraphElement(
         id: number
     ): HTMLParagraphElement | null {
 
         return document.querySelector(
-            `p[data-id="${id}"]`
+            `p[data-paragraph-id="${id}"]`
         ) as HTMLParagraphElement | null;
 
     }
 
+    // getParagraphFragments //
+    private getParagraphFragments(
+        paragraphId: number
+    ): HTMLParagraphElement[] {
+
+        const all =
+            Array.from(
+                document.querySelectorAll(
+                    `p[data-paragraph-id="${paragraphId}"], p[data-id="${paragraphId}"]`
+                )
+            ) as HTMLParagraphElement[];
+
+        // Remove possíveis duplicados
+        const unique =
+            Array.from(
+                new Set(all)
+            );
+
+        // Garante a ordem visual/lógica
+        unique.sort(
+            (a, b) => {
+
+                const startA =
+                    Number(
+                        a.dataset.startOffset ?? 0
+                    );
+
+                const startB =
+                    Number(
+                        b.dataset.startOffset ?? 0
+                    );
+
+                return startA - startB;
+
+            }
+        );
+
+        return unique;
+
+    }
+
+    // getLogicalParagraphLength //
+    private getLogicalParagraphLength(
+        paragraphId: number
+    ): number {
+
+        const fragments =
+            this.getParagraphFragments(
+                paragraphId
+            );
+
+        if (fragments.length === 0) {
+            return 0;
+        }
+
+        let length = 0;
+
+        for (const fragment of fragments) {
+
+            const start =
+                Number(
+                    fragment.dataset.startOffset ?? 0
+                );
+
+            const end =
+                Number(
+                    fragment.dataset.endOffset ??
+                    start +
+                    (fragment.textContent?.length ?? 0)
+                );
+
+            length =
+                Math.max(
+                    length,
+                    end
+                );
+
+        }
+
+        return length;
+
+    }
+
+    // getParagraphLogicalLength //
+    public getParagraphLogicalLength(
+        paragraphId: number
+    ): number {
+
+        return this.getLogicalParagraphLength(
+            paragraphId
+        );
+
+    }
+
+    // getFirstParagraphFragment //
+    private getFirstParagraphFragment(
+        paragraphId: number
+    ): HTMLParagraphElement | null {
+
+        const fragments =
+            this.getParagraphFragments(
+                paragraphId
+            );
+
+        return fragments[0] ?? null;
+
+    }
+
+    // findParagraph //
     private findParagraph(
         node: Node | null
     ): HTMLParagraphElement | null {
@@ -42,7 +152,10 @@ export class SelectionManager {
 
             if (
                 node instanceof HTMLParagraphElement &&
-                node.dataset.id
+                (
+                    node.dataset.id ||
+                    node.dataset.paragraphId
+                )
             ) {
 
                 return node;
@@ -57,11 +170,61 @@ export class SelectionManager {
 
     }
 
+    // getParagraphTextLength //
     private getParagraphTextLength(
         paragraph: HTMLParagraphElement
     ): number {
 
-        return paragraph.textContent?.length ?? 0;
+        const paragraphId =
+            paragraph.dataset.paragraphId ??
+            paragraph.dataset.id;
+
+        if (!paragraphId) {
+
+            return paragraph.textContent?.length ?? 0;
+
+        }
+
+        const fragments =
+            Array.from(
+                document.querySelectorAll(
+                    `p[data-paragraph-id="${paragraphId}"]`
+                )
+            ) as HTMLParagraphElement[];
+
+        if (fragments.length === 0) {
+
+            return paragraph.textContent?.length ?? 0;
+
+        }
+
+        let length = 0;
+
+        for (const fragment of fragments) {
+
+            const endOffset =
+                Number(
+                    fragment.dataset.endOffset
+                );
+
+            if (Number.isFinite(endOffset)) {
+
+                length =
+                    Math.max(
+                        length,
+                        endOffset
+                    );
+
+            } else {
+
+                length +=
+                    fragment.textContent?.length ?? 0;
+
+            }
+
+        }
+
+        return length;
 
     }
 
@@ -348,6 +511,12 @@ export class SelectionManager {
 
         this.renderSelection();
 
+        requestAnimationFrame(() => {
+
+            this.ensureCaretVisible();
+
+        });
+
     }
 
     // ================================================================
@@ -361,6 +530,13 @@ export class SelectionManager {
         focusOffset: number
     ) {
 
+        console.log("[SET SELECTION BEFORE]", {
+            anchorParagraphId,
+            anchorOffset,
+            focusParagraphId,
+            focusOffset
+        });
+
         this.controller.setSelection(
             {
                 paragraphId: anchorParagraphId,
@@ -372,10 +548,21 @@ export class SelectionManager {
             }
         );
 
+        console.log(
+            "[SET SELECTION CONTROLLER]",
+            this.controller.getState()
+        );
+
         this.renderSelection();
+
+        console.log(
+            "[SET SELECTION AFTER]",
+            this.controller.getState()
+        );
 
     }
 
+    // extendSelection //
     extendSelection(
         paragraphId: number,
         offset: number
@@ -519,6 +706,28 @@ export class SelectionManager {
 
     }
 
+    // getParagraphLength //
+    getParagraphLength(
+        paragraphId: number
+    ): number {
+
+        const paragraph =
+            this.getParagraphElement(
+                paragraphId
+            );
+
+        if (!paragraph) {
+
+            return 0;
+
+        }
+
+        return this.getParagraphTextLength(
+            paragraph
+        );
+
+    }
+
     // getCurrentSelection //
     getCurrentSelection(): SelectionRange | null {
 
@@ -635,19 +844,24 @@ export class SelectionManager {
             return null;
         }
 
-        const current =
-            this.getParagraphElement(id);
+        const ids =
+            this.getLogicalParagraphIds();
 
-        if (!current) {
+        const index =
+            ids.indexOf(id);
+
+        if (
+            index <= 0
+        ) {
+
             return null;
+
         }
 
-        const previous =
-            current.previousElementSibling;
+        return this.getParagraphElement(
+            ids[index - 1]
+        );
 
-        return previous instanceof HTMLParagraphElement
-            ? previous
-            : null;
     }
 
     // getPreviousParagraphFrom //
@@ -655,19 +869,29 @@ export class SelectionManager {
         paragraphId: number
     ): HTMLParagraphElement | null {
 
-        const current =
-            this.getParagraphElement(paragraphId);
+        const paragraphs =
+            this.getParagraphElements();
 
-        if (!current) {
+        const index =
+            paragraphs.findIndex(
+                paragraph =>
+                    Number(
+                        paragraph.dataset.id
+                    ) === paragraphId
+            );
+
+        if (
+            index <= 0
+        ) {
+
             return null;
+
         }
 
-        const previous =
-            current.previousElementSibling;
+        return paragraphs[
+            index - 1
+        ];
 
-        return previous instanceof HTMLParagraphElement
-            ? previous
-            : null;
     }
 
     // getNextParagraph //
@@ -679,19 +903,25 @@ export class SelectionManager {
             return null;
         }
 
-        const current =
-            this.getParagraphElement(id);
+        const ids =
+            this.getLogicalParagraphIds();
 
-        if (!current) {
+        const index =
+            ids.indexOf(id);
+
+        if (
+            index === -1 ||
+            index >= ids.length - 1
+        ) {
+
             return null;
+
         }
 
-        const next =
-            current.nextElementSibling;
+        return this.getParagraphElement(
+            ids[index + 1]
+        );
 
-        return next instanceof HTMLParagraphElement
-            ? next
-            : null;
     }
 
     // getNextParagraphFrom //
@@ -699,25 +929,33 @@ export class SelectionManager {
         paragraphId: number
     ): HTMLParagraphElement | null {
 
-        const current =
-            this.getParagraphElement(paragraphId);
+        const ids =
+            this.getLogicalParagraphIds();
 
-        if (!current) {
+        const index =
+            ids.indexOf(paragraphId);
+
+        if (
+            index === -1 ||
+            index >= ids.length - 1
+        ) {
+
             return null;
+
         }
 
-        const next =
-            current.nextElementSibling;
+        const nextParagraphId =
+            ids[index + 1];
 
-        return next instanceof HTMLParagraphElement
-            ? next
-            : null;
+        return this.getParagraphElement(
+            nextParagraphId
+        );
+
     }
+    // ----------------------------- //
 
     getCaretColumn(): number {
-
         return this.getCaretOffset();
-
     }
 
     // ================================================================
@@ -1026,9 +1264,46 @@ export class SelectionManager {
 
         return Array.from(
             document.querySelectorAll(
-                "p[data-id]"
+                "p[data-paragraph-id]"
             )
         ) as HTMLParagraphElement[];
+
+    }
+
+    // getLogicalParagraphIds //
+    private getLogicalParagraphIds(): number[] {
+
+        const fragments =
+            this.getParagraphElements();
+
+        const ids: number[] = [];
+
+        for (const fragment of fragments) {
+
+            const id =
+                Number(
+                    fragment.dataset.paragraphId
+                );
+
+            if (
+                !Number.isFinite(id)
+            ) {
+
+                continue;
+
+            }
+
+            if (
+                !ids.includes(id)
+            ) {
+
+                ids.push(id);
+
+            }
+
+        }
+
+        return ids;
 
     }
 
@@ -1036,6 +1311,219 @@ export class SelectionManager {
     // DOM POSITION
     // ================================================================
 
+    private getParagraphFragmentForOffset(
+        paragraphId: number,
+        logicalOffset: number
+    ): HTMLParagraphElement | null {
+
+        const fragments =
+            this.getParagraphFragments(
+                paragraphId
+            );
+
+        if (fragments.length === 0) {
+
+            return null;
+
+        }
+
+        for (const fragment of fragments) {
+
+            const start =
+                Number(
+                    fragment.dataset.startOffset ?? 0
+                );
+
+            const end =
+                Number(
+                    fragment.dataset.endOffset ?? 0
+                );
+
+            if (
+                logicalOffset >= start &&
+                logicalOffset <= end
+            ) {
+
+                return fragment;
+
+            }
+
+        }
+
+        return fragments[
+            fragments.length - 1
+        ];
+
+    }
+    // ----------------------------------------------- //
+
+    // getVisualFragmentForOffset //
+    public getVisualFragmentForOffset(
+        paragraphId: number,
+        logicalOffset: number
+    ): HTMLParagraphElement | null {
+
+        const fragments =
+            this.getParagraphFragments(
+                paragraphId
+            );
+
+        if (fragments.length === 0) {
+            return null;
+        }
+
+        for (const fragment of fragments) {
+
+            const start =
+                Number(
+                    fragment.dataset.startOffset ?? 0
+                );
+
+            const end =
+                Number(
+                    fragment.dataset.endOffset ??
+                    start +
+                    (fragment.textContent?.length ?? 0)
+                );
+
+            if (
+                logicalOffset >= start &&
+                (
+                    logicalOffset < end ||
+                    (
+                        logicalOffset === end &&
+                        fragment === fragments[fragments.length - 1]
+                    )
+                )
+            ) {
+
+                return fragment;
+
+            }
+
+        }
+
+        return fragments[
+            fragments.length - 1
+        ];
+
+    }
+
+    // getPreviousVisualFragment //
+    public getPreviousVisualFragment(
+        paragraphId: number,
+        logicalOffset: number
+    ): HTMLParagraphElement | null {
+
+        const fragments =
+            this.getParagraphFragments(
+                paragraphId
+            );
+
+        if (fragments.length <= 1) {
+            return null;
+        }
+
+        const current =
+            this.getVisualFragmentForOffset(
+                paragraphId,
+                logicalOffset
+            );
+
+        if (!current) {
+            return null;
+        }
+
+        const currentIndex =
+            fragments.indexOf(current);
+
+        if (currentIndex <= 0) {
+            return null;
+        }
+
+        return fragments[
+            currentIndex - 1
+        ];
+
+    }
+
+    // getNextVisualFragment //
+    public getNextVisualFragment(
+        paragraphId: number,
+        logicalOffset: number
+    ): HTMLParagraphElement | null {
+
+        const fragments =
+            this.getParagraphFragments(
+                paragraphId
+            );
+
+        if (fragments.length <= 1) {
+            return null;
+        }
+
+        const current =
+            this.getVisualFragmentForOffset(
+                paragraphId,
+                logicalOffset
+            );
+
+        if (!current) {
+            return null;
+        }
+
+        const currentIndex =
+            fragments.indexOf(current);
+
+        if (
+            currentIndex === -1 ||
+            currentIndex >= fragments.length - 1
+        ) {
+            return null;
+        }
+
+        return fragments[
+            currentIndex + 1
+        ];
+
+    }
+
+    // ================================================================
+    // PRIMEIRO FRAGMENTO VISUAL DE UM PARÁGRAFO
+    // ================================================================
+
+    public getFirstVisualFragment(
+        paragraphId: number
+    ): HTMLParagraphElement | null {
+
+        const fragments =
+            this.getParagraphFragments(
+                paragraphId
+            );
+
+        return fragments[0] ?? null;
+    }
+
+
+    // ================================================================
+    // ÚLTIMO FRAGMENTO VISUAL DE UM PARÁGRAFO
+    // ================================================================
+
+    public getLastVisualFragment(
+        paragraphId: number
+    ): HTMLParagraphElement | null {
+
+        const fragments =
+            this.getParagraphFragments(
+                paragraphId
+            );
+
+        return fragments[
+            fragments.length - 1
+        ] ?? null;
+    }
+
+    // setDOMPosition //
     private setDOMPosition(
         paragraph: HTMLParagraphElement,
         logicalOffset: number
@@ -1048,10 +1536,38 @@ export class SelectionManager {
             return;
         }
 
+        const paragraphId =
+            Number(
+                paragraph.dataset.paragraphId ??
+                paragraph.dataset.id
+            );
+
+        const fragment =
+            this.getParagraphFragmentForOffset(
+                paragraphId,
+                logicalOffset
+            );
+
+        if (!fragment) {
+            return;
+        }
+
+        const fragmentStart =
+            Number(
+                fragment.dataset.startOffset ?? 0
+            );
+
+        const localOffset =
+            Math.max(
+                0,
+                logicalOffset -
+                fragmentStart
+            );
+
         const position =
             this.logicalOffsetToDOM(
-                paragraph,
-                logicalOffset
+                fragment,
+                localOffset
             );
 
         const range =
@@ -1065,7 +1581,767 @@ export class SelectionManager {
         range.collapse(true);
 
         selection.removeAllRanges();
+
         selection.addRange(range);
+
+    }
+
+    // ================================================================
+    // ENCONTRAR OFFSET VISUALMENTE MAIS PRÓXIMO
+    // ================================================================
+
+    public getClosestOffsetInFragment(
+        fragment: HTMLParagraphElement,
+        targetX: number,
+        targetY: number
+    ): number {
+
+        const walker =
+            document.createTreeWalker(
+                fragment,
+                NodeFilter.SHOW_TEXT
+            );
+
+        const textNodes: Text[] = [];
+
+        let node: Node | null;
+
+        while (
+            node = walker.nextNode()
+        ) {
+
+            textNodes.push(
+                node as Text
+            );
+
+        }
+
+        if (textNodes.length === 0) {
+
+            return 0;
+
+        }
+
+        /*
+        * ============================================================
+        * ETAPA 1
+        *
+        * Encontrar todas as posições possíveis do caret.
+        *
+        * Cada posição recebe:
+        *
+        * - offset local
+        * - X
+        * - Y
+        *
+        * Assim conseguimos identificar as linhas reais do DOM.
+        * ============================================================
+        */
+
+        interface CaretCandidate {
+
+            offset: number;
+
+            x: number;
+
+            y: number;
+
+        }
+
+        const candidates:
+            CaretCandidate[] = [];
+
+        for (const textNode of textNodes) {
+
+            for (
+                let i = 0;
+                i <= textNode.length;
+                i++
+            ) {
+
+                const range =
+                    document.createRange();
+
+                try {
+
+                    range.setStart(
+                        textNode,
+                        i
+                    );
+
+                    range.collapse(true);
+
+                } catch {
+
+                    continue;
+
+                }
+
+                const rect =
+                    range.getBoundingClientRect();
+
+                if (
+                    rect.width === 0 &&
+                    rect.height === 0
+                ) {
+
+                    const clientRects =
+                        range.getClientRects();
+
+                    if (
+                        clientRects.length === 0
+                    ) {
+
+                        continue;
+
+                    }
+
+                    const fallback =
+                        clientRects[
+                            clientRects.length - 1
+                        ];
+
+                    candidates.push({
+
+                        offset:
+                            this.getLocalOffsetFromDomPoint(
+                                fragment,
+                                textNode,
+                                i
+                            ),
+
+                        x:
+                            fallback.left,
+
+                        y:
+                            fallback.top,
+
+                    });
+
+                    continue;
+
+                }
+
+                candidates.push({
+
+                    offset:
+                        this.getLocalOffsetFromDomPoint(
+                            fragment,
+                            textNode,
+                            i
+                        ),
+
+                    x:
+                        rect.left,
+
+                    y:
+                        rect.top,
+
+                });
+
+            }
+
+        }
+
+        if (candidates.length === 0) {
+
+            return 0;
+
+        }
+
+        /*
+        * ============================================================
+        * ETAPA 2
+        *
+        * Encontrar a linha visual mais próxima.
+        *
+        * Não usamos simplesmente o menor Y.
+        *
+        * Agrupamos posições que pertencem à mesma linha.
+        * ============================================================
+        */
+
+        const lineTolerance = 3;
+
+        interface VisualLine {
+
+            y: number;
+
+            candidates: CaretCandidate[];
+
+        }
+
+        const lines: VisualLine[] = [];
+
+        for (const candidate of candidates) {
+
+            let line =
+                lines.find(
+                    existing =>
+                        Math.abs(
+                            existing.y -
+                            candidate.y
+                        ) <= lineTolerance
+                );
+
+            if (!line) {
+
+                line = {
+
+                    y:
+                        candidate.y,
+
+                    candidates:
+                        [],
+
+                };
+
+                lines.push(line);
+
+            }
+
+            line.candidates.push(
+                candidate
+            );
+
+        }
+
+        /*
+        * Ordena as linhas visualmente.
+        */
+
+        lines.sort(
+            (a, b) =>
+                a.y - b.y
+        );
+
+        /*
+        * ============================================================
+        * ETAPA 3
+        *
+        * Encontrar a linha cuja posição vertical é mais próxima
+        * de targetY.
+        * ============================================================
+        */
+
+        let closestLine:
+            VisualLine | null = null;
+
+        let closestVerticalDistance =
+            Infinity;
+
+        for (const line of lines) {
+
+            const distance =
+                Math.abs(
+                    line.y -
+                    targetY
+                );
+
+            if (
+                distance <
+                closestVerticalDistance
+            ) {
+
+                closestVerticalDistance =
+                    distance;
+
+                closestLine =
+                    line;
+
+            }
+
+        }
+
+        if (!closestLine) {
+
+            return 0;
+
+        }
+
+        /*
+        * ============================================================
+        * ETAPA 4
+        *
+        * Dentro da linha correta, procurar a posição horizontal
+        * mais próxima.
+        * ============================================================
+        */
+
+        let bestCandidate =
+            closestLine.candidates[0];
+
+        let bestHorizontalDistance =
+            Math.abs(
+                bestCandidate.x -
+                targetX
+            );
+
+        for (
+            let i = 1;
+            i < closestLine.candidates.length;
+            i++
+        ) {
+
+            const candidate =
+                closestLine.candidates[i];
+
+            const horizontalDistance =
+                Math.abs(
+                    candidate.x -
+                    targetX
+                );
+
+            if (
+                horizontalDistance <
+                bestHorizontalDistance
+            ) {
+
+                bestHorizontalDistance =
+                    horizontalDistance;
+
+                bestCandidate =
+                    candidate;
+
+            }
+
+        }
+
+        return bestCandidate.offset;
+
+    }
+
+    // ================================================================
+    // POSIÇÃO VERTICAL DO CARET DENTRO DO FRAGMENTO
+    // ================================================================
+
+    public getCaretLinePosition(
+        fragment: HTMLParagraphElement
+    ): {
+        lineIndex: number;
+        lineCount: number;
+    } | null {
+
+        const selection =
+            window.getSelection();
+
+        if (
+            !selection ||
+            !selection.focusNode
+        ) {
+            return null;
+        }
+
+        const caretRange =
+            document.createRange();
+
+        try {
+
+            caretRange.setStart(
+                selection.focusNode,
+                selection.focusOffset
+            );
+
+            caretRange.collapse(true);
+
+        } catch {
+
+            return null;
+
+        }
+
+        const caretRect =
+            caretRange.getBoundingClientRect();
+
+        if (
+            caretRect.height === 0
+        ) {
+            return null;
+        }
+
+        const walker =
+            document.createTreeWalker(
+                fragment,
+                NodeFilter.SHOW_TEXT
+            );
+
+        const lines: number[] = [];
+
+        let node: Node | null;
+
+        while (
+            node =
+                walker.nextNode()
+        ) {
+
+            const textNode =
+                node as Text;
+
+            for (
+                let i = 0;
+                i <= textNode.length;
+                i++
+            ) {
+
+                const range =
+                    document.createRange();
+
+                range.setStart(
+                    textNode,
+                    i
+                );
+
+                range.collapse(true);
+
+                const rect =
+                    range.getBoundingClientRect();
+
+                if (
+                    rect.width === 0 &&
+                    rect.height === 0
+                ) {
+                    continue;
+                }
+
+                const top =
+                    Math.round(rect.top);
+
+                if (
+                    !lines.includes(top)
+                ) {
+
+                    lines.push(top);
+
+                }
+
+            }
+
+        }
+
+        if (lines.length === 0) {
+            return null;
+        }
+
+        lines.sort(
+            (a, b) => a - b
+        );
+
+        let closestLine = 0;
+
+        let closestDistance =
+            Infinity;
+
+        for (
+            let i = 0;
+            i < lines.length;
+            i++
+        ) {
+
+            const distance =
+                Math.abs(
+                    lines[i] -
+                    caretRect.top
+                );
+
+            if (
+                distance <
+                closestDistance
+            ) {
+
+                closestDistance =
+                    distance;
+
+                closestLine =
+                    i;
+
+            }
+
+        }
+
+        return {
+
+            lineIndex:
+                closestLine,
+
+            lineCount:
+                lines.length,
+
+        };
+
+    }
+
+    // getCaretVisualPosition //
+    public getCaretVisualPosition(): {
+        x: number;
+        y: number;
+    } | null {
+
+        const selection =
+            window.getSelection();
+
+        if (
+            !selection ||
+            selection.rangeCount === 0 ||
+            !selection.focusNode
+        ) {
+
+            return null;
+
+        }
+
+        const range =
+            selection.getRangeAt(0);
+
+        /*
+        * Precisamos de uma range colapsada
+        * exatamente na posição do caret.
+        */
+
+        const caretRange =
+            document.createRange();
+
+        try {
+
+            caretRange.setStart(
+                selection.focusNode,
+                selection.focusOffset
+            );
+
+            caretRange.collapse(true);
+
+        } catch {
+
+            return null;
+
+        }
+
+        const rect =
+            caretRange.getBoundingClientRect();
+
+        /*
+        * Alguns browsers podem retornar um rect
+        * vazio para o caret.
+        */
+
+        if (
+            rect.width === 0 &&
+            rect.height === 0
+        ) {
+
+            const clientRects =
+                caretRange.getClientRects();
+
+            if (
+                clientRects.length > 0
+            ) {
+
+                const fallback =
+                    clientRects[
+                        clientRects.length - 1
+                    ];
+
+                return {
+                    x: fallback.left,
+                    y: fallback.top,
+                };
+
+            }
+
+        }
+
+        return {
+            x: rect.left,
+            y: rect.top,
+        };
+
+    }
+
+    // ================================================================
+    // GARANTIR QUE O CARET FIQUE VISÍVEL
+    // ================================================================
+
+    private ensureCaretVisible(): void {
+
+        const selection =
+            window.getSelection();
+
+        if (
+            !selection ||
+            selection.rangeCount === 0 ||
+            !selection.focusNode
+        ) {
+            return;
+        }
+
+        const range =
+            document.createRange();
+
+        try {
+
+            range.setStart(
+                selection.focusNode,
+                selection.focusOffset
+            );
+
+            range.collapse(true);
+
+        } catch {
+
+            return;
+
+        }
+
+        let rect =
+            range.getBoundingClientRect();
+
+        // ------------------------------------------------------------
+        // Alguns browsers podem retornar um rect vazio para o caret.
+        // ------------------------------------------------------------
+
+        if (
+            rect.width === 0 &&
+            rect.height === 0
+        ) {
+
+            const rects =
+                range.getClientRects();
+
+            if (rects.length > 0) {
+
+                rect =
+                    rects[rects.length - 1];
+
+            }
+
+        }
+
+        if (
+            rect.width === 0 &&
+            rect.height === 0
+        ) {
+            return;
+        }
+
+        // ------------------------------------------------------------
+        // Procura o primeiro elemento rolável acima do caret.
+        // ------------------------------------------------------------
+
+        let element: HTMLElement | null =
+            selection.focusNode.nodeType === Node.ELEMENT_NODE
+
+                ? selection.focusNode as HTMLElement
+
+                : selection.focusNode.parentElement;
+
+        while (element) {
+
+            const style =
+                getComputedStyle(element);
+
+            const isScrollable =
+                (
+                    element.scrollHeight >
+                    element.clientHeight
+                ) &&
+                (
+                    style.overflowY === "auto" ||
+                    style.overflowY === "scroll"
+                );
+
+            if (isScrollable) {
+                break;
+            }
+
+            element =
+                element.parentElement;
+
+        }
+
+        // ------------------------------------------------------------
+        // Não encontrou container interno.
+        // Usa o viewport.
+        // ------------------------------------------------------------
+
+        if (!element) {
+
+            const viewportTop =
+                0;
+
+            const viewportBottom =
+                window.innerHeight;
+
+            const margin = 30;
+
+            if (
+                rect.top <
+                viewportTop + margin
+            ) {
+
+                window.scrollBy(
+                    0,
+                    rect.top -
+                    viewportTop -
+                    margin
+                );
+
+            } else if (
+                rect.bottom >
+                viewportBottom - margin
+            ) {
+
+                window.scrollBy(
+                    0,
+                    rect.bottom -
+                    viewportBottom +
+                    margin
+                );
+
+            }
+
+            return;
+        }
+
+        // ------------------------------------------------------------
+        // Container interno
+        // ------------------------------------------------------------
+
+        const containerRect =
+            element.getBoundingClientRect();
+
+        const margin = 30;
+
+        // CARET ACIMA DA ÁREA VISÍVEL
+
+        if (
+            rect.top <
+            containerRect.top + margin
+        ) {
+
+            element.scrollTop -=
+                (
+                    containerRect.top +
+                    margin -
+                    rect.top
+                );
+
+            return;
+        }
+
+        // CARET ABAIXO DA ÁREA VISÍVEL
+
+        if (
+            rect.bottom >
+            containerRect.bottom - margin
+        ) {
+
+            element.scrollTop +=
+                (
+                    rect.bottom -
+                    containerRect.bottom +
+                    margin
+                );
+
+        }
 
     }
 
@@ -1088,13 +2364,15 @@ export class SelectionManager {
         }
 
         const anchorParagraph =
-            this.getParagraphElement(
-                anchorParagraphId
+            this.getParagraphFragmentForOffset(
+                anchorParagraphId,
+                anchorOffset
             );
 
         const focusParagraph =
-            this.getParagraphElement(
-                focusParagraphId
+            this.getParagraphFragmentForOffset(
+                focusParagraphId,
+                focusOffset
             );
 
         if (
@@ -1106,13 +2384,13 @@ export class SelectionManager {
 
         const anchorPoint =
             this.getDomPointFromOffset(
-                anchorParagraph,
+                anchorParagraphId,
                 anchorOffset
             );
 
         const focusPoint =
             this.getDomPointFromOffset(
-                focusParagraph,
+                focusParagraphId,
                 focusOffset
             );
 
@@ -1253,19 +2531,38 @@ export class SelectionManager {
 
         }
 
-        const anchorParagraph =
+        const anchorFragment =
             this.findParagraph(
                 selection.anchorNode
             );
 
-        const focusParagraph =
+        const focusFragment =
             this.findParagraph(
                 selection.focusNode
             );
 
         if (
-            !anchorParagraph ||
-            !focusParagraph
+            !anchorFragment ||
+            !focusFragment
+        ) {
+
+            return;
+
+        }
+
+        const anchorParagraphId =
+            this.getLogicalParagraphIdFromFragment(
+                anchorFragment
+            );
+
+        const focusParagraphId =
+            this.getLogicalParagraphIdFromFragment(
+                focusFragment
+            );
+
+        if (
+            anchorParagraphId === null ||
+            focusParagraphId === null
         ) {
 
             return;
@@ -1273,15 +2570,15 @@ export class SelectionManager {
         }
 
         const anchorOffset =
-            this.getParagraphOffsetFromDomPoint(
-                anchorParagraph,
+            this.getLogicalOffsetFromFragment(
+                anchorFragment,
                 selection.anchorNode!,
                 selection.anchorOffset
             );
 
         const focusOffset =
-            this.getParagraphOffsetFromDomPoint(
-                focusParagraph,
+            this.getLogicalOffsetFromFragment(
+                focusFragment,
                 selection.focusNode!,
                 selection.focusOffset
             );
@@ -1290,21 +2587,133 @@ export class SelectionManager {
 
             {
                 paragraphId:
-                    Number(anchorParagraph.dataset.id),
+                    anchorParagraphId,
 
                 offset:
-                    anchorOffset
+                    anchorOffset,
+
             },
 
             {
                 paragraphId:
-                    Number(focusParagraph.dataset.id),
+                    focusParagraphId,
 
                 offset:
-                    focusOffset
+                    focusOffset,
+
             }
 
         );
+
+        console.log(
+            "[SYNC DOM → CONTROLLER AFTER]",
+            this.controller.getState()
+        );
+
+        console.log(
+            "[SYNC DOM LOGICAL]",
+            {
+                anchor: {
+                    paragraphId:
+                        anchorParagraphId,
+                    offset:
+                        anchorOffset,
+                },
+
+                focus: {
+                    paragraphId:
+                        focusParagraphId,
+                    offset:
+                        focusOffset,
+                },
+
+                anchorFragment: {
+                    start:
+                        anchorFragment.dataset.startOffset,
+                    end:
+                        anchorFragment.dataset.endOffset,
+                },
+
+                focusFragment: {
+                    start:
+                        focusFragment.dataset.startOffset,
+                    end:
+                        focusFragment.dataset.endOffset,
+                },
+            }
+        );
+
+    }
+
+    // getLogicalParagraphIdFromFragment //
+    private getLogicalParagraphIdFromFragment(
+        fragment: HTMLParagraphElement
+    ): number | null {
+
+        const id =
+            fragment.dataset.paragraphId ??
+            fragment.dataset.id;
+
+        if (!id) {
+            return null;
+        }
+
+        return Number(id);
+
+    }
+
+    // getLogicalOffsetFromFragment //
+    private getLogicalOffsetFromFragment(
+        fragment: HTMLParagraphElement,
+        node: Node,
+        offset: number
+    ): number {
+
+        const start =
+            Number(
+                fragment.dataset.startOffset ?? 0
+            );
+
+        const localOffset =
+            this.getLocalOffsetFromDomPoint(
+                fragment,
+                node,
+                offset
+            );
+
+        return start + localOffset;
+
+    }
+
+    // getLocalOffsetFromDomPoint //
+    private getLocalOffsetFromDomPoint(
+        fragment: HTMLParagraphElement,
+        node: Node,
+        offset: number
+    ): number {
+
+        const range =
+            document.createRange();
+
+        try {
+
+            range.setStart(
+                fragment,
+                0
+            );
+
+            range.setEnd(
+                node,
+                offset
+            );
+
+            return range.toString().length;
+
+        } catch {
+
+            return 0;
+
+        }
 
     }
 
@@ -1327,18 +2736,20 @@ export class SelectionManager {
 
         }
 
-        const paragraph =
+        const fragment =
             this.findParagraph(
                 selection.focusNode
             );
 
-        if (!paragraph) {
+        if (!fragment) {
+
             return 0;
+
         }
 
-        return this.domOffsetToLogical(
+        return this.getLogicalOffsetFromFragment(
 
-            paragraph,
+            fragment,
 
             selection.focusNode,
 
@@ -1456,63 +2867,203 @@ export class SelectionManager {
     // NOVO
     // ==============================
     private getDomPointFromOffset(
-    paragraph: HTMLParagraphElement,
+        paragraphId: number,
         offset: number
-    ): { node: Text; offset: number } | null {
+    ): {
+        node: Text;
+        offset: number;
+    } | null {
 
-        const walker = document.createTreeWalker(
-            paragraph,
-            NodeFilter.SHOW_TEXT
-        );
+        const fragments =
+            this.getParagraphFragments(
+                paragraphId
+            );
 
-        let currentOffset = 0;
+        if (fragments.length === 0) {
 
-        let node: Text | null;
-
-        while ((node = walker.nextNode() as Text | null)) {
-
-            const length = node.length;
-
-            if (
-                offset >= currentOffset &&
-                offset <= currentOffset + length
-            ) {
-
-                return {
-                    node,
-                    offset: offset - currentOffset
-                };
-
-            }
-
-            currentOffset += length;
+            return null;
 
         }
 
-        // parágrafo vazio
-        const fallback = document.createTextNode("");
+        const logicalLength =
+            this.getLogicalParagraphLength(
+                paragraphId
+            );
 
-        paragraph.appendChild(fallback);
+        const clampedOffset =
+            Math.max(
+                0,
+                Math.min(
+                    offset,
+                    logicalLength
+                )
+            );
+
+        // -------------------------------------------------
+        // PROCURA O FRAGMENTO QUE CONTÉM O OFFSET
+        // -------------------------------------------------
+
+        for (const fragment of fragments) {
+
+            const start =
+                Number(
+                    fragment.dataset.startOffset ?? 0
+                );
+
+            const end =
+                Number(
+                    fragment.dataset.endOffset ??
+                    start +
+                    (fragment.textContent?.length ?? 0)
+                );
+
+            if (
+                clampedOffset >= start &&
+                clampedOffset <= end
+            ) {
+
+                const localOffset =
+                    clampedOffset - start;
+
+                const walker =
+                    document.createTreeWalker(
+                        fragment,
+                        NodeFilter.SHOW_TEXT
+                    );
+
+                let consumed = 0;
+
+                let node:
+                    Node | null;
+
+                while (
+                    node =
+                        walker.nextNode()
+                ) {
+
+                    const textNode =
+                        node as Text;
+
+                    const length =
+                        textNode.length;
+
+                    if (
+                        localOffset <=
+                        consumed + length
+                    ) {
+
+                        return {
+
+                            node: textNode,
+
+                            offset:
+                                localOffset -
+                                consumed,
+
+                        };
+
+                    }
+
+                    consumed += length;
+
+                }
+
+            }
+
+        }
+
+        // -------------------------------------------------
+        // FALLBACK → ÚLTIMO FRAGMENTO
+        // -------------------------------------------------
+
+        const last =
+            fragments[
+                fragments.length - 1
+            ];
+
+        const walker =
+            document.createTreeWalker(
+                last,
+                NodeFilter.SHOW_TEXT
+            );
+
+        let lastText: Text | null = null;
+
+        let node:
+            Node | null;
+
+        while (
+            node =
+                walker.nextNode()
+        ) {
+
+            lastText =
+                node as Text;
+
+        }
+
+        if (lastText) {
+
+            return {
+
+                node: lastText,
+
+                offset: lastText.length,
+
+            };
+
+        }
+
+        const fallback =
+            document.createTextNode("");
+
+        last.appendChild(
+            fallback
+        );
 
         return {
+
             node: fallback,
-            offset: 0
+
+            offset: 0,
+
         };
 
     }
+    // ---------------------------------------- //
 
+    // getParagraphoffsetFromDomPoint //
     private getParagraphOffsetFromDomPoint(
         paragraph: HTMLParagraphElement,
         node: Node,
         offset: number
     ): number {
 
-        const range = document.createRange();
+        const range =
+            document.createRange();
 
-        range.setStart(paragraph, 0);
-        range.setEnd(node, offset);
+        range.setStart(
+            paragraph,
+            0
+        );
 
-        return range.toString().length;
+        range.setEnd(
+            node,
+            offset
+        );
+
+        const localOffset =
+            range.toString().length;
+
+        const fragmentStart =
+            Number(
+                paragraph.dataset.startOffset ?? 0
+            );
+
+        return (
+            fragmentStart +
+            localOffset
+        );
 
     }
 
@@ -1521,11 +3072,26 @@ export class SelectionManager {
     // =========================
     public selectAll() {
 
+        console.log(
+            "[CTRL+A] SelectionManager.selectAll CHAMADO"
+        );
+
         const paragraphs =
             this.getParagraphElements();
 
+        console.log(
+            "[CTRL+A] fragments:",
+            paragraphs.length
+        );
+
         if (paragraphs.length === 0) {
+
+            console.log(
+                "[CTRL+A] NENHUM FRAGMENTO"
+            );
+
             return;
+
         }
 
         const first =
@@ -1534,22 +3100,74 @@ export class SelectionManager {
         const last =
             paragraphs[paragraphs.length - 1];
 
+        // =========================================================
+        // IDs LÓGICOS
+        // =========================================================
+
         const firstId =
-            Number(first.dataset.id);
+            Number(
+                first.dataset.paragraphId ??
+                first.dataset.id
+            );
 
         const lastId =
-            Number(last.dataset.id);
+            Number(
+                last.dataset.paragraphId ??
+                last.dataset.id
+            );
+
+        if (
+            !Number.isFinite(firstId) ||
+            !Number.isFinite(lastId)
+        ) {
+
+            console.error(
+                "[CTRL+A] IDs LÓGICOS INVÁLIDOS",
+                {
+                    first,
+                    last,
+                    firstId,
+                    lastId
+                }
+            );
+
+            return;
+
+        }
+
+        // =========================================================
+        // OFFSET LÓGICO DO ÚLTIMO PARÁGRAFO
+        // =========================================================
 
         const lastOffset =
-            last.textContent?.length ?? 0;
+            this.getLogicalParagraphLength(
+                lastId
+            );
+
+        console.log(
+            "[CTRL+A] range lógico:",
+            {
+                firstId,
+                lastId,
+                lastOffset
+            }
+        );
+
+        // =========================================================
+        // SELEÇÃO
+        // =========================================================
 
         this.setSelection(
+
             firstId,
             0,
+
             lastId,
             lastOffset
+
         );
 
     }
+    // ----------------------------------- //
 
 }
