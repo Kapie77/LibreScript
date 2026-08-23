@@ -17,95 +17,66 @@ import HistoryPage from "./editor/pages/History/HistoryPage";
 // --------------------------------------------------------- //
 
 function App() {
-  
-  // Função de historico
-  const [historyEntries, setHistoryEntries] =
-    useState<HistoryEntry[]>(() => {
 
-      const saved =
-        localStorage.getItem(
-          "librescript-history"
-        );
+    // =========================================================
+    // HISTÓRICO
+    // =========================================================
 
-      if (saved) {
-        return JSON.parse(saved);
-      }
+    const [historyEntries, setHistoryEntries] =
+        useState<HistoryEntry[]>([]);
 
-      return [];
 
-    });
+    // =========================================================
+    // PROJETO
+    // =========================================================
 
-      // Salvar historico no localStorage
-      useEffect(() => {
+    const [project, setProject] =
+        useState<ScriptProject>(() => ({
+          
+            title: "",
+            author: "",
+            blocks:
+                structuredClone(
+                    sampleScript
+                ),
 
-        localStorage.setItem(
-          "librescript-history",
-          JSON.stringify(historyEntries)
-        );
+        }));
 
-      }, [historyEntries]);
 
-  // Base do projeto
-  const [project, setProject] =
-    useState<ScriptProject>(() => {
+    // =========================================================
+    // CONFIGURAÇÕES
+    // =========================================================
+    const [settings, setSettings] =
+        useState(() => {
 
-      const saved =
-        localStorage.getItem(
-          "librescript-project"
-        );
-
-      if (saved) {
-        return JSON.parse(saved);
-      }
-
-      return {
-        title: "",
-        author: "",
-        blocks: sampleScript,
-      };
-
-    });
-
-      // Salvar projeto no localStorage
-      useEffect(() => {
-
-        localStorage.setItem(
-          "librescript-project",
-          JSON.stringify(project)
-        );
-
-      }, [project]);
-
-        //Salvar configurações no localStorage
-          const [settings, setSettings] =
-            useState(() => {
-
-              const saved =
+            const saved =
                 localStorage.getItem(
-                  "librescript-settings"
+                    "librescript-settings"
                 );
 
-              if (saved) {
-                return JSON.parse(saved);
-              }
+            if (saved) {
 
-              return {
+                return JSON.parse(
+                    saved
+                );
+
+            }
+
+            return {
                 theme: "light",
                 language: "pt-BR",
-
                 allowDeleteBlocks: true,
                 allowMoveBlocks: true,
                 allowCollapseScenes: true,
-
                 showStatisticsButton: true,
                 showHistoryButton: true,
-
                 showNavigator: false,
                 showToolbar: true,
                 showStatusBar: true,
-              };
+            };
 
-            });
+        });
+
 
               //UseEffects para salvar configuração no localStorage
               useEffect(() => {

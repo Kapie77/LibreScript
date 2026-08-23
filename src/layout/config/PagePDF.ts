@@ -1,3 +1,6 @@
+// PagePDF.ts
+// src/layout/config/
+
 // Controla a altura da página do PDF
 // Esses valores correspondem ao tamanho A4 do jsPDF
 

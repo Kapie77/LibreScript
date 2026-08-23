@@ -29,21 +29,13 @@ do PDF para que alterações em um não afetem o outro.
 import type { ScriptBlock } from "../../types/script";
 
 export interface PdfBlockLayout {
-
     x: number;
-
     renderWidth: number;
-
     compositionWidth: number;
-
     fontStyle: "normal" | "bold" | "italic" | "bolditalic";
-
     align: "left" | "right";
-
     lineHeight: number;
-
     marginBottom: number;
-
 }
 
 export function getPdfBlockLayout(
@@ -55,35 +47,25 @@ export function getPdfBlockLayout(
         case "scene":
 
             return {
-
                 x: 20,
                 renderWidth: 90,
                 compositionWidth: 160,
-
                 fontStyle: "bold",
-
                 align: "left",
-
                 lineHeight: 6,
                 marginBottom: 4,
-
             };
 
         case "action":
 
             return {
-
                 x: 20,
                 renderWidth: 90,
                 compositionWidth: 160,
-
                 fontStyle: "normal",
-
                 align: "left",
-
                 lineHeight: 6,
                 marginBottom: 4,
-
             };
 
         case "character":
@@ -92,103 +74,73 @@ export function getPdfBlockLayout(
         case "character_vo":
 
             return {
-
                 x: 90,
                 renderWidth: 65,
                 compositionWidth: 160,
-
                 fontStyle: "bold",
-
                 align: "left",
-
                 lineHeight: 6,
                 marginBottom: 4,
-
             };
 
         case "dialogue":
 
             return {
-
                 x: 60,
                 renderWidth: 70,
                 compositionWidth: 160,
-
                 fontStyle: "normal",
-
                 align: "left",
-
                 lineHeight: 6,
                 marginBottom: 4,
-
             };
 
         case "parenthetical":
 
             return {
-
                 x: 75,
                 renderWidth: 55,
                 compositionWidth: 160,
-
                 fontStyle: "italic",
-
                 align: "left",
-
                 lineHeight: 6,
                 marginBottom: 4,
-
             };
 
         case "shot":
 
             return {
-
                 x: 20,
                 renderWidth: 90,
                 compositionWidth: 160,
-
                 fontStyle: "bold",
-
                 align: "left",
-
                 lineHeight: 6,
                 marginBottom: 4,
-
             };
 
         case "transition":
 
             return {
-
                 x: 190,
                 renderWidth: 90,
                 compositionWidth: 160,
-
                 fontStyle: "bold",
-
                 align: "right",
-
                 lineHeight: 6,
                 marginBottom: 4,
-
             };
 
         default:
 
             return {
-
                 x: 20,
                 renderWidth: 90,
                 compositionWidth: 160,
-
                 fontStyle: "normal",
-
                 align: "left",
-
                 lineHeight: 6,
                 marginBottom: 4,
-
             };
 
     }

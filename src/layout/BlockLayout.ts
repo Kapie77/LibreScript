@@ -41,18 +41,17 @@ import type { ScriptBlock } from "../types/script";
 /*
 A página do editor possui:
 
-    width: 816px
-    padding: 96px
+    width = 850px
+    padding horizontal = 60px
 
 Portanto:
 
-    816 - 96 - 96 = 624px
+    850 - 60 - 60 = 730px
 
-Essa é a largura REAL disponível para o roteiro.
-
-O padding da página já é aplicado pelo DocumentEditor.css.
-
-Por isso NÃO devemos repetir esses 96px aqui.
+A largura de 624px usada pelo roteiro é uma
+largura interna específica da diagramação de
+screenplay, menor que toda a área disponível
+da página.
 */
 
 const CONTENT_WIDTH = 624;

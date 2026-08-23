@@ -41,53 +41,164 @@ export interface CompositionResult {
 
 // composeLines
 function composeLines(
-  text: string,
-  maxWidth: number,
-  measure: TextMeasurer
+    text: string,
+    maxWidth: number,
+    measure: TextMeasurer
 ): string[] {
 
-  if (!text.trim()) {
-    return [""];
-  }
+    if (!text.trim()) {
+        return [""];
+    }
 
-  const words = text.split(/\s+/);
+    const lines: string[] = [];
 
-  const lines: string[] = [];
+    /*
+    -------------------------------------------------------
+    Divide primeiro pelas quebras de linha reais.
+    -------------------------------------------------------
+    */
 
-  let currentLine = "";
+    const paragraphs =
+        text.split(/\r?\n/);
 
-  for (const word of words) {
+    for (const paragraph of paragraphs) {
 
-    const candidate =
-      currentLine === ""
-        ? word
-        : currentLine + " " + word;
+        if (paragraph === "") {
 
-    if (
-      measure(candidate) <= maxWidth
-    ) {
+            lines.push("");
 
-      currentLine = candidate;
+            continue;
+
+        }
+
+        const words =
+            paragraph.split(/\s+/);
+
+        let currentLine = "";
+
+        for (const word of words) {
+
+            /*
+            ------------------------------------------------
+            Palavra normal
+            ------------------------------------------------
+            */
+
+            const candidate =
+                currentLine === ""
+                    ? word
+                    : currentLine + " " + word;
+
+            if (
+                measure(candidate) <= maxWidth
+            ) {
+
+                currentLine =
+                    candidate;
+
+                continue;
+
+            }
+
+            /*
+            ------------------------------------------------
+            Se a palavra inteira não couber, precisamos
+            quebrá-la em partes.
+            ------------------------------------------------
+            */
+
+            if (currentLine !== "") {
+
+                lines.push(
+                    currentLine
+                );
+
+                currentLine = "";
+
+            }
+
+            /*
+            ------------------------------------------------
+            Quebra palavras gigantes sem espaços.
+            ------------------------------------------------
+            */
+
+            let remaining =
+                word;
+
+            while (
+                remaining.length > 0
+            ) {
+
+                let chunk = "";
+
+                for (
+                    const character
+                    of remaining
+                ) {
+
+                    const candidateChunk =
+                        chunk + character;
+
+                    if (
+                        measure(
+                            candidateChunk
+                        ) <= maxWidth
+                    ) {
+
+                        chunk =
+                            candidateChunk;
+
+                    } else {
+
+                        break;
+
+                    }
+
+                }
+
+                /*
+                ------------------------------------------------
+                Proteção contra TextMeasurer incapaz de medir
+                sequer um caractere.
+                ------------------------------------------------
+                */
+
+                if (
+                    chunk.length === 0
+                ) {
+
+                    chunk =
+                        remaining.charAt(0);
+
+                }
+
+                lines.push(
+                    chunk
+                );
+
+                remaining =
+                    remaining.slice(
+                        chunk.length
+                    );
+
+            }
+
+        }
+
+        if (
+            currentLine !== ""
+        ) {
+
+            lines.push(
+                currentLine
+            );
+
+        }
 
     }
 
-    else {
-
-      if (currentLine !== "") {
-        lines.push(currentLine);
-      }
-
-      currentLine = word;
-
-    }
-
-  }
-
-  if (currentLine !== "") {
-    lines.push(currentLine);
-  }
-
-  return lines;
+    return lines;
 
 }
 

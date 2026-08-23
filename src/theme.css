@@ -45,6 +45,13 @@ src/
   --history-deleted-bg: #3a2222;
   --history-moved-bg: #1f2f46;
   --history-restored-bg: #584511;
+
+  /* Amarelos da busca */
+    --search-highlight: #584511;
+    --search-highlight-current: #8a5a16;
+    --search-highlight-active: #b8860b;
+    --search-highlight-text: #fff;
+
 }
 
 /* =====================
@@ -90,4 +97,10 @@ src/
   --history-deleted-bg: #e44141;
   --history-moved-bg: #d8e9ff;
   --history-restored-bg: #dde93cd0;
+
+  /* Amarelos da busca */
+  --search-highlight: #fff3a3;
+  --search-highlight-current: #ffb84d;
+  --search-highlight-active: #ffd21c;
+  --search-highlight-text: #222;
 }
