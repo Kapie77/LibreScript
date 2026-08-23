@@ -134,6 +134,32 @@ export class DocumentView {
         pageNumber: number
     ): HTMLDivElement {
 
+        // -----------------------------------------------------
+        // WRAPPER DA PÁGINA
+        // -----------------------------------------------------
+
+        const pageWrapper =
+            document.createElement("div");
+
+        pageWrapper.className =
+            "document-editor-page-wrapper";
+
+        pageWrapper.style.position =
+            "relative";
+
+        pageWrapper.style.width =
+            `${PAGE_EDITOR.width}px`;
+
+        pageWrapper.style.height =
+            `${PAGE_EDITOR.height}px`;
+
+        pageWrapper.style.boxSizing =
+            "border-box";
+
+        // -----------------------------------------------------
+        // PÁGINA REAL DO EDITOR
+        // -----------------------------------------------------
+
         const page =
             document.createElement("div");
 
@@ -166,6 +192,7 @@ export class DocumentView {
 
         // -----------------------------------------------------
         // NÚMERO DA PÁGINA
+        // FICA FORA DA ÁREA SELECIONÁVEL
         // -----------------------------------------------------
 
         if (pageNumber > 1) {
@@ -179,15 +206,41 @@ export class DocumentView {
             pageNumberElement.textContent =
                 `${pageNumber}.`;
 
-            page.appendChild(
+            pageNumberElement.style.userSelect =
+                "none";
+
+            pageNumberElement.style.pointerEvents =
+                "none";
+
+            pageWrapper.appendChild(
                 pageNumberElement
             );
 
         }
 
-        this.pages.push(page);
+        // -----------------------------------------------------
+        // PÁGINA FICA DENTRO DO WRAPPER
+        // -----------------------------------------------------
 
-        this.root.appendChild(page);
+        pageWrapper.appendChild(
+            page
+        );
+
+        // -----------------------------------------------------
+        // REGISTRA A PÁGINA REAL
+        // -----------------------------------------------------
+
+        this.pages.push(
+            page
+        );
+
+        // -----------------------------------------------------
+        // ADICIONA O WRAPPER AO ROOT
+        // -----------------------------------------------------
+
+        this.root.appendChild(
+            pageWrapper
+        );
 
         return page;
 
@@ -1110,7 +1163,18 @@ export class DocumentView {
             const page of this.pages
         ) {
 
-            page.remove();
+            const pageWrapper =
+                page.parentElement;
+
+            if (pageWrapper) {
+
+                pageWrapper.remove();
+
+            } else {
+
+                page.remove();
+
+            }
 
         }
 

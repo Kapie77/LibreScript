@@ -179,14 +179,25 @@
    NÚMERO DA PÁGINA
 ========================================================= */
 .document-page-number {
+
     position: absolute;
+
     top: 24px;
     right: 60px;
+
     font-family:
         "Courier Prime",
         monospace;
+
     font-size: 12px;
+
     line-height: 1;
+
     color: var(--text-main);
+
+    user-select: none;
     pointer-events: none;
+
+    z-index: 10;
+
 }
