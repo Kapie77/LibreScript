@@ -462,23 +462,6 @@ export class EditController {
 
         event.preventDefault();
 
-        console.log(
-            "[BACKSPACE STATE]",
-            {
-                hasSelection:
-                    this.selection.hasSelection(),
-
-                currentParagraphId:
-                    this.selection.getCurrentParagraphId(),
-
-                caretOffset:
-                    this.selection.getCaretOffset(),
-
-                selection:
-                    this.selection.getCurrentSelection(),
-            }
-        );
-
         if (this.selection.hasSelection()) {
 
             this.executeReplaceSelection("");
@@ -555,23 +538,6 @@ export class EditController {
     ) {
 
         event.preventDefault();
-
-        console.log(
-            "[DELETE STATE]",
-            {
-                hasSelection:
-                    this.selection.hasSelection(),
-
-                currentParagraphId:
-                    this.selection.getCurrentParagraphId(),
-
-                caretOffset:
-                    this.selection.getCaretOffset(),
-
-                selection:
-                    this.selection.getCurrentSelection(),
-            }
-        );
 
         // --------------------------------------------------
         // EXISTE SELEÇÃO
@@ -662,8 +628,6 @@ export class EditController {
 
     // SELECIONAR TUDO (CTRL + A) //
     private selectAll() {
-
-        console.log("[CTRL+A] EditController.selectAll CHAMADO");
 
         this.selection.selectAll();
 

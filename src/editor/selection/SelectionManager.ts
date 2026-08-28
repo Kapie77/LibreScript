@@ -530,12 +530,6 @@ export class SelectionManager {
         focusOffset: number
     ) {
 
-        console.log("[SET SELECTION BEFORE]", {
-            anchorParagraphId,
-            anchorOffset,
-            focusParagraphId,
-            focusOffset
-        });
 
         this.controller.setSelection(
             {
@@ -548,17 +542,7 @@ export class SelectionManager {
             }
         );
 
-        console.log(
-            "[SET SELECTION CONTROLLER]",
-            this.controller.getState()
-        );
-
         this.renderSelection();
-
-        console.log(
-            "[SET SELECTION AFTER]",
-            this.controller.getState()
-        );
 
     }
 
@@ -2605,44 +2589,6 @@ export class SelectionManager {
 
         );
 
-        console.log(
-            "[SYNC DOM → CONTROLLER AFTER]",
-            this.controller.getState()
-        );
-
-        console.log(
-            "[SYNC DOM LOGICAL]",
-            {
-                anchor: {
-                    paragraphId:
-                        anchorParagraphId,
-                    offset:
-                        anchorOffset,
-                },
-
-                focus: {
-                    paragraphId:
-                        focusParagraphId,
-                    offset:
-                        focusOffset,
-                },
-
-                anchorFragment: {
-                    start:
-                        anchorFragment.dataset.startOffset,
-                    end:
-                        anchorFragment.dataset.endOffset,
-                },
-
-                focusFragment: {
-                    start:
-                        focusFragment.dataset.startOffset,
-                    end:
-                        focusFragment.dataset.endOffset,
-                },
-            }
-        );
-
     }
 
     // getLogicalParagraphIdFromFragment //
@@ -3072,23 +3018,10 @@ export class SelectionManager {
     // =========================
     public selectAll() {
 
-        console.log(
-            "[CTRL+A] SelectionManager.selectAll CHAMADO"
-        );
-
         const paragraphs =
             this.getParagraphElements();
 
-        console.log(
-            "[CTRL+A] fragments:",
-            paragraphs.length
-        );
-
         if (paragraphs.length === 0) {
-
-            console.log(
-                "[CTRL+A] NENHUM FRAGMENTO"
-            );
 
             return;
 
@@ -3143,15 +3076,6 @@ export class SelectionManager {
             this.getLogicalParagraphLength(
                 lastId
             );
-
-        console.log(
-            "[CTRL+A] range lógico:",
-            {
-                firstId,
-                lastId,
-                lastOffset
-            }
-        );
 
         // =========================================================
         // SELEÇÃO

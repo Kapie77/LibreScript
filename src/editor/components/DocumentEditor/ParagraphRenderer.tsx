@@ -74,8 +74,7 @@ export default function ParagraphRenderer({
     // LAYOUT
     // ---------------------------------------------------------------
 
-    const layout =
-        getEditorBlockLayout(block.type);
+    const layout = getEditorBlockLayout(block.type);
 
     // ---------------------------------------------------------------
     // SINCRONIZAÇÃO DO CONTEÚDO

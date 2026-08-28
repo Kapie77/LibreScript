@@ -257,13 +257,6 @@ export class CursorController {
             return;
         }
 
-        console.log("[ARROW UP LINE]", {
-            paragraphId,
-            offset,
-            lineIndex: line.lineIndex,
-            lineCount: line.lineCount
-        });
-
         const caretPosition =
             this.selection.getCaretVisualPosition();
 
@@ -494,13 +487,6 @@ export class CursorController {
         if (!line) {
             return;
         }
-
-        console.log("[ARROW DOWN LINE]", {
-            paragraphId,
-            offset,
-            lineIndex: line.lineIndex,
-            lineCount: line.lineCount
-        });
 
         const caretPosition =
             this.selection.getCaretVisualPosition();

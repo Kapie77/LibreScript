@@ -367,7 +367,6 @@ export class DocumentView {
     // =========================================================
     // CREATE ACTIONS
     // =========================================================
-
     private createParagraphActions(
         id: number
     ): HTMLDivElement {
@@ -518,7 +517,6 @@ export class DocumentView {
     // =========================================================
     // POSICIONA AÇÕES NO CENTRO DO PARÁGRAFO
     // =========================================================
-
     private positionParagraphActions(
         wrapper: HTMLDivElement,
         paragraph: HTMLParagraphElement
@@ -607,7 +605,6 @@ export class DocumentView {
     // =========================================================
     // RENDER RUNS
     // =========================================================
-
     private renderRuns(
         element: HTMLParagraphElement,
         paragraph: Paragraph
@@ -998,6 +995,10 @@ export class DocumentView {
 
         }
 
+        // -----------------------------------------------------
+        // PEGA TODOS OS TEXT NODES
+        // -----------------------------------------------------
+
         const walker =
             document.createTreeWalker(
                 element,
@@ -1025,21 +1026,441 @@ export class DocumentView {
             const length =
                 textNode.textContent?.length ?? 0;
 
-            textNodes.push({
-                node: textNode,
-                start: offset,
-                end: offset + length,
-            });
+            if (length > 0) {
 
-            offset += length;
+                textNodes.push({
+                    node: textNode,
+                    start: offset,
+                    end: offset + length,
+                });
+
+                offset += length;
+
+            }
+
+        }
+
+        if (!textNodes.length) {
+
+            return offsets;
 
         }
 
         // -----------------------------------------------------
-        // PEGA A POSIÇÃO VERTICAL DE CADA CARACTERE
+        // CASO MAIS COMUM
+        //
+        // Um único TextNode.
+        //
+        // Em vez de medir TODOS os caracteres, descobrimos
+        // onde a linha termina através de busca binária.
         // -----------------------------------------------------
 
-        const characterTops: number[] = [];
+        if (textNodes.length === 1) {
+
+            const info =
+                textNodes[0];
+
+            const nodeText =
+                info.node.textContent ?? "";
+
+            const nodeLength =
+                nodeText.length;
+
+            // -------------------------------------------------
+            // Mede a posição vertical de um intervalo.
+            //
+            // Usamos o centro vertical do primeiro caractere
+            // do intervalo como referência.
+            // -------------------------------------------------
+
+            const getTop =
+                (
+                    start: number,
+                    end: number
+                ): number | null => {
+
+                    if (
+                        start >= end ||
+                        start < 0 ||
+                        end > nodeLength
+                    ) {
+
+                        return null;
+
+                    }
+
+                    const range =
+                        document.createRange();
+
+                    range.setStart(
+                        info.node,
+                        start
+                    );
+
+                    range.setEnd(
+                        info.node,
+                        Math.min(
+                            start + 1,
+                            end
+                        )
+                    );
+
+                    const rect =
+                        range.getBoundingClientRect();
+
+                    return rect.height > 0
+                        ? rect.top
+                        : null;
+
+                };
+
+            // -------------------------------------------------
+            // Primeiro caractere
+            // -------------------------------------------------
+
+            const firstTop =
+                getTop(
+                    0,
+                    nodeLength
+                );
+
+            if (
+                firstTop === null
+            ) {
+
+                return offsets;
+
+            }
+
+            // -------------------------------------------------
+            // DESCOBRE AS LINHAS
+            // -------------------------------------------------
+
+            let lineStart = 0;
+
+            let currentTop =
+                firstTop;
+
+            const tolerance = 2;
+
+            while (
+                lineStart < nodeLength
+            ) {
+
+                // ---------------------------------------------
+                // Se estamos no último caractere, terminamos.
+                // ---------------------------------------------
+
+                if (
+                    lineStart ===
+                    nodeLength - 1
+                ) {
+
+                    offsets.push({
+                        start:
+                            lineStart,
+
+                        end:
+                            nodeLength,
+                    });
+
+                    break;
+
+                }
+
+                // ---------------------------------------------
+                // Precisamos descobrir o maior índice que ainda
+                // pertence à linha atual.
+                //
+                // Primeiro procuramos um limite superior.
+                // ---------------------------------------------
+
+                let low =
+                    lineStart + 1;
+
+                let high =
+                    Math.min(
+                        nodeLength,
+                        Math.max(
+                            low + 8,
+                            low * 2
+                        )
+                    );
+
+                let foundDifferentLine =
+                    false;
+
+                while (
+                    high < nodeLength
+                ) {
+
+                    const top =
+                        getTop(
+                            high - 1,
+                            high
+                        );
+
+                    if (
+                        top === null
+                    ) {
+
+                        break;
+
+                    }
+
+                    if (
+                        Math.abs(
+                            top -
+                            currentTop
+                        ) > tolerance
+                    ) {
+
+                        foundDifferentLine =
+                            true;
+
+                        break;
+
+                    }
+
+                    low =
+                        high;
+
+                    high =
+                        Math.min(
+                            nodeLength,
+                            high * 2
+                        );
+
+                }
+
+                // ---------------------------------------------
+                // Caso ainda não tenhamos encontrado uma linha
+                // diferente, verificamos o final do texto.
+                // ---------------------------------------------
+
+                if (
+                    !foundDifferentLine
+                ) {
+
+                    const lastTop =
+                        getTop(
+                            nodeLength - 1,
+                            nodeLength
+                        );
+
+                    if (
+                        lastTop === null ||
+                        Math.abs(
+                            lastTop -
+                            currentTop
+                        ) <= tolerance
+                    ) {
+
+                        offsets.push({
+                            start:
+                                lineStart,
+
+                            end:
+                                nodeLength,
+                        });
+
+                        break;
+
+                    }
+
+                    high =
+                        nodeLength;
+
+                }
+
+                // ---------------------------------------------
+                // BUSCA BINÁRIA
+                //
+                // low  = último ponto conhecido da linha atual
+                // high = primeiro limite fora dela
+                // ---------------------------------------------
+
+                let left =
+                    low;
+
+                let right =
+                    high;
+
+                while (
+                    left + 1 < right
+                ) {
+
+                    const middle =
+                        Math.floor(
+                            (
+                                left +
+                                right
+                            ) / 2
+                        );
+
+                    const top =
+                        getTop(
+                            middle - 1,
+                            middle
+                        );
+
+                    if (
+                        top !== null &&
+                        Math.abs(
+                            top -
+                            currentTop
+                        ) <= tolerance
+                    ) {
+
+                        left =
+                            middle;
+
+                    } else {
+
+                        right =
+                            middle;
+
+                    }
+
+                }
+
+                // ---------------------------------------------
+                // A linha termina em "left".
+                // ---------------------------------------------
+
+                const lineEnd =
+                    left;
+
+                if (
+                    lineEnd <= lineStart
+                ) {
+
+                    // Segurança contra loop infinito.
+                    offsets.push({
+                        start:
+                            lineStart,
+
+                        end:
+                            Math.min(
+                                lineStart + 1,
+                                nodeLength
+                            ),
+                    });
+
+                    lineStart += 1;
+
+                    const nextTop =
+                        getTop(
+                            lineStart,
+                            nodeLength
+                        );
+
+                    if (
+                        nextTop !== null
+                    ) {
+
+                        currentTop =
+                            nextTop;
+
+                    }
+
+                    continue;
+
+                }
+
+                offsets.push({
+                    start:
+                        lineStart,
+
+                    end:
+                        lineEnd,
+                });
+
+                // ---------------------------------------------
+                // Próxima linha
+                // ---------------------------------------------
+
+                lineStart =
+                    lineEnd;
+
+                const nextTop =
+                    getTop(
+                        lineStart,
+                        nodeLength
+                    );
+
+                if (
+                    nextTop === null
+                ) {
+
+                    break;
+
+                }
+
+                currentTop =
+                    nextTop;
+
+            }
+
+            // -------------------------------------------------
+            // DEBUG
+            // -------------------------------------------------
+
+            if (
+                text.length > 1000
+            ) {
+
+                console.log(
+                    "[LINE OFFSETS OPTIMIZED]",
+                    {
+                        textLength:
+                            text.length,
+
+                        textNodes:
+                            textNodes.length,
+
+                        lines:
+                            offsets.length,
+
+                        lastOffset:
+                            offsets[
+                                offsets.length - 1
+                            ],
+
+                        lastLineText:
+                            text.slice(
+                                offsets[
+                                    offsets.length - 1
+                                ].start,
+                                offsets[
+                                    offsets.length - 1
+                                ].end
+                            ),
+
+                        lastCharacter:
+                            text.charAt(
+                                text.length - 1
+                            )
+                    }
+                );
+
+            }
+
+            return offsets;
+
+        }
+
+        // -----------------------------------------------------
+        // FALLBACK
+        //
+        // Se existirem vários TextNodes, usamos a estratégia
+        // antiga. Isso preserva a segurança para runs formatados.
+        // -----------------------------------------------------
+
+        const characterTops:
+            number[] = [];
+
+        let textNodeIndex = 0;
 
         for (
             let i = 0;
@@ -1047,12 +1468,23 @@ export class DocumentView {
             i++
         ) {
 
+            while (
+                textNodeIndex <
+                    textNodes.length &&
+                i >=
+                    textNodes[
+                        textNodeIndex
+                    ].end
+            ) {
+
+                textNodeIndex++;
+
+            }
+
             const info =
-                textNodes.find(
-                    item =>
-                        i >= item.start &&
-                        i < item.end
-                );
+                textNodes[
+                    textNodeIndex
+                ];
 
             if (!info) {
 
@@ -1061,7 +1493,8 @@ export class DocumentView {
             }
 
             const localOffset =
-                i - info.start;
+                i -
+                info.start;
 
             const range =
                 document.createRange();
@@ -1088,10 +1521,6 @@ export class DocumentView {
 
         }
 
-        // -----------------------------------------------------
-        // AGRUPA OS CARACTERES PELA LINHA
-        // -----------------------------------------------------
-
         if (
             characterTops.length === 0
         ) {
@@ -1100,7 +1529,12 @@ export class DocumentView {
 
         }
 
+        // -----------------------------------------------------
+        // AGRUPA OS CARACTERES PELA LINHA
+        // -----------------------------------------------------
+
         let lineStart = 0;
+
         let currentTop =
             characterTops[0];
 
@@ -1117,13 +1551,17 @@ export class DocumentView {
 
             if (
                 Math.abs(
-                    top - currentTop
+                    top -
+                    currentTop
                 ) > tolerance
             ) {
 
                 offsets.push({
-                    start: lineStart,
-                    end: i,
+                    start:
+                        lineStart,
+
+                    end:
+                        i,
                 });
 
                 lineStart =
@@ -1137,11 +1575,570 @@ export class DocumentView {
         }
 
         offsets.push({
-            start: lineStart,
-            end: characterTops.length,
+            start:
+                lineStart,
+
+            end:
+                characterTops.length,
         });
 
         return offsets;
+
+    }
+
+
+    // =========================================================
+    // SCREENPLAY PAGINATION
+    // =========================================================
+
+    // isDialogueCharacter
+    private isDialogueCharacter(
+        type: Paragraph["type"]
+    ): boolean {
+
+        return (
+            type === "character" ||
+            type === "character_contd" ||
+            type === "character_os" ||
+            type === "character_vo"
+        );
+
+    }
+
+        // =========================================================
+        // MEDE O PRIMEIRO FRAGMENTO DE UM BLOCO
+        // =========================================================
+        private measureFirstFragmentHeight(
+            paragraph: Paragraph,
+            element: HTMLParagraphElement,
+            start: number,
+            end: number
+        ): number {
+
+            const layout =
+                getEditorBlockLayout(
+                    paragraph.type
+                );
+
+            // -----------------------------------------------------
+            // CRIA O PRIMEIRO FRAGMENTO
+            //
+            // O elemento original NÃO precisa estar conectado
+            // ao DOM para servir como fonte do fragmento.
+            // -----------------------------------------------------
+
+            const fragment =
+                this.createParagraphFragment(
+                    element,
+                    start,
+                    end,
+                    true
+                );
+
+            // -----------------------------------------------------
+            // ESTILO
+            // -----------------------------------------------------
+
+            fragment.style.marginTop =
+                `${layout.marginTop}px`;
+
+            fragment.style.marginBottom =
+                `${layout.marginBottom}px`;
+
+            fragment.style.lineHeight =
+                `${layout.lineHeight}px`;
+
+            fragment.style.width =
+                `${layout.width}px`;
+
+            fragment.style.maxWidth =
+                `${layout.maxWidth}px`;
+
+            fragment.style.marginLeft =
+                `${layout.marginLeft}px`;
+
+            fragment.style.textAlign =
+                layout.align;
+
+            // -----------------------------------------------------
+            // WRAPPER
+            // -----------------------------------------------------
+
+            const wrapper =
+                this.createFragmentWrapper(
+                    paragraph,
+                    true
+                );
+
+            wrapper.appendChild(
+                fragment
+            );
+
+            // -----------------------------------------------------
+            // PÁGINA TEMPORÁRIA DE MEDIÇÃO
+            // -----------------------------------------------------
+
+            const measurementPage =
+                document.createElement("div");
+
+            measurementPage.className =
+                "document-editor-page";
+
+            measurementPage.style.width =
+                `${PAGE_EDITOR.width}px`;
+
+            measurementPage.style.height =
+                `${PAGE_EDITOR.height}px`;
+
+            measurementPage.style.paddingTop =
+                `${PAGE_EDITOR.paddingTop}px`;
+
+            measurementPage.style.paddingBottom =
+                `${PAGE_EDITOR.paddingBottom}px`;
+
+            measurementPage.style.paddingLeft =
+                `${PAGE_EDITOR.paddingLeft}px`;
+
+            measurementPage.style.paddingRight =
+                `${PAGE_EDITOR.paddingRight}px`;
+
+            measurementPage.style.boxSizing =
+                "border-box";
+
+            measurementPage.style.position =
+                "absolute";
+
+            measurementPage.style.left =
+                "-100000px";
+
+            measurementPage.style.top =
+                "0";
+
+            // -----------------------------------------------------
+            // COLOCA A PÁGINA NO DOM
+            // -----------------------------------------------------
+
+            this.root.appendChild(
+                measurementPage
+            );
+
+            measurementPage.appendChild(
+                wrapper
+            );
+
+            // -----------------------------------------------------
+            // POSICIONA AÇÕES
+            // -----------------------------------------------------
+
+            this.positionParagraphActions(
+                wrapper,
+                fragment
+            );
+
+            // -----------------------------------------------------
+            // MEDE
+            // -----------------------------------------------------
+
+            console.log(
+                "[MEASURE FIRST FRAGMENT RESULT]",
+                {
+                    paragraphId:
+                        paragraph.id,
+
+                    paragraphType:
+                        paragraph.type,
+
+                    text:
+                        fragment.textContent?.slice(0, 100),
+
+                    start,
+                    end,
+
+                    elementConnected:
+                        element.isConnected,
+
+                    measurementPageConnected:
+                        measurementPage.isConnected,
+
+                    measurementPageWidth:
+                        measurementPage.getBoundingClientRect().width,
+
+                    wrapperWidth:
+                        wrapper.getBoundingClientRect().width,
+
+                    fragmentWidth:
+                        fragment.getBoundingClientRect().width,
+
+                    wrapperHeight:
+                        wrapper.getBoundingClientRect().height,
+
+                    fragmentHeight:
+                        fragment.getBoundingClientRect().height
+                }
+            );
+
+            const height =
+                wrapper.getBoundingClientRect().height;
+
+            // -----------------------------------------------------
+            // REMOVE
+            // -----------------------------------------------------
+
+            measurementPage.remove();
+
+            return height;
+        }
+
+    // --------------------------------------------- //
+
+    // =========================================================
+    // MEDE A ALTURA DA PRIMEIRA LINHA VISUAL DE UM PARÁGRAFO
+    // =========================================================
+    private measureFirstVisualLineHeight(
+        paragraph: Paragraph,
+        element: HTMLParagraphElement
+    ): number {
+
+        const layout =
+            getEditorBlockLayout(
+                paragraph.type
+            );
+
+        // -----------------------------------------------------
+        // CRIA UMA CÓPIA DO PARÁGRAFO
+        // -----------------------------------------------------
+
+        const measurementElement =
+            document.createElement("p");
+
+        measurementElement.className =
+            element.className;
+
+        measurementElement.style.cssText =
+            element.style.cssText;
+
+        measurementElement.contentEditable =
+            "false";
+
+        measurementElement.dataset.paragraphId =
+            String(paragraph.id);
+
+        // -----------------------------------------------------
+        // COPIA O CONTEÚDO
+        // -----------------------------------------------------
+
+        const walker =
+            document.createTreeWalker(
+                element,
+                NodeFilter.SHOW_TEXT
+            );
+
+        let node:
+            Node | null;
+
+        while (
+            node = walker.nextNode()
+        ) {
+
+            const textNode =
+                node as Text;
+
+            const parent =
+                textNode.parentElement;
+
+            const clonedNode =
+                textNode.cloneNode(true) as Text;
+
+            if (
+                parent &&
+                parent !== element
+            ) {
+
+                const clonedParent =
+                    parent.cloneNode(false) as HTMLElement;
+
+                clonedParent.appendChild(
+                    clonedNode
+                );
+
+                measurementElement.appendChild(
+                    clonedParent
+                );
+
+            } else {
+
+                measurementElement.appendChild(
+                    clonedNode
+                );
+
+            }
+
+        }
+
+        // -----------------------------------------------------
+        // APLICA O LAYOUT REAL
+        // -----------------------------------------------------
+
+        measurementElement.style.marginTop =
+            `${layout.marginTop}px`;
+
+        measurementElement.style.marginBottom =
+            `${layout.marginBottom}px`;
+
+        measurementElement.style.lineHeight =
+            `${layout.lineHeight}px`;
+
+        measurementElement.style.width =
+            `${layout.width}px`;
+
+        measurementElement.style.maxWidth =
+            `${layout.maxWidth}px`;
+
+        measurementElement.style.marginLeft =
+            `${layout.marginLeft}px`;
+
+        measurementElement.style.textAlign =
+            layout.align;
+
+        // -----------------------------------------------------
+        // PÁGINA TEMPORÁRIA
+        // -----------------------------------------------------
+
+        const measurementPage =
+            document.createElement("div");
+
+        measurementPage.className =
+            "document-editor-page";
+
+        measurementPage.style.width =
+            `${PAGE_EDITOR.width}px`;
+
+        measurementPage.style.height =
+            `${PAGE_EDITOR.height}px`;
+
+        measurementPage.style.paddingTop =
+            `${PAGE_EDITOR.paddingTop}px`;
+
+        measurementPage.style.paddingBottom =
+            `${PAGE_EDITOR.paddingBottom}px`;
+
+        measurementPage.style.paddingLeft =
+            `${PAGE_EDITOR.paddingLeft}px`;
+
+        measurementPage.style.paddingRight =
+            `${PAGE_EDITOR.paddingRight}px`;
+
+        measurementPage.style.boxSizing =
+            "border-box";
+
+        measurementPage.style.position =
+            "absolute";
+
+        measurementPage.style.left =
+            "-100000px";
+
+        measurementPage.style.top =
+            "0";
+
+        // -----------------------------------------------------
+        // CONECTA ANTES DE MEDIR
+        // -----------------------------------------------------
+
+        this.root.appendChild(
+            measurementPage
+        );
+
+        measurementPage.appendChild(
+            measurementElement
+        );
+
+        // -----------------------------------------------------
+        // AGORA O ELEMENTO TEM LAYOUT REAL
+        // -----------------------------------------------------
+
+        const lineOffsets =
+            this.getLineOffsets(
+                measurementElement
+            );
+
+        if (
+            lineOffsets.length === 0
+        ) {
+
+            measurementPage.remove();
+
+            return 0;
+
+        }
+
+        // -----------------------------------------------------
+        // PRIMEIRA LINHA
+        // -----------------------------------------------------
+
+        const firstLine =
+            lineOffsets[0];
+
+        const fragment =
+            this.createParagraphFragment(
+                measurementElement,
+                firstLine.start,
+                firstLine.end,
+                true
+            );
+
+        fragment.style.marginTop =
+            `${layout.marginTop}px`;
+
+        fragment.style.marginBottom =
+            `${layout.marginBottom}px`;
+
+        fragment.style.lineHeight =
+            `${layout.lineHeight}px`;
+
+        fragment.style.width =
+            `${layout.width}px`;
+
+        fragment.style.maxWidth =
+            `${layout.maxWidth}px`;
+
+        fragment.style.marginLeft =
+            `${layout.marginLeft}px`;
+
+        fragment.style.textAlign =
+            layout.align;
+
+        const wrapper =
+            this.createFragmentWrapper(
+                paragraph,
+                true
+            );
+
+        wrapper.appendChild(
+            fragment
+        );
+
+        measurementPage.innerHTML = "";
+
+        measurementPage.appendChild(
+            wrapper
+        );
+
+        this.positionParagraphActions(
+            wrapper,
+            fragment
+        );
+
+        const height =
+            wrapper.getBoundingClientRect()
+                .height;
+
+        console.log(
+            "[MEASURE FIRST VISUAL LINE]",
+            {
+                paragraphId:
+                    paragraph.id,
+
+                paragraphType:
+                    paragraph.type,
+
+                textLength:
+                    measurementElement.textContent?.length ?? 0,
+
+                lines:
+                    lineOffsets.length,
+
+                firstLineStart:
+                    firstLine.start,
+
+                firstLineEnd:
+                    firstLine.end,
+
+                firstLineText:
+                    measurementElement.textContent
+                        ?.slice(
+                            firstLine.start,
+                            firstLine.end
+                        ),
+
+                measurementElementWidth:
+                    measurementElement
+                        .getBoundingClientRect()
+                        .width,
+
+                measurementElementHeight:
+                    measurementElement
+                        .getBoundingClientRect()
+                        .height,
+
+                firstLineHeight:
+                    height
+            }
+        );
+
+        measurementPage.remove();
+
+        return height;
+
+    }
+
+    // getNextParagraph
+    private getNextParagraph(
+        paragraphIndex: number
+    ): Paragraph | null {
+
+        if (
+            paragraphIndex < 0 ||
+            paragraphIndex >= this.paragraphs.length - 1
+        ) {
+
+            return null;
+
+        }
+
+        return (
+            this.paragraphs[
+                paragraphIndex + 1
+            ] ?? null
+        );
+
+    }
+
+    private isDialogueStart(
+        paragraphIndex: number
+    ): boolean {
+
+        const paragraph =
+            this.paragraphs[
+                paragraphIndex
+            ];
+
+        if (!paragraph) {
+            return false;
+        }
+
+        if (
+            !this.isDialogueCharacter(
+                paragraph.type
+            )
+        ) {
+
+            return false;
+
+        }
+
+        const next =
+            this.getNextParagraph(
+                paragraphIndex
+            );
+
+        if (!next) {
+            return false;
+        }
+
+        return (
+            next.type === "dialogue" ||
+            next.type === "parenthetical"
+        );
 
     }
 
@@ -1196,17 +2193,16 @@ export class DocumentView {
         const validIds =
             new Set<number>();
 
-        // -----------------------------------------------------
-        // PROCESSA PARÁGRAFOS
-        // -----------------------------------------------------
+        // -------------------------------------------------
+        // PREPARA TODOS OS ELEMENTOS ANTES DA PAGINAÇÃO
+        // -------------------------------------------------
+        // Precisamos que os próximos parágrafos já existam
+        // em this.elements para que a regra de Character
+        // possa medir o primeiro fragmento do próximo bloco.
 
         for (
             const paragraph of paragraphs
         ) {
-
-            validIds.add(
-                paragraph.id
-            );
 
             let element =
                 this.elements.get(
@@ -1226,6 +2222,37 @@ export class DocumentView {
                     element,
                     paragraph
                 );
+
+            }
+
+        }
+
+        // -----------------------------------------------------
+        // PROCESSA PARÁGRAFOS
+        // -----------------------------------------------------
+
+        for (
+            let paragraphIndex = 0;
+            paragraphIndex < paragraphs.length;
+            paragraphIndex++
+        ) {
+
+            const paragraph = paragraphs[paragraphIndex];
+
+            const nextParagraph = paragraphs[paragraphIndex + 1] ?? null;
+
+            validIds.add(
+                paragraph.id
+            );
+
+            const element =
+                this.elements.get(
+                    paragraph.id
+                );
+
+            if (!element) {
+
+                continue;
 
             }
 
@@ -1261,12 +2288,20 @@ export class DocumentView {
             // AGORA O <p> ESTÁ CONECTADO
             // -------------------------------------------------
 
+            // -------------------------------------------------
+            // BLOQUEIA O WRAPPER ORIGINAL
+            // SEM REMOVER SEU LAYOUT
+            wrapper.style.position =
+                "absolute";
+
+            wrapper.style.visibility =
+                "hidden";
+            // ------------------------------------------------- //
+
             const lineOffsets =
                 this.getLineOffsets(
                     element
                 );
-
-            wrapper.remove();
 
             // -------------------------------------------------
             // BLOCO VAZIO
@@ -1311,180 +2346,460 @@ export class DocumentView {
                 // Começamos tentando colocar
                 // todas as linhas restantes.
                 // Se não couber, vamos diminuindo.
-                let linesToTake =
-                    remaining;
 
-                let fragmentAccepted =
-                    false;
 
-                while (
-                    linesToTake > 0
-                ) {
+                    // =========================================================
+                    // PROCURA BINÁRIA DA QUANTIDADE DE LINHAS QUE CABE
+                    // =========================================================
+                    //
+                    // Antes:
+                    //   63 → 62 → 61 → 60 → ... → 42
+                    //
+                    // Agora:
+                    //   63 → 31 → 47 → 39 → 43 → 41 → 42
+                    //
+                    // Isso reduz drasticamente a quantidade de fragmentos
+                    // criados e medidos.
+                    // =========================================================
 
-                    const start =
-                        lineOffsets[
-                            lineIndex
-                        ].start;
+                    const binarySearchStart = performance.now();
 
-                    const end =
-                        lineOffsets[
+                    let minLines =
+                        1;
+
+                    let maxLines =
+                        remaining;
+
+                    let bestLines =
+                        0;
+
+                    while (
+                        minLines <= maxLines
+                    ) {
+
+                        const linesToTake =
+                            Math.floor(
+                                (
+                                    minLines +
+                                    maxLines
+                                ) / 2
+                            );
+
+                        const start =
+                            lineOffsets[
+                                lineIndex
+                            ].start;
+
+                        const end =
+                            lineOffsets[
+                                lineIndex +
+                                linesToTake -
+                                1
+                            ].end;
+
+                        const isFirstFragment =
+                            lineIndex === 0;
+
+                        const isLastFragment =
                             lineIndex +
-                            linesToTake -
-                            1
-                        ].end;
+                            linesToTake >=
+                            lineOffsets.length;
 
-                    const isFirstFragment =
-                        lineIndex === 0;
+                        // -----------------------------------------------------
+                        // CRIA FRAGMENTO
+                        // -----------------------------------------------------
 
-                    const isLastFragment =
-                        lineIndex +
-                        linesToTake >=
-                        lineOffsets.length;
+                        const fragment =
+                            this.createParagraphFragment(
+                                element,
+                                start,
+                                end,
+                                isFirstFragment
+                            );
 
-                    // -------------------------------------------------
-                    // CRIA FRAGMENTO
-                    // -------------------------------------------------
-                    const fragment =
-                        this.createParagraphFragment(
-                            element,
-                            start,
-                            end,
+                        // -----------------------------------------------------
+                        // ESTILO
+                        // -----------------------------------------------------
+
+                        fragment.style.marginTop =
                             isFirstFragment
+                                ? `${layout.marginTop}px`
+                                : "0px";
+
+                        fragment.style.marginBottom =
+                            isLastFragment
+                                ? `${layout.marginBottom}px`
+                                : "0px";
+
+                        fragment.style.lineHeight =
+                            `${layout.lineHeight}px`;
+
+                        fragment.style.width =
+                            `${layout.width}px`;
+
+                        fragment.style.maxWidth =
+                            `${layout.maxWidth}px`;
+
+                        fragment.style.marginLeft =
+                            `${layout.marginLeft}px`;
+
+                        fragment.style.textAlign =
+                            layout.align;
+
+                        // -----------------------------------------------------
+                        // WRAPPER DO FRAGMENTO
+                        // -----------------------------------------------------
+
+                        const fragmentWrapper =
+                            this.createFragmentWrapper(
+                                paragraph,
+                                isFirstFragment
+                            );
+
+                        fragmentWrapper.appendChild(
+                            fragment
                         );
 
-                    // -------------------------------------------------
-                    // ESTILO
-                    // -------------------------------------------------
+                        // -----------------------------------------------------
+                        // COLOCA NO DOM PARA MEDIR
+                        // -----------------------------------------------------
 
-                    fragment.style.marginTop =
-                        isFirstFragment
-                            ? `${layout.marginTop}px`
-                            : "0px";
-
-                    fragment.style.marginBottom =
-                        isLastFragment
-                            ? `${layout.marginBottom}px`
-                            : "0px";
-
-                    fragment.style.lineHeight =
-                        `${layout.lineHeight}px`;
-
-                    fragment.style.width =
-                        `${layout.width}px`;
-
-                    fragment.style.maxWidth =
-                        `${layout.maxWidth}px`;
-
-                    fragment.style.marginLeft =
-                        `${layout.marginLeft}px`;
-
-                    fragment.style.textAlign =
-                        layout.align;
-
-                    // -------------------------------------------------
-                    // WRAPPER DO FRAGMENTO
-                    // -------------------------------------------------
-
-                    const fragmentWrapper =
-                        this.createFragmentWrapper(
-                            paragraph,
-                            isFirstFragment
+                        currentPage.appendChild(
+                            fragmentWrapper
                         );
 
-                    fragmentWrapper.appendChild(
-                        fragment
-                    );
+                        // -----------------------------------------------------
+                        // POSICIONA AS AÇÕES
+                        // -----------------------------------------------------
 
-                    // -------------------------------------------------
-                    // COLOCA NO DOM PARA MEDIR
-                    // -------------------------------------------------
+                        this.positionParagraphActions(
+                            fragmentWrapper,
+                            fragment
+                        );
 
-                    currentPage.appendChild(
-                        fragmentWrapper
-                    );
+                        // -----------------------------------------------------
+                        // MEDE
+                        // -----------------------------------------------------
 
-                    // -------------------------------------------------
-                    // POSICIONA AS AÇÕES NO CENTRO DO FRAGMENTO
-                    // -------------------------------------------------
+                        const fragmentHeight =
+                            fragmentWrapper
+                                .getBoundingClientRect()
+                                .height;
 
-                    this.positionParagraphActions(
-                        fragmentWrapper,
-                        fragment
-                    );
+                        const PAGINATION_SAFETY =
+                            4;
 
-                    // -------------------------------------------------
-                    // MEDE O TAMANHO REAL
-                    // -------------------------------------------------
+                        const availableHeight =
+                            PAGE_EDITOR.contentHeight -
+                            currentHeight -
+                            PAGINATION_SAFETY;
 
-                    const fragmentHeight = fragmentWrapper.getBoundingClientRect().height;
-                        
-                    const PAGINATION_SAFETY = 4;
+                        const isEmptyPage =
+                            currentHeight === 0 &&
+                            currentPage.children.length === 1;
 
-                    const availableHeight =
-                        PAGE_EDITOR.contentHeight -
-                        currentHeight -
-                        PAGINATION_SAFETY;
+                        let fits =
+                            fragmentHeight <=
+                            availableHeight;
 
-                    const fits =
-                        fragmentHeight <=
-                        availableHeight;
+                        // -----------------------------------------------------
+                        // UMA LINHA SOZINHA PRECISA ENTRAR EM PÁGINA VAZIA
+                        // -----------------------------------------------------
 
-                    // -------------------------------------------------
-                    // COUBE
-                    // -------------------------------------------------
+                        if (
+                            isEmptyPage &&
+                            linesToTake === 1
+                        ) {
 
-                    if (fits) {
-                        currentHeight += fragmentHeight;
+                            fits = true;
 
-                        console.log("[PAGINATION ACCEPT]", {
-                            paragraphId: paragraph.id,
-                            page: this.pages.length,
-                            lineIndex,
-                            linesToTake,
-                            totalLines: lineOffsets.length,
-                            fragmentHeight,
-                            currentHeight,
-                            available: PAGE_EDITOR.contentHeight,
-                            remainingLines:
-                                lineOffsets.length -
-                                (lineIndex + linesToTake),
-                        });
+                        }
 
-                        lineIndex += linesToTake;
-                        fragmentAccepted = true;
-                        break;
+                        // -----------------------------------------------------
+                        // REGRA CHARACTER + SPEECH
+                        // -----------------------------------------------------
+
+                        const isFirstFragmentOfParagraph =
+                            lineIndex === 0;
+
+                        const isWholeCharacter =
+                            this.isDialogueCharacter(
+                                paragraph.type
+                            ) &&
+                            isFirstFragmentOfParagraph &&
+                            isLastFragment;
+
+                        const nextIsSpeech =
+                            nextParagraph !== null &&
+                            (
+                                nextParagraph.type === "parenthetical" ||
+                                nextParagraph.type === "dialogue"
+                            );
+
+                        const shouldProtectCharacter =
+                            isWholeCharacter &&
+                            nextIsSpeech;
+
+                        let characterNeedsNextPage =
+                            false;
+
+                        if (
+                            shouldProtectCharacter &&
+                            nextParagraph
+                        ) {
+
+                            const nextElement =
+                                this.elements.get(
+                                    nextParagraph.id
+                                );
+
+                            if (nextElement) {
+
+                                const nextFirstLineHeight =
+                                    this.measureFirstVisualLineHeight(
+                                        nextParagraph,
+                                        nextElement
+                                    );
+
+                                const remainingHeightAfterCharacter =
+                                    availableHeight -
+                                    fragmentHeight;
+
+                                characterNeedsNextPage =
+                                    remainingHeightAfterCharacter <
+                                    nextFirstLineHeight;
+
+                            }
+
+                        }
+
+                        // -----------------------------------------------------
+                        // CHARACTER NÃO FICA ISOLADO NO FIM DA PÁGINA
+                        // -----------------------------------------------------
+
+                        if (
+                            fits &&
+                            isWholeCharacter &&
+                            nextIsSpeech &&
+                            characterNeedsNextPage
+                        ) {
+
+                            fits = false;
+
+                        }
+
+                        // -----------------------------------------------------
+                        // DECISÃO DA BUSCA BINÁRIA
+                        // -----------------------------------------------------
+
+                        if (fits) {
+
+                            // ---------------------------------------------
+                            // Cabe.
+                            //
+                            // Guardamos esta quantidade como a melhor
+                            // encontrada e tentamos colocar mais linhas.
+                            // ---------------------------------------------
+
+                            bestLines =
+                                linesToTake;
+
+                            currentPage.removeChild(
+                                fragmentWrapper
+                            );
+
+                            minLines =
+                                linesToTake + 1;
+
+                        } else {
+
+                            // ---------------------------------------------
+                            // Não cabe.
+                            //
+                            // Tentamos menos linhas.
+                            // ---------------------------------------------
+
+                            currentPage.removeChild(
+                                fragmentWrapper
+                            );
+
+                            maxLines =
+                                linesToTake - 1;
+
+                        }
+
                     }
 
-
-                    // -------------------------------------------------
-                    // NÃO COUBE
-                    // -------------------------------------------------
-
-                    currentPage.removeChild(
-                        fragmentWrapper
+                    console.log(
+                        "[BINARY SEARCH PERFORMANCE]",
+                        {
+                            paragraphId: paragraph.id,
+                            totalLines: lineOffsets.length,
+                            bestLines,
+                            duration:
+                                Math.round(
+                                    performance.now() -
+                                    binarySearchStart
+                                )
+                        }
                     );
 
-                    linesToTake--;
+                    // =========================================================
+                    // AGORA CRIAMOS DEFINITIVAMENTE O MELHOR FRAGMENTO
+                    // =========================================================
 
-                }
+                    // ---------------------------------------------------------
+                    // NENHUMA LINHA COUBE
+                    // ---------------------------------------------------------
+                    //
+                    // Isso pode acontecer principalmente pela regra 6.1:
+                    //
+                    // CHARACTER + próximo SPEECH
+                    //
+                    // Se o CHARACTER cabe na página, mas não sobra espaço
+                    // suficiente para a primeira linha do diálogo seguinte,
+                    // precisamos mandar o CHARACTER inteiro para a próxima
+                    // página.
+                    //
+                    // IMPORTANTE:
+                    // Não podemos simplesmente deixar bestLines = 0,
+                    // porque o while continuaria tentando exatamente a mesma
+                    // linha infinitamente.
+                    // ---------------------------------------------------------
 
+                    if (
+                        bestLines === 0
+                    ) {
 
-                if (!fragmentAccepted) {
+                        // -----------------------------------------------------
+                        // Se já existe conteúdo na página atual,
+                        // começamos uma nova página.
+                        // -----------------------------------------------------
 
-                    // Isso só deveria acontecer
-                    // se nem uma única linha couber.
+                        if (
+                            currentHeight > 0
+                        ) {
 
-                    currentPage =
-                        this.createPage(
-                            this.pages.length + 1
+                            currentPage =
+                                this.createPage(
+                                    this.pages.length + 1
+                                );
+
+                            currentHeight = 0;
+
+                            // Não avançamos lineIndex.
+                            //
+                            // A mesma linha será tentada novamente,
+                            // agora em uma página vazia.
+
+                            continue;
+
+                        }
+
+                        // -----------------------------------------------------
+                        // Se a página já está vazia, uma linha precisa entrar.
+                        //
+                        // Isso evita loop infinito caso uma única linha seja
+                        // maior que a altura disponível ou a regra 6.1 ainda
+                        // considere que não cabe.
+                        // -----------------------------------------------------
+
+                        bestLines = 1;
+
+                    }
+
+                    // =========================================================
+                    // CRIA DEFINITIVAMENTE O MELHOR FRAGMENTO
+                    // =========================================================
+
+                    if (
+                        bestLines > 0
+                    ) {
+
+                        const start =
+                            lineOffsets[
+                                lineIndex
+                            ].start;
+
+                        const end =
+                            lineOffsets[
+                                lineIndex +
+                                bestLines -
+                                1
+                            ].end;
+
+                        const isFirstFragment =
+                            lineIndex === 0;
+
+                        const isLastFragment =
+                            lineIndex +
+                            bestLines >=
+                            lineOffsets.length;
+
+                        const fragment =
+                            this.createParagraphFragment(
+                                element,
+                                start,
+                                end,
+                                isFirstFragment
+                            );
+
+                        fragment.style.marginTop =
+                            isFirstFragment
+                                ? `${layout.marginTop}px`
+                                : "0px";
+
+                        fragment.style.marginBottom =
+                            isLastFragment
+                                ? `${layout.marginBottom}px`
+                                : "0px";
+
+                        fragment.style.lineHeight =
+                            `${layout.lineHeight}px`;
+
+                        fragment.style.width =
+                            `${layout.width}px`;
+
+                        fragment.style.maxWidth =
+                            `${layout.maxWidth}px`;
+
+                        fragment.style.marginLeft =
+                            `${layout.marginLeft}px`;
+
+                        fragment.style.textAlign =
+                            layout.align;
+
+                        const fragmentWrapper =
+                            this.createFragmentWrapper(
+                                paragraph,
+                                isFirstFragment
+                            );
+
+                        fragmentWrapper.appendChild(
+                            fragment
                         );
 
-                    currentHeight = 0;
+                        currentPage.appendChild(
+                            fragmentWrapper
+                        );
 
-                    continue;
+                        this.positionParagraphActions(
+                            fragmentWrapper,
+                            fragment
+                        );
 
-                }
+                        const fragmentHeight =
+                            fragmentWrapper
+                                .getBoundingClientRect()
+                                .height;
 
+                        currentHeight +=
+                            fragmentHeight;
+
+                        lineIndex +=
+                            bestLines;
+
+                    }
 
             }
 
