@@ -5,6 +5,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import type { Dispatch, SetStateAction } from "react";
+import type { SearchResult } from "../../services/SearchService";
 // -------------------------------------- //
 type Props = {
   onNew: () => void;
@@ -16,7 +17,7 @@ type Props = {
   onExportPDF: () => void;
   searchTerm: string;
   setSearchTerm: (value: string) => void;
-  searchResults: number[];
+  searchResults: SearchResult[];
   currentResultIndex: number;
   onNextResult: () => void;
   onPrevResult: () => void;

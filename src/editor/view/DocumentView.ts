@@ -3243,10 +3243,11 @@ export class DocumentView {
             );
 
     }
-
+    
     // =========================================================
     // HIGHLIGHT SEARCH RESULT
     // =========================================================
+
     highlightSearchResult(
         id: number,
         term: string,
@@ -3254,313 +3255,477 @@ export class DocumentView {
         clearPrevious: boolean = true,
         scrollToActive: boolean = true,
         caseSensitive: boolean = false,
-        ignoreAccents: boolean = true
+        ignoreAccents: boolean = true,
+        occurrenceIndex: number = 0
     ) {
 
-        if (clearPrevious) {
+            if (clearPrevious) {
 
-            this.clearSearchHighlights();
+        this.clearSearchHighlights();
 
-        }
+    }
 
-        if (!term.trim()) {
+    if (!term.trim()) {
 
-            return;
+        return;
 
-        }
+    }
 
-        const paragraph =
-            this.getParagraphElementById(id);
+    // -------------------------------------------------
+    // TEXTO LÓGICO ORIGINAL DO PARÁGRAFO
+    // -------------------------------------------------
 
-        if (!paragraph) {
+    const paragraphData =
+        this.paragraphs.find(
+            paragraph =>
+                paragraph.id === id
+        );
 
-            return;
+    if (!paragraphData) {
 
-        }
+        return;
 
-        const text =
-            paragraph.textContent ?? "";
+    }
 
-        // -------------------------------------------------
-        // NORMALIZAÇÃO
-        // -------------------------------------------------
+    const text =
+        paragraphData.content;
 
-        const normalize = (value: string) => {
+    // -------------------------------------------------
+    // FRAGMENTOS VISUAIS
+    // -------------------------------------------------
+    //
+    // Não usamos getParagraphFragments() porque esse
+    // método não pertence ao DocumentView.
+    //
+    // Procuramos diretamente os fragmentos que possuem
+    // startOffset e endOffset.
+    // -------------------------------------------------
 
-            let result = value;
+    const allElements =
+        Array.from(
+            this.root.querySelectorAll(
+                `p[data-paragraph-id="${id}"], p[data-id="${id}"]`
+            )
+        ) as HTMLParagraphElement[];
 
-            if (ignoreAccents) {
+    const fragments =
+        allElements.filter(
+            fragment =>
+                fragment.dataset.startOffset !== undefined &&
+                fragment.dataset.endOffset !== undefined
+        );
 
-                result =
-                    result
-                        .normalize("NFD")
-                        .replace(
-                            /[\u0300-\u036f]/g,
-                            ""
-                        );
+    if (fragments.length === 0) {
 
-            }
+        return;
 
-            if (!caseSensitive) {
+    }
 
-                result =
-                    result.toLocaleLowerCase();
+    // -------------------------------------------------
+    // ORDENA OS FRAGMENTOS PELO OFFSET LÓGICO
+    // -------------------------------------------------
 
-            }
+    fragments.sort(
+        (
+            a: HTMLParagraphElement,
+            b: HTMLParagraphElement
+        ) => {
 
-            return result;
-
-        };
-
-        // -------------------------------------------------
-        // TEXTO NORMALIZADO
-        // -------------------------------------------------
-
-        const normalizedText =
-            normalize(text);
-
-        const normalizedTerm =
-            normalize(term);
-
-        if (!normalizedTerm) {
-
-            return;
-
-        }
-
-        // -------------------------------------------------
-        // ENCONTRA OCORRÊNCIAS
-        // -------------------------------------------------
-
-        const matches: {
-            start: number;
-            end: number;
-        }[] = [];
-
-        let searchStart = 0;
-
-        while (true) {
-
-            const index =
-                normalizedText.indexOf(
-                    normalizedTerm,
-                    searchStart
+            const startA =
+                Number(
+                    a.dataset.startOffset ?? 0
                 );
 
-            if (index === -1) {
+            const startB =
+                Number(
+                    b.dataset.startOffset ?? 0
+                );
+
+            return startA - startB;
+
+        }
+    );
+
+    // -------------------------------------------------
+    // NORMALIZAÇÃO
+    // -------------------------------------------------
+
+    const normalize = (
+        value: string
+    ) => {
+
+        let result =
+            value;
+
+        if (ignoreAccents) {
+
+            result =
+                result
+                    .normalize("NFD")
+                    .replace(
+                        /[\u0300-\u036f]/g,
+                        ""
+                    );
+
+        }
+
+        if (!caseSensitive) {
+
+            result =
+                result.toLocaleLowerCase();
+
+        }
+
+        return result;
+
+    };
+
+    // -------------------------------------------------
+    // TEXTO NORMALIZADO
+    // -------------------------------------------------
+
+    const normalizedText =
+        normalize(text);
+
+    const normalizedTerm =
+        normalize(term);
+
+    if (!normalizedTerm) {
+
+        return;
+
+    }
+
+    // -------------------------------------------------
+    // ENCONTRA TODAS AS OCORRÊNCIAS
+    // -------------------------------------------------
+
+    const matches: {
+        start: number;
+        end: number;
+        index: number;
+    }[] = [];
+
+    let searchStart =
+        0;
+
+    let matchIndex =
+        0;
+
+    while (true) {
+
+        const index =
+            normalizedText.indexOf(
+                normalizedTerm,
+                searchStart
+            );
+
+        if (index === -1) {
+
+            break;
+
+        }
+
+        // -------------------------------------------------
+        // CONVERTE OFFSET NORMALIZADO
+        // PARA OFFSET ORIGINAL
+        // -------------------------------------------------
+
+        let originalStart =
+            -1;
+
+        let originalEnd =
+            -1;
+
+        let normalizedPosition =
+            0;
+
+        for (
+            let originalIndex = 0;
+            originalIndex < text.length;
+            originalIndex++
+        ) {
+
+            const normalizedCharacter =
+                normalize(
+                    text[originalIndex]
+                );
+
+            const characterLength =
+                normalizedCharacter.length;
+
+            if (
+                normalizedPosition === index &&
+                originalStart === -1
+            ) {
+
+                originalStart =
+                    originalIndex;
+
+            }
+
+            normalizedPosition +=
+                characterLength;
+
+            if (
+                normalizedPosition >=
+                index +
+                normalizedTerm.length
+            ) {
+
+                originalEnd =
+                    originalIndex + 1;
 
                 break;
 
             }
 
-            // -------------------------------------------------
-            // IMPORTANTE:
-            //
-            // normalizedText pode ter tamanho diferente
-            // do texto original por causa dos acentos.
-            //
-            // Por isso não podemos simplesmente usar:
-            //
-            // index + term.length
-            //
-            // -------------------------------------------------
-
-            let originalStart = -1;
-
-            let originalEnd = -1;
-
-            let normalizedPosition = 0;
-
-            for (
-                let originalIndex = 0;
-                originalIndex < text.length;
-                originalIndex++
-            ) {
-
-                const normalizedCharacter =
-                    normalize(
-                        text[originalIndex]
-                    );
-
-                const characterLength =
-                    normalizedCharacter.length;
-
-                if (
-                    normalizedPosition === index &&
-                    originalStart === -1
-                ) {
-
-                    originalStart =
-                        originalIndex;
-
-                }
-
-                normalizedPosition +=
-                    characterLength;
-
-                if (
-                    normalizedPosition >=
-                    index +
-                    normalizedTerm.length
-                ) {
-
-                    originalEnd =
-                        originalIndex + 1;
-
-                    break;
-
-                }
-
-            }
-
-            if (
-                originalStart !== -1 &&
-                originalEnd !== -1
-            ) {
-
-                matches.push({
-
-                    start:
-                        originalStart,
-
-                    end:
-                        originalEnd,
-
-                });
-
-            }
-
-            searchStart =
-                index +
-                normalizedTerm.length;
-
         }
-
-        if (matches.length === 0) {
-
-            return;
-
-        }
-
-        // -------------------------------------------------
-        // RECONSTRÓI O PARÁGRAFO
-        // -------------------------------------------------
-
-        const fragment =
-            document.createDocumentFragment();
-
-        let position = 0;
-
-        matches.forEach(
-            (match, index) => {
-
-                // -----------------------------------------
-                // TEXTO ANTES DO MATCH
-                // -----------------------------------------
-
-                if (
-                    match.start >
-                    position
-                ) {
-
-                    fragment.appendChild(
-                        document.createTextNode(
-                            text.slice(
-                                position,
-                                match.start
-                            )
-                        )
-                    );
-
-                }
-
-                // -----------------------------------------
-                // HIGHLIGHT
-                // -----------------------------------------
-
-                const highlight =
-                    document.createElement(
-                        "span"
-                    );
-
-                highlight.className =
-                    "search-highlight";
-
-                if (
-                    active &&
-                    index === 0
-                ) {
-
-                    highlight.classList.add(
-                        "search-highlight-active"
-                    );
-
-                }
-
-                highlight.textContent =
-                    text.slice(
-                        match.start,
-                        match.end
-                    );
-
-                fragment.appendChild(
-                    highlight
-                );
-
-                position =
-                    match.end;
-
-            }
-        );
-
-        // ---------------------------------------------
-        // TEXTO DEPOIS DO ÚLTIMO MATCH
-        // ---------------------------------------------
 
         if (
-            position <
-            text.length
+            originalStart !== -1 &&
+            originalEnd !== -1
         ) {
 
-            fragment.appendChild(
+            matches.push({
+
+                start:
+                    originalStart,
+
+                end:
+                    originalEnd,
+
+                index:
+                    matchIndex,
+
+            });
+
+            matchIndex++;
+
+        }
+
+        searchStart =
+            index +
+            normalizedTerm.length;
+
+    }
+
+    if (matches.length === 0) {
+
+        return;
+
+    }
+
+    // -------------------------------------------------
+    // OCORRÊNCIA ATIVA
+    // -------------------------------------------------
+
+    const activeMatch =
+        matches[occurrenceIndex];
+
+    // -------------------------------------------------
+    // PROCESSA CADA FRAGMENTO VISUAL
+    // -------------------------------------------------
+
+    for (
+        const fragment of fragments
+    ) {
+
+        const fragmentStart =
+            Number(
+                fragment.dataset.startOffset ?? 0
+            );
+
+        const fragmentEnd =
+            Number(
+                fragment.dataset.endOffset ?? 0
+            );
+
+        const fragmentText =
+            text.slice(
+                fragmentStart,
+                fragmentEnd
+            );
+
+        if (!fragmentText) {
+
+            continue;
+
+        }
+
+        // -------------------------------------------------
+        // MATCHES QUE PERTENCEM A ESTE FRAGMENTO
+        // -------------------------------------------------
+
+        const fragmentMatches =
+            matches.filter(
+                match =>
+                    match.start < fragmentEnd &&
+                    match.end > fragmentStart
+            );
+
+        if (
+            fragmentMatches.length === 0
+        ) {
+
+            continue;
+
+        }
+
+        // -------------------------------------------------
+        // RECONSTRÓI O FRAGMENTO
+        // -------------------------------------------------
+
+        const content =
+            document.createDocumentFragment();
+
+        let localPosition =
+            0;
+
+        for (
+            const match of fragmentMatches
+        ) {
+
+            // -------------------------------------------------
+            // OFFSET GLOBAL → OFFSET LOCAL
+            // -------------------------------------------------
+
+            const localStart =
+                Math.max(
+                    0,
+                    match.start -
+                    fragmentStart
+                );
+
+            const localEnd =
+                Math.min(
+                    fragmentText.length,
+                    match.end -
+                    fragmentStart
+                );
+
+            // -------------------------------------------------
+            // TEXTO ANTES DO MATCH
+            // -------------------------------------------------
+
+            if (
+                localStart >
+                localPosition
+            ) {
+
+                content.appendChild(
+                    document.createTextNode(
+                        fragmentText.slice(
+                            localPosition,
+                            localStart
+                        )
+                    )
+                );
+
+            }
+
+            // -------------------------------------------------
+            // HIGHLIGHT
+            // -------------------------------------------------
+
+            const highlight =
+                document.createElement(
+                    "span"
+                );
+
+            highlight.className =
+                "search-highlight";
+
+            // -------------------------------------------------
+            // SOMENTE A OCORRÊNCIA ATIVA
+            // -------------------------------------------------
+
+            if (
+                active &&
+                activeMatch &&
+                match.index ===
+                activeMatch.index
+            ) {
+
+                highlight.classList.add(
+                    "search-highlight-active"
+                );
+
+            }
+
+            highlight.textContent =
+                fragmentText.slice(
+                    localStart,
+                    localEnd
+                );
+
+            content.appendChild(
+                highlight
+            );
+
+            localPosition =
+                localEnd;
+
+        }
+
+        // -------------------------------------------------
+        // TEXTO DEPOIS DO ÚLTIMO MATCH
+        // -------------------------------------------------
+
+        if (
+            localPosition <
+            fragmentText.length
+        ) {
+
+            content.appendChild(
                 document.createTextNode(
-                    text.slice(
-                        position
+                    fragmentText.slice(
+                        localPosition
                     )
                 )
             );
 
         }
 
-        // ---------------------------------------------
-        // APLICA
-        // ---------------------------------------------
+        // -------------------------------------------------
+        // APLICA AO FRAGMENTO
+        // -------------------------------------------------
 
-        paragraph.replaceChildren(
-            fragment
+        fragment.replaceChildren(
+            content
         );
 
-        // ---------------------------------------------
-        // SCROLL
-        // ---------------------------------------------
+    }
 
-        if (scrollToActive) {
+    // -------------------------------------------------
+    // SCROLL PARA O RESULTADO ATIVO
+    // -------------------------------------------------
+    if (scrollToActive) {
 
-            const activeHighlight =
-                paragraph.querySelector(
-                    ".search-highlight-active"
-                );
+            requestAnimationFrame(() => {
 
-            activeHighlight?.scrollIntoView({
+                const activeHighlight =
+                    this.root.querySelector(
+                        ".search-highlight-active"
+                    );
 
-                behavior: "smooth",
+                if (!activeHighlight) {
 
-                block: "center",
+                    return;
+
+                }
+
+                activeHighlight.scrollIntoView({
+
+                    behavior: "smooth",
+
+                    block: "center",
+
+                });
 
             });
 
         }
-
     }
     // ----------------------------------------------------- //
 }

@@ -8,16 +8,6 @@
 // Converte o texto para uma forma usada somente
 // durante a comparação da busca.
 //
-// 1. NFD separa letras de seus acentos.
-// 2. O replace remove as marcas de acentuação.
-// 3. toLowerCase torna a busca case insensitive.
-//
-// Exemplo:
-//
-// "João" → "joao"
-// "JOÃO" → "joao"
-// "José" → "jose"
-//
 // O texto original do documento NÃO é alterado.
 // =====================================================
 
@@ -31,6 +21,32 @@ export type SearchOccurrence = {
     end: number;
 
 };
+
+// =====================================================
+// RESULTADO DE BUSCA
+// =====================================================
+//
+// Cada resultado representa UMA ocorrência.
+//
+// Um mesmo parágrafo pode aparecer várias vezes:
+//
+// [
+//     { paragraphId: 10, occurrenceIndex: 0 },
+//     { paragraphId: 10, occurrenceIndex: 1 },
+//     { paragraphId: 10, occurrenceIndex: 2 },
+// ]
+//
+// =====================================================
+
+export type SearchResult = {
+
+    paragraphId: number;
+
+    occurrenceIndex: number;
+
+};
+
+// --------------------------------------------------- //
 
 export class SearchService {
 
@@ -81,6 +97,7 @@ export class SearchService {
     // =====================================================
     // MÉTODO PARA LOCALIZAR POSIÇÕES
     // =====================================================
+
     findOccurrences(
         text: string,
         term: string,
@@ -103,7 +120,11 @@ export class SearchService {
         // MANTENDO O MAPA PARA AS POSIÇÕES ORIGINAIS
         // -------------------------------------------------
 
-        for (let i = 0; i < text.length; i++) {
+        for (
+            let i = 0;
+            i < text.length;
+            i++
+        ) {
 
             let character =
                 text[i];
@@ -134,7 +155,9 @@ export class SearchService {
                 normalizedText +=
                     normalizedCharacter;
 
-                originalPositions.push(i);
+                originalPositions.push(
+                    i
+                );
 
             }
 
@@ -217,13 +240,27 @@ export class SearchService {
     // =====================================================
     // BUSCA
     // =====================================================
+    //
+    // ANTES:
+    //
+    //   number[]
+    //
+    // Cada parágrafo aparecia apenas uma vez.
+    //
+    // AGORA:
+    //
+    //   SearchResult[]
+    //
+    // Cada ocorrência vira um resultado independente.
+    //
+    // =====================================================
 
     search(
         blocks: ScriptBlock[],
         term: string,
         caseSensitive: boolean = false,
         ignoreAccents: boolean = true
-    ): number[] {
+    ): SearchResult[] {
 
         if (!term.trim()) {
 
@@ -231,33 +268,49 @@ export class SearchService {
 
         }
 
-        const normalizedTerm =
-            this.normalizeSearchText(
-                term,
-                caseSensitive,
-                ignoreAccents
-            );
+        const results:
+            SearchResult[] = [];
 
-        return blocks
-            .filter(
-                block => {
+        // -------------------------------------------------
+        // PERCORRE OS BLOCOS NA ORDEM DO DOCUMENTO
+        // -------------------------------------------------
 
-                    const normalizedContent =
-                        this.normalizeSearchText(
-                            block.content,
-                            caseSensitive,
-                            ignoreAccents
-                        );
+        for (
+            const block of blocks
+        ) {
 
-                    return normalizedContent.includes(
-                        normalizedTerm
-                    );
+            const occurrences =
+                this.findOccurrences(
+                    block.content,
+                    term,
+                    caseSensitive,
+                    ignoreAccents
+                );
 
-                }
-            )
-            .map(
-                block => block.id
-            );
+            // -------------------------------------------------
+            // CADA OCORRÊNCIA É UM RESULTADO
+            // -------------------------------------------------
+
+            for (
+                let occurrenceIndex = 0;
+                occurrenceIndex < occurrences.length;
+                occurrenceIndex++
+            ) {
+
+                results.push({
+
+                    paragraphId:
+                        block.id,
+
+                    occurrenceIndex,
+
+                });
+
+            }
+
+        }
+
+        return results;
 
     }
 

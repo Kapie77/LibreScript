@@ -298,16 +298,18 @@ export default function EditorPage({
                 return;
             }
 
-            const currentId =
+            const currentResult =
                 searchResults[currentResultIndex];
 
-            if (currentId === undefined) {
+            if (currentResult === undefined) {
+
                 return;
+
             }
 
             engine.replaceCurrentSearchResult(
 
-                currentId,
+                currentResult.paragraphId,
 
                 searchTerm,
 
@@ -315,9 +317,12 @@ export default function EditorPage({
 
                 caseSensitive,
 
-                ignoreAccents
+                ignoreAccents,
+
+                currentResult.occurrenceIndex
 
             );
+
         }}
 
           onReplaceAll={() => {

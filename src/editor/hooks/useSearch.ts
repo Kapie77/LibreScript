@@ -25,6 +25,7 @@ import {
 
 import { EditorEngine } from "../../editor/engine/EditorEngine";
 import type { ScriptBlock } from "../../types/script";
+import type { SearchResult } from "../services/SearchService";
 
 // -------------------------------------------------------- //
 
@@ -70,8 +71,7 @@ export function useSearch({
     // RESULTADOS
     // =====================================================
 
-    const [searchResults, setSearchResults] =
-        useState<number[]>([]);
+    const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
 
     const [currentResultIndex, setCurrentResultIndex] =
         useState(0);

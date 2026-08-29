@@ -8,7 +8,10 @@ import { DocumentModel } from "../model/DocumentModel";
 
 import { CommandExecutor } from "../commands/CommandExecutor";
 import { StatisticsService } from "../services/StatisticsService";
-import { SearchService } from "../services/SearchService";
+import {
+    SearchService,
+    type SearchResult,
+} from "../services/SearchService";
 import { DocumentView } from "../view/DocumentView";
 
 import { HistoryManager } from "../history/HistoryManager";
@@ -375,12 +378,15 @@ saveProject() {
     }
     // -------------- //
 
-     // Search //
+    // =====================================================
+    // SEARCH
+    // =====================================================
+
     searchBlocks(
         term: string,
         caseSensitive: boolean = false,
         ignoreAccents: boolean = true
-    ): number[] {
+    ): SearchResult[] {
 
         return this.search.search(
             this.getBlocks(),
@@ -390,7 +396,6 @@ saveProject() {
         );
 
     }
-    // ----------------- //
 
     // =====================================================
     // REPLACE CURRENT SEARCH RESULT
@@ -401,7 +406,8 @@ saveProject() {
         searchTerm: string,
         replacement: string,
         caseSensitive: boolean = false,
-        ignoreAccents: boolean = true
+        ignoreAccents: boolean = true,
+        occurrenceIndex: number = 0
     ) {
 
         if (!searchTerm.trim()) {
@@ -438,8 +444,11 @@ saveProject() {
 
         }
 
-        const occurrence =
-            occurrences[0];
+        const occurrence = occurrences[occurrenceIndex];
+
+        if (!occurrence) {
+            return;
+        }
 
         const removedText =
             paragraph.content.slice(
@@ -470,20 +479,24 @@ saveProject() {
     // =========================================================
 
     highlightSearchResult(
-        id: number,
+        result: SearchResult,
         term: string,
+        active: boolean = true,
+        clearPrevious: boolean = true,
+        scrollToActive: boolean = true,
         caseSensitive: boolean = false,
         ignoreAccents: boolean = true
     ) {
 
         this.documentView?.highlightSearchResult(
-            id,
+            result.paragraphId,
             term,
-            true,
-            true,
-            true,
+            active,
+            clearPrevious,
+            scrollToActive,
             caseSensitive,
-            ignoreAccents
+            ignoreAccents,
+            result.occurrenceIndex
         );
 
     }
@@ -495,9 +508,12 @@ saveProject() {
 
     }
 
-    // highlightAllSearchResults
+    // =========================================================
+    // HIGHLIGHT ALL SEARCH RESULTS
+    // =========================================================
+
     highlightSearchResults(
-        ids: number[],
+        results: SearchResult[],
         activeIndex: number,
         term: string,
         caseSensitive: boolean = false,
@@ -538,20 +554,76 @@ saveProject() {
         this.documentView?.clearSearchHighlights();
 
         // -----------------------------------------------------
-        // DESTACA TODOS OS RESULTADOS
+        // AGRUPA OS RESULTADOS POR PARÁGRAFO
         // -----------------------------------------------------
 
-        ids.forEach(
-            (id, index) => {
+        const resultsByParagraph =
+            new Map<number, SearchResult[]>();
+
+        results.forEach(
+            result => {
+
+                const existing =
+                    resultsByParagraph.get(
+                        result.paragraphId
+                    );
+
+                if (existing) {
+
+                    existing.push(result);
+
+                } else {
+
+                    resultsByParagraph.set(
+                        result.paragraphId,
+                        [result]
+                    );
+
+                }
+
+            }
+        );
+
+        // -----------------------------------------------------
+        // LOCALIZA A OCORRÊNCIA ATIVA
+        // -----------------------------------------------------
+
+        const activeResult =
+            results[activeIndex];
+
+        // -----------------------------------------------------
+        // DESTACA CADA PARÁGRAFO UMA ÚNICA VEZ
+        // -----------------------------------------------------
+
+        resultsByParagraph.forEach(
+            paragraphResults => {
+
+                const paragraphId =
+                    paragraphResults[0]?.paragraphId;
+
+                if (paragraphId === undefined) {
+
+                    return;
+
+                }
+
+                const isActiveParagraph =
+                    activeResult?.paragraphId === paragraphId;
+
+                const activeOccurrenceIndex =
+                    isActiveParagraph
+                        ? activeResult.occurrenceIndex
+                        : -1;
 
                 this.documentView?.highlightSearchResult(
-                    id,
+                    paragraphId,
                     term,
-                    index === activeIndex,
+                    isActiveParagraph,
                     false,
-                    false,
+                    isActiveParagraph,
                     caseSensitive,
-                    ignoreAccents
+                    ignoreAccents,
+                    activeOccurrenceIndex
                 );
 
             }
@@ -575,13 +647,12 @@ saveProject() {
 
         if (
             editorHasFocus &&
-            activeIndex >= 0 &&
-            activeIndex < ids.length
+            activeResult
         ) {
 
             const paragraph =
                 this.getParagraphElementById(
-                    ids[activeIndex]
+                    activeResult.paragraphId
                 );
 
             const activeHighlight =
@@ -590,8 +661,11 @@ saveProject() {
                 );
 
             activeHighlight?.scrollIntoView({
+
                 behavior: "smooth",
+
                 block: "center",
+
             });
 
         }
