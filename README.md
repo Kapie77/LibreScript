@@ -189,6 +189,12 @@ Por exemplo:
 }
 ```
 
+6. Precisamos apenas garantir que os pacotes JavaScript correspondentes também estejam instalados agora:
+```bash
+npm install @tauri-apps/plugin-dialog @tauri-apps/plugin-fs
+```
+Se eles já estiverem instalados, o npm simplesmente vai manter as versões existentes.
+
 ## Como iniciar o projeto no servidor
 **[Navegador]**
 Digite no terminal do Visual Studio Code:
