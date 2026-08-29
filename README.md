@@ -61,8 +61,146 @@ npm install
 ```
 Em "Select a framework" desce e selecione "React". No "Select a variant" escolha "TypeScript".
 
+# COMO INSTALAR O TAURI E OUTRAS DEPENDÊNCIAS
+No Windows, o Tauri exige: Rust, Microsoft C++ Build Tools, WebView2.
+O WebView2 normalmente já está instalado no Windows 10/11, e o Tauri o utiliza para renderizar a interface do aplicativo.
+Como nosso frontend já é React + Vite, Node/npm você já tem.
+
+## Instalar o Rust
+No PowerShell, você pode usar o winget, que é o método indicado na documentação do Tauri:
+
+```winget install --id Rustlang.Rustup```
+
+Se aparecer uma pergunta de confirmação, aceite.
+
+Durante a instalação, se aparecer a escolha do toolchain, queremos MSVC, normalmente:
+
+```x86_64-pc-windows-msvc```
+
+Esse é o importante para o nosso Windows 64-bit.
+
+## Instalar o Microsoft C++ Build Tools
+Vamos instalar pelo site oficial da Microsoft:
+- [Visual Studio Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/)
+
+Na instalação, procure a carga de trabalho:
+
+Desenvolvimento para desktop com C++
+(em inglês, Desktop development with C++)
+
+Marque essa opção.
+
+Dentro dela, deixe selecionados os componentes recomendados. O importante é termos:
+
+- MSVC — C++ build tools
+- Windows 10/11 SDK
+- ferramentas CMake
+
+O Tauri lista o Desktop development with C++ como requisito para desenvolvimento no Windows.
+
+## Instalar Tauri CLI
+```cd C:\Users\User\LibreScript```
+```npm install --save-dev @tauri-apps/cli@latest```
+
+Ver se isntalou digite:
+```npx tauri --version```
+
+Se aparecer algo como abaixo tá instalado:
+tauri-cli 2.11.4
+
+## Inicializar o Tauri no LibreScript
+Agora vamos fazer o Tauri entrar no projeto React/Vite que já existe, sem recriar o LibreScript.
+Na mesma pasta, rode:
+```npx tauri init```
+Ele vai fazer algumas perguntas no terminal. Não responda aleatoriamente, porque precisamos configurar corretamente para o nosso Vite.
+
+**Configuração que você deve fazer:**
+- What is your app name? · LibreScript
+- What should the window title be? · LibreScript
+- Where are your web assets (HTML/CSS/JS) located, relative to the "<current dir>/src-tauri/tauri.conf.json" file that will be created? › ../build
+(Aqui não deixe ../build. Como nosso projeto é Vite, a pasta de saída padrão é dist. Digite ../)
+- What is the url of your dev server? › http://localhost:5173/ (coloque o IP que o vscode passa pra ti)
+- What is your frontend dev command? › npm run dev
+- What is your frontend build command? › npm run build
+
+## Configurando os arquivos
+1. O identificador ainda está como padrão:
+```"identifier": "com.tauri.dev"```
+Vamos trocar para algo próprio do LibreScript, por exemplo:
+```"identifier": "com.librescript.app"```
+No **tauri.conf.json**, na pasta "src-tauri", altere somente essa linha.
+Depois salve.
+
+2. Abra o **package.json** do LibreScript e procure:
+"scripts": {
+
+Provavelmente está parecido com:
+
+```bash
+    "scripts": {
+      "dev": "vite",
+      "build": "tsc -b && vite build",
+      ...
+    }
+```
+
+Adicione esta linha dentro de "scripts":
+
+```"tauri": "tauri"```
+
+Por exemplo:
+```bash
+    "scripts": {
+      "dev": "vite",
+      "build": "tsc -b && vite build",
+      "tauri": "tauri"
+    }
+```
+
+3. Instalar API JS do Tauri
+```cd C:\Users\User\LibreScript```
+```npm install @tauri-apps/api```
+
+4. Instalar outras dependencias
+```npm install @tauri-apps/plugin-dialog @tauri-apps/plugin-fs```
+
+```npm run tauri add dialog```
+
+```npm run tauri add fs```
+
+5. Mude o arquivo ```src-tauri/capabilities/default.json``` para isso:
+```bash
+{
+    "$schema": "../gen/schemas/desktop-schema.json",
+    "identifier": "default",
+    "description": "enables the default permissions",
+    "windows": [
+        "main"
+    ],
+
+    "permissions": [
+        "core:default",
+        "dialog:default",
+        "fs:allow-read-text-file",
+        "fs:allow-write-text-file",
+        "fs:allow-write-file",
+        "core:window:allow-set-title"
+    ]
+}
+```
+
 ## Como iniciar o projeto no servidor
+**[Navegador]**
 Digite no terminal do Visual Studio Code:
 ```bash
 npm run dev
+```
+
+**[App Desktop]**
+Digite no Power Shell:
+```bash
+cd + caminho da pasta libre script
+```
+```bash
+npm run tauri dev
 ```
