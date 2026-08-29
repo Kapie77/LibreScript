@@ -46,8 +46,10 @@ function composeLines(
     measure: TextMeasurer
 ): string[] {
 
-    if (!text.trim()) {
+    if (text.length === 0) {
+
         return [""];
+
     }
 
     const lines: string[] = [];
@@ -63,7 +65,13 @@ function composeLines(
 
     for (const paragraph of paragraphs) {
 
-        if (paragraph === "") {
+        /*
+        ---------------------------------------------------
+        Parágrafo vazio
+        ---------------------------------------------------
+        */
+
+        if (paragraph.length === 0) {
 
             lines.push("");
 
@@ -71,26 +79,176 @@ function composeLines(
 
         }
 
-        const words =
-            paragraph.split(/\s+/);
+        /*
+        ---------------------------------------------------
+        IMPORTANTE:
+        
+        Não usamos mais:
+        
+            paragraph.split(/\s+/)
+        
+        porque isso destruiria múltiplos espaços.
+        
+        Em vez disso, separamos:
+        
+        - palavras
+        - sequências de espaços
+        
+        Assim:
+        
+        "Olá,       mundo"
+        
+        continua sendo:
+        
+        "Olá,"
+        "       "
+        "mundo"
+        ---------------------------------------------------
+        */
+
+        const tokens =
+            paragraph.match(
+                /\S+|[ \t]+/g
+            ) ?? [];
 
         let currentLine = "";
 
-        for (const word of words) {
+        for (const token of tokens) {
 
             /*
             ------------------------------------------------
-            Palavra normal
+            TOKEN DE ESPAÇOS
+            ------------------------------------------------
+            */
+
+            if (
+                /^[ \t]+$/.test(token)
+            ) {
+
+                const candidate =
+                    currentLine +
+                    token;
+
+                if (
+                    measure(candidate) <=
+                    maxWidth
+                ) {
+
+                    currentLine =
+                        candidate;
+
+                    continue;
+
+                }
+
+                /*
+                --------------------------------------------
+                Os espaços não couberam.
+                
+                Mantemos a linha atual exatamente como está
+                e começamos a próxima com os espaços.
+                --------------------------------------------
+                */
+
+                if (
+                    currentLine !== ""
+                ) {
+
+                    lines.push(
+                        currentLine
+                    );
+
+                    currentLine = "";
+
+                }
+
+                /*
+                --------------------------------------------
+                Se os próprios espaços forem maiores que a
+                largura disponível, quebramos a sequência.
+                --------------------------------------------
+                */
+
+                let remainingSpaces =
+                    token;
+
+                while (
+                    remainingSpaces.length > 0
+                ) {
+
+                    let chunk = "";
+
+                    for (
+                        const character
+                        of remainingSpaces
+                    ) {
+
+                        const candidateChunk =
+                            chunk +
+                            character;
+
+                        if (
+                            measure(
+                                candidateChunk
+                            ) <= maxWidth
+                        ) {
+
+                            chunk =
+                                candidateChunk;
+
+                        } else {
+
+                            break;
+
+                        }
+
+                    }
+
+                    /*
+                    ----------------------------------------
+                    Proteção contra TextMeasurer incapaz de
+                    medir sequer um espaço.
+                    ----------------------------------------
+                    */
+
+                    if (
+                        chunk.length === 0
+                    ) {
+
+                        chunk =
+                            remainingSpaces.charAt(0);
+
+                    }
+
+                    lines.push(
+                        chunk
+                    );
+
+                    remainingSpaces =
+                        remainingSpaces.slice(
+                            chunk.length
+                        );
+
+                }
+
+                continue;
+
+            }
+
+            /*
+            ------------------------------------------------
+            TOKEN DE PALAVRA
             ------------------------------------------------
             */
 
             const candidate =
                 currentLine === ""
-                    ? word
-                    : currentLine + " " + word;
+                    ? token
+                    : currentLine + token;
 
             if (
-                measure(candidate) <= maxWidth
+                measure(candidate) <=
+                maxWidth
             ) {
 
                 currentLine =
@@ -102,12 +260,13 @@ function composeLines(
 
             /*
             ------------------------------------------------
-            Se a palavra inteira não couber, precisamos
-            quebrá-la em partes.
+            A palavra não coube.
             ------------------------------------------------
             */
 
-            if (currentLine !== "") {
+            if (
+                currentLine !== ""
+            ) {
 
                 lines.push(
                     currentLine
@@ -119,12 +278,12 @@ function composeLines(
 
             /*
             ------------------------------------------------
-            Quebra palavras gigantes sem espaços.
+            QUEBRA PALAVRAS GIGANTES
             ------------------------------------------------
             */
 
             let remaining =
-                word;
+                token;
 
             while (
                 remaining.length > 0
@@ -138,7 +297,8 @@ function composeLines(
                 ) {
 
                     const candidateChunk =
-                        chunk + character;
+                        chunk +
+                        character;
 
                     if (
                         measure(
@@ -173,9 +333,35 @@ function composeLines(
 
                 }
 
-                lines.push(
-                    chunk
-                );
+                /*
+                ------------------------------------------------
+                Se ainda existe texto depois deste chunk,
+                ele realmente é uma quebra de palavra.
+                ------------------------------------------------
+                */
+
+                if (
+                    chunk.length <
+                    remaining.length
+                ) {
+
+                    lines.push(
+                        chunk
+                    );
+
+                } else {
+
+                    /*
+                    --------------------------------------------
+                    Último pedaço da palavra.
+                    Ele pode continuar na currentLine.
+                    --------------------------------------------
+                    */
+
+                    currentLine =
+                        chunk;
+
+                }
 
                 remaining =
                     remaining.slice(
@@ -185,6 +371,12 @@ function composeLines(
             }
 
         }
+
+        /*
+        ---------------------------------------------------
+        ÚLTIMA LINHA DO PARÁGRAFO
+        ---------------------------------------------------
+        */
 
         if (
             currentLine !== ""
@@ -201,7 +393,7 @@ function composeLines(
     return lines;
 
 }
-
+// ---------------------------------------------------- //
 // ComposeBlock
 export function composeBlock(
     block: ScriptBlock,
