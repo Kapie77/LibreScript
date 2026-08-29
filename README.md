@@ -194,6 +194,7 @@ Por exemplo:
 npm install @tauri-apps/plugin-dialog @tauri-apps/plugin-fs
 ```
 Se eles já estiverem instalados, o npm simplesmente vai manter as versões existentes.
+Se aparecer **up to date, audited 187 packages in 6s** significa que o npm verificou as dependências e não precisou instalar/alterar nada, porque @tauri-apps/plugin-dialog e @tauri-apps/plugin-fs já estavam presentes na versão adequada.
 
 ## Como iniciar o projeto no servidor
 **[Navegador]**
