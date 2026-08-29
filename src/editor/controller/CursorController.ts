@@ -891,7 +891,10 @@ export class CursorController {
         }
 
         const previousId =
-            Number(previous.dataset.id);
+            Number(
+                previous.dataset.paragraphId ??
+                previous.dataset.id
+            );
 
         const previousLength =
             this.selection.getParagraphLogicalLength(
@@ -955,7 +958,10 @@ export class CursorController {
         }
 
         this.selection.setCaret(
-            Number(next.dataset.id),
+            Number(
+                next.dataset.paragraphId ??
+                next.dataset.id
+            ),
             0
         );
 
@@ -998,7 +1004,10 @@ export class CursorController {
         }
 
         const previousId =
-            Number(previous.dataset.id);
+            Number(
+                previous.dataset.paragraphId ??
+                previous.dataset.id
+            );
 
         const previousLength =
             this.selection.getParagraphLogicalLength(
@@ -1062,7 +1071,10 @@ export class CursorController {
         }
 
         this.selection.setFocus(
-            Number(next.dataset.id),
+            Number(
+                next.dataset.paragraphId ??
+                next.dataset.id
+            ),
             0
         );
 

@@ -29,13 +29,17 @@ export class SelectionManager {
         id: number
     ): HTMLParagraphElement | null {
 
-        return document.querySelector(
-            `p[data-paragraph-id="${id}"]`
-        ) as HTMLParagraphElement | null;
+        const fragments =
+            this.getParagraphFragments(id);
+
+        return fragments[0] ?? null;
 
     }
 
-    // getParagraphFragments //
+    // =========================================================
+    // GET PARAGRAPH FRAGMENTS
+    // =========================================================
+
     private getParagraphFragments(
         paragraphId: number
     ): HTMLParagraphElement[] {
@@ -43,28 +47,48 @@ export class SelectionManager {
         const all =
             Array.from(
                 document.querySelectorAll(
-                    `p[data-paragraph-id="${paragraphId}"], p[data-id="${paragraphId}"]`
+                    `p[data-paragraph-id="${paragraphId}"]`
                 )
             ) as HTMLParagraphElement[];
 
-        // Remove possíveis duplicados
-        const unique =
-            Array.from(
-                new Set(all)
+        // -----------------------------------------------------
+        // SOMENTE FRAGMENTOS REAIS
+        // -----------------------------------------------------
+        //
+        // O <p> original possui apenas data-id.
+        //
+        // Os fragmentos criados pela paginação possuem:
+        //
+        // data-paragraph-id
+        // data-start-offset
+        // data-end-offset
+        //
+        // Portanto, usamos os offsets para excluir qualquer
+        // elemento que não seja um fragmento visual.
+        // -----------------------------------------------------
+
+        const fragments =
+            all.filter(
+                paragraph =>
+                    paragraph.dataset.startOffset !== undefined &&
+                    paragraph.dataset.endOffset !== undefined
             );
 
-        // Garante a ordem visual/lógica
-        unique.sort(
+        // -----------------------------------------------------
+        // ORDEM VISUAL / LÓGICA
+        // -----------------------------------------------------
+
+        fragments.sort(
             (a, b) => {
 
                 const startA =
                     Number(
-                        a.dataset.startOffset ?? 0
+                        a.dataset.startOffset
                     );
 
                 const startB =
                     Number(
-                        b.dataset.startOffset ?? 0
+                        b.dataset.startOffset
                     );
 
                 return startA - startB;
@@ -72,7 +96,7 @@ export class SelectionManager {
             }
         );
 
-        return unique;
+        return fragments;
 
     }
 
@@ -186,11 +210,9 @@ export class SelectionManager {
         }
 
         const fragments =
-            Array.from(
-                document.querySelectorAll(
-                    `p[data-paragraph-id="${paragraphId}"]`
-                )
-            ) as HTMLParagraphElement[];
+            this.getParagraphFragments(
+                Number(paragraphId)
+            );
 
         if (fragments.length === 0) {
 
@@ -198,33 +220,50 @@ export class SelectionManager {
 
         }
 
-        let length = 0;
+        let logicalLength = 0;
 
         for (const fragment of fragments) {
 
-            const endOffset =
+            const start =
                 Number(
-                    fragment.dataset.endOffset
+                    fragment.dataset.startOffset ?? 0
                 );
 
-            if (Number.isFinite(endOffset)) {
+            const endValue =
+                fragment.dataset.endOffset;
 
-                length =
-                    Math.max(
-                        length,
-                        endOffset
-                    );
+            if (endValue !== undefined) {
 
-            } else {
+                const end =
+                    Number(endValue);
 
-                length +=
-                    fragment.textContent?.length ?? 0;
+                if (Number.isFinite(end)) {
+
+                    logicalLength =
+                        Math.max(
+                            logicalLength,
+                            end
+                        );
+
+                    continue;
+
+                }
 
             }
 
+            logicalLength =
+                Math.max(
+                    logicalLength,
+                    start +
+                    (
+                        fragment.textContent?.length ??
+                        0
+                    )
+                );
+
         }
 
-        return length;
+        return logicalLength;
 
     }
 
@@ -484,6 +523,7 @@ export class SelectionManager {
     // CARET
     // ================================================================
 
+    // moveCaretToParagraphStart //
     moveCaretToParagraphStart(
         paragraph: HTMLParagraphElement | null
     ) {
@@ -499,6 +539,7 @@ export class SelectionManager {
 
     }
 
+    // setCaret //
     setCaret(
         paragraphId: number,
         offset: number
@@ -523,6 +564,7 @@ export class SelectionManager {
     // SELECTION
     // ================================================================
 
+    // setSelection //
     setSelection(
         anchorParagraphId: number,
         anchorOffset: number,
@@ -1294,7 +1336,6 @@ export class SelectionManager {
     // ================================================================
     // DOM POSITION
     // ================================================================
-
     private getParagraphFragmentForOffset(
         paragraphId: number,
         logicalOffset: number
@@ -1306,12 +1347,20 @@ export class SelectionManager {
             );
 
         if (fragments.length === 0) {
-
             return null;
-
         }
 
-        for (const fragment of fragments) {
+        const lastIndex =
+            fragments.length - 1;
+
+        for (
+            let i = 0;
+            i < fragments.length;
+            i++
+        ) {
+
+            const fragment =
+                fragments[i];
 
             const start =
                 Number(
@@ -1320,8 +1369,40 @@ export class SelectionManager {
 
             const end =
                 Number(
-                    fragment.dataset.endOffset ?? 0
+                    fragment.dataset.endOffset ??
+                    start +
+                    (
+                        fragment.textContent?.length ??
+                        0
+                    )
                 );
+
+            // -------------------------------------------------
+            // Fragmentos intermediários:
+            //
+            // start <= offset < end
+            // -------------------------------------------------
+
+            if (i < lastIndex) {
+
+                if (
+                    logicalOffset >= start &&
+                    logicalOffset < end
+                ) {
+
+                    return fragment;
+
+                }
+
+                continue;
+
+            }
+
+            // -------------------------------------------------
+            // Último fragmento:
+            //
+            // start <= offset <= end
+            // -------------------------------------------------
 
             if (
                 logicalOffset >= start &&
@@ -1334,9 +1415,22 @@ export class SelectionManager {
 
         }
 
-        return fragments[
-            fragments.length - 1
-        ];
+        // -----------------------------------------------------
+        // Fallback
+        // -----------------------------------------------------
+
+        if (
+            logicalOffset <
+            Number(
+                fragments[0].dataset.startOffset ?? 0
+            )
+        ) {
+
+            return fragments[0];
+
+        }
+
+        return fragments[lastIndex];
 
     }
     // ----------------------------------------------- //
@@ -1356,7 +1450,17 @@ export class SelectionManager {
             return null;
         }
 
-        for (const fragment of fragments) {
+        const lastIndex =
+            fragments.length - 1;
+
+        for (
+            let i = 0;
+            i < fragments.length;
+            i++
+        ) {
+
+            const fragment =
+                fragments[i];
 
             const start =
                 Number(
@@ -1367,29 +1471,39 @@ export class SelectionManager {
                 Number(
                     fragment.dataset.endOffset ??
                     start +
-                    (fragment.textContent?.length ?? 0)
+                    (
+                        fragment.textContent?.length ??
+                        0
+                    )
                 );
 
-            if (
-                logicalOffset >= start &&
-                (
-                    logicalOffset < end ||
-                    (
-                        logicalOffset === end &&
-                        fragment === fragments[fragments.length - 1]
-                    )
-                )
-            ) {
+            if (i < lastIndex) {
 
-                return fragment;
+                if (
+                    logicalOffset >= start &&
+                    logicalOffset < end
+                ) {
+
+                    return fragment;
+
+                }
+
+            } else {
+
+                if (
+                    logicalOffset >= start &&
+                    logicalOffset <= end
+                ) {
+
+                    return fragment;
+
+                }
 
             }
 
         }
 
-        return fragments[
-            fragments.length - 1
-        ];
+        return fragments[lastIndex];
 
     }
 
@@ -2475,7 +2589,6 @@ export class SelectionManager {
     // ================================================================
     // RENDER SELECTION
     // ================================================================
-
     private renderSelection() {
 
         const state =
@@ -2733,6 +2846,7 @@ export class SelectionManager {
         }
 
         return Number(
+            paragraph.dataset.paragraphId ??
             paragraph.dataset.id
         );
 
@@ -2792,9 +2906,19 @@ export class SelectionManager {
         const last =
             paragraphs[paragraphs.length - 1];
 
+        const lastId =
+            Number(
+                last.dataset.paragraphId ??
+                last.dataset.id
+            );
+
+        if (!Number.isFinite(lastId)) {
+            return;
+        }
+
         const end =
-            this.getParagraphTextLength(
-                last
+            this.getParagraphLogicalLength(
+                lastId
             );
 
         this.setSelection(
@@ -2802,7 +2926,7 @@ export class SelectionManager {
             anchor.paragraphId,
             anchor.offset,
 
-            Number(last.dataset.id),
+            lastId,
             end
 
         );
@@ -2863,9 +2987,19 @@ export class SelectionManager {
                     (fragment.textContent?.length ?? 0)
                 );
 
+            const isLastFragment =
+                fragment ===
+                fragments[fragments.length - 1];
+
             if (
                 clampedOffset >= start &&
-                clampedOffset <= end
+                (
+                    clampedOffset < end ||
+                    (
+                        isLastFragment &&
+                        clampedOffset === end
+                    )
+                )
             ) {
 
                 const localOffset =

@@ -485,7 +485,7 @@ export class EditController {
 
             const paragraph =
                 document.querySelector(
-                    `p[data-id="${paragraphId}"]`
+                    `p[data-paragraph-id="${paragraphId}"]`
                 ) as HTMLParagraphElement | null;
 
             if (!paragraph) {
@@ -565,33 +565,92 @@ export class EditController {
         const position =
             this.selection.getCaretOffset();
 
-        const paragraph =
-            document.querySelector(
-                `p[data-id="${paragraphId}"]`
-            ) as HTMLParagraphElement | null;
+        // --------------------------------------------------
+        // COMPRIMENTO LÓGICO DO PARÁGRAFO
+        // --------------------------------------------------
 
-        if (!paragraph) {
-            return;
-        }
-
-        const text =
-            paragraph.textContent ?? "";
+        const logicalLength =
+            this.selection.getParagraphLogicalLength(
+                paragraphId
+            );
 
         // --------------------------------------------------
         // HÁ CARACTERE À DIREITA
         // --------------------------------------------------
 
-        if (position < text.length) {
+        if (position < logicalLength) {
 
-            const deletedText =
-                text.slice(
-                    position,
-                    position + 1
-                );
+            const paragraph =
+                document.querySelector(
+                    `p[data-paragraph-id="${paragraphId}"]`
+                ) as HTMLParagraphElement | null;
+
+            if (!paragraph) {
+                return;
+            }
+
+            /*
+            * Precisamos obter o caractere usando
+            * a posição lógica, e não o textContent
+            * de um único fragmento visual.
+            */
+
+            const fragments =
+                Array.from(
+                    document.querySelectorAll(
+                        `p[data-paragraph-id="${paragraphId}"]`
+                    )
+                ) as HTMLParagraphElement[];
+
+            let deletedText = "";
+
+            for (const fragment of fragments) {
+
+                const start =
+                    Number(
+                        fragment.dataset.startOffset ?? 0
+                    );
+
+                const end =
+                    Number(
+                        fragment.dataset.endOffset ??
+                        start +
+                        (
+                            fragment.textContent?.length ??
+                            0
+                        )
+                    );
+
+                if (
+                    position >= start &&
+                    position < end
+                ) {
+
+                    const localOffset =
+                        position - start;
+
+                    const text =
+                        fragment.textContent ?? "";
+
+                    deletedText =
+                        text.slice(
+                            localOffset,
+                            localOffset + 1
+                        );
+
+                    break;
+
+                }
+
+            }
 
             if (!deletedText) {
                 return;
             }
+
+            // --------------------------------------------------
+            // EXECUTA DELETE
+            // --------------------------------------------------
 
             this.engine.execute({
 

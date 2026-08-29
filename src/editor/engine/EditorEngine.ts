@@ -620,6 +620,10 @@ saveProject() {
             return;
         }
 
+        // =========================================================
+        // DEFINE O CARET APÓS A EXECUÇÃO DO COMANDO
+        // =========================================================
+
         if (
             command.type === "MOVE_PARAGRAPH" &&
             beforeCaret

@@ -1446,6 +1446,36 @@ export class DocumentView {
 
             }
 
+            console.log(
+                "[DEBUG LINE OFFSETS]",
+                {
+                    paragraphId:
+                        element.dataset.id,
+
+                    textLength:
+                        text.length,
+
+                    lines:
+                        offsets.length,
+
+                    offsets,
+
+                    linesText:
+                        offsets.map(
+                            (line, index) => ({
+                                index,
+                                start: line.start,
+                                end: line.end,
+                                text:
+                                    text.slice(
+                                        line.start,
+                                        line.end
+                                    )
+                            })
+                        )
+                }
+            );
+
             return offsets;
 
         }
@@ -2502,6 +2532,127 @@ export class DocumentView {
                             fragmentHeight <=
                             availableHeight;
 
+                        console.log(
+                            "[DEBUG PAGINATION DECISION]",
+                            {
+                                paragraphId:
+                                    paragraph.id,
+
+                                paragraphType:
+                                    paragraph.type,
+
+                                page:
+                                    this.pages.length,
+
+                                lineIndex,
+
+                                linesToTake,
+
+                                bestLines,
+
+                                totalLines:
+                                    lineOffsets.length,
+
+                                start,
+
+                                end,
+
+                                fragmentText:
+                                    fragment.textContent,
+
+                                fragmentHeight,
+
+                                currentHeight,
+
+                                availableHeight,
+
+                                fits,
+
+                                pageContentHeight:
+                                    PAGE_EDITOR.contentHeight,
+
+                                fragmentRect:
+                                    {
+                                        top:
+                                            fragment.getBoundingClientRect().top,
+
+                                        bottom:
+                                            fragment.getBoundingClientRect().bottom,
+
+                                        height:
+                                            fragment.getBoundingClientRect().height,
+                                    },
+
+                                pageRect:
+                                    {
+                                        top:
+                                            currentPage.getBoundingClientRect().top,
+
+                                        bottom:
+                                            currentPage.getBoundingClientRect().bottom,
+
+                                        height:
+                                            currentPage.getBoundingClientRect().height,
+                                    },
+
+                                lineOffsets:
+                                    lineOffsets.map(
+                                        (line, index) => ({
+                                            index,
+
+                                            start:
+                                                line.start,
+
+                                            end:
+                                                line.end,
+
+                                            text:
+                                                element.textContent?.slice(
+                                                    line.start,
+                                                    line.end
+                                                ),
+                                        })
+                                    ),
+                            }
+                        );
+
+                        console.log(
+                            "[DEBUG CANDIDATE]",
+                            {
+                                paragraphId:
+                                    paragraph.id,
+
+                                page:
+                                    this.pages.length,
+
+                                lineIndex,
+
+                                linesToTake,
+
+                                start,
+
+                                end,
+
+                                text:
+                                    fragment.textContent,
+
+                                fragmentHeight,
+
+                                currentHeight,
+
+                                availableHeight,
+
+                                fits,
+
+                                pageBottom:
+                                    currentHeight +
+                                    fragmentHeight,
+
+                                contentHeight:
+                                    PAGE_EDITOR.contentHeight
+                            }
+                        );
+
                         // -----------------------------------------------------
                         // UMA LINHA SOZINHA PRECISA ENTRAR EM PÁGINA VAZIA
                         // -----------------------------------------------------
@@ -2793,8 +2944,49 @@ export class DocumentView {
                                 .getBoundingClientRect()
                                 .height;
 
+                        const previousHeight =
+                            currentHeight;
+
                         currentHeight +=
                             fragmentHeight;
+
+                        console.log(
+                            "[DEBUG PAGINATION FRAGMENT]",
+                            {
+                                paragraphId:
+                                    paragraph.id,
+
+                                paragraphType:
+                                    paragraph.type,
+
+                                page:
+                                    this.pages.length,
+
+                                lineIndex,
+
+                                bestLines,
+
+                                start,
+
+                                end,
+
+                                fragmentText:
+                                    fragment.textContent,
+
+                                fragmentHeight,
+
+                                previousHeight,
+
+                                currentHeight,
+
+                                contentHeight:
+                                    PAGE_EDITOR.contentHeight,
+
+                                remaining:
+                                    PAGE_EDITOR.contentHeight -
+                                    currentHeight
+                            }
+                        );
 
                         lineIndex +=
                             bestLines;
@@ -2876,10 +3068,10 @@ export class DocumentView {
 
     getParagraphElementById(
         id: number
-    ) {
+    ): HTMLParagraphElement | null {
 
         return this.root.querySelector(
-            `p[data-id="${id}"]`
+            `p[data-paragraph-id="${id}"]`
         ) as HTMLParagraphElement | null;
 
     }
