@@ -1,4 +1,4 @@
-// PreparedBlocks.ts
+// PreparedBlock.ts
 // src/layout/core/
 
 /*

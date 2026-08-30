@@ -27,8 +27,17 @@ Editor e PDF possuem layouts independentes.
 import type { ScriptBlock } from "../../types/script";
 import type { TextMeasurer } from "../measurers/TextMeasurer";
 import type { PreparedBlock } from "../core/PreparedBlock";
-import { getEditorBlockLayout } from "../BlockLayout";
-import { getPdfBlockLayout } from "../pdf/PdfLayout";
+
+import {
+    getEditorBlockLayout,
+    type EditorBlockLayout
+} from "../BlockLayout";
+
+import {
+    getPdfBlockLayout,
+    type PdfBlockLayout
+} from "../pdf/PdfLayout";
+
 import { composeBlock } from "./CompositionEngine";
 import {
     getEditorContentHeight,
@@ -39,7 +48,11 @@ import {
 
 export function prepareBlocks(
     blocks: ScriptBlock[],
-    measure: TextMeasurer
+    measure: TextMeasurer,
+    getCompositionWidth?: (
+        editorLayout: EditorBlockLayout,
+        pdfLayout: PdfBlockLayout
+    ) => number
 ): PreparedBlock[] {
 
     return blocks.map((block) => {
@@ -54,10 +67,18 @@ export function prepareBlocks(
                 block.type
             );
 
+        const compositionWidth =
+            getCompositionWidth
+                ? getCompositionWidth(
+                    editorLayout,
+                    pdfLayout
+                )
+                : editorLayout.maxWidth;
+
         const composition =
             composeBlock(
                 block,
-                editorLayout.maxWidth,
+                compositionWidth,
                 measure
             );
 

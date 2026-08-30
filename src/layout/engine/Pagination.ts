@@ -23,16 +23,26 @@ export function paginate(
     // PROCESSA CADA BLOCO
     // =====================================================
 
-    for (const prepared of preparedBlocks) {
+    for (
+        let preparedIndex = 0;
+        preparedIndex < preparedBlocks.length;
+        preparedIndex++
+    ) {
+
+        const prepared =
+            preparedBlocks[preparedIndex];
+
+        const nextPrepared =
+            preparedBlocks[preparedIndex + 1] ?? null;
 
         const lines =
             prepared.composition.lines;
 
         const lineHeight =
-            prepared.editorLayout.lineHeight;
+            prepared.pdfLayout.lineHeight;
 
         const marginBottom =
-            prepared.editorLayout.marginBottom;
+            prepared.pdfLayout.marginBottom;
 
         const totalLines =
             lines.length;
@@ -142,6 +152,49 @@ export function paginate(
                         : 0
                 );
 
+            // =================================================
+            // REGRA CHARACTER + SPEECH
+            // =================================================
+
+            const isDialogueCharacter =
+                prepared.block.type === "character" ||
+                prepared.block.type === "character_contd" ||
+                prepared.block.type === "character_os" ||
+                prepared.block.type === "character_vo";
+
+            const nextIsSpeech =
+                nextPrepared !== null &&
+                (
+                    nextPrepared.block.type === "parenthetical" ||
+                    nextPrepared.block.type === "dialogue"
+                );
+
+            const isWholeCharacter =
+                isDialogueCharacter &&
+                isFirstFragment &&
+                isLastFragment;
+
+            let characterNeedsNextPage = false;
+
+            if (
+                isWholeCharacter &&
+                nextIsSpeech &&
+                currentPage.length > 0
+            ) {
+
+                const nextFirstLineHeight =
+                    nextPrepared!.pdfLayout.lineHeight;
+
+                const remainingHeightAfterCharacter =
+                    availableHeight -
+                    fragmentHeight;
+
+                characterNeedsNextPage =
+                    remainingHeightAfterCharacter <
+                    nextFirstLineHeight;
+
+            }
+
             /*
             ------------------------------------------------
             CASO ESPECIAL
@@ -155,16 +208,25 @@ export function paginate(
             ------------------------------------------------
             */
 
-            if (
+            // =================================================
+            // VERIFICA SE O FRAGMENTO CABE
+            // =================================================
 
-                isLastFragment &&
-
-                currentPage.length > 0 &&
-
+            const doesNotFit =
                 currentHeight +
                     fragmentHeight >
-                    pageHeight
+                    pageHeight;
 
+            // =================================================
+            // CHARACTER + SPEECH
+            // =================================================
+
+            if (
+                currentPage.length > 0 &&
+                (
+                    doesNotFit ||
+                    characterNeedsNextPage
+                )
             ) {
 
                 pages.push(

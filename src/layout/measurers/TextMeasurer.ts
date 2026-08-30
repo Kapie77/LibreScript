@@ -1,3 +1,5 @@
+// TextMeasurer.ts
+// src/layout/measures/
 // MEDIDOR DE TEXTO
 const canvas = document.createElement("canvas");
 
