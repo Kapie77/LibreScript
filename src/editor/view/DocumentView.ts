@@ -1446,36 +1446,6 @@ export class DocumentView {
 
             }
 
-            console.log(
-                "[DEBUG LINE OFFSETS]",
-                {
-                    paragraphId:
-                        element.dataset.id,
-
-                    textLength:
-                        text.length,
-
-                    lines:
-                        offsets.length,
-
-                    offsets,
-
-                    linesText:
-                        offsets.map(
-                            (line, index) => ({
-                                index,
-                                start: line.start,
-                                end: line.end,
-                                text:
-                                    text.slice(
-                                        line.start,
-                                        line.end
-                                    )
-                            })
-                        )
-                }
-            );
-
             return offsets;
 
         }
@@ -1769,44 +1739,6 @@ export class DocumentView {
             // MEDE
             // -----------------------------------------------------
 
-            console.log(
-                "[MEASURE FIRST FRAGMENT RESULT]",
-                {
-                    paragraphId:
-                        paragraph.id,
-
-                    paragraphType:
-                        paragraph.type,
-
-                    text:
-                        fragment.textContent?.slice(0, 100),
-
-                    start,
-                    end,
-
-                    elementConnected:
-                        element.isConnected,
-
-                    measurementPageConnected:
-                        measurementPage.isConnected,
-
-                    measurementPageWidth:
-                        measurementPage.getBoundingClientRect().width,
-
-                    wrapperWidth:
-                        wrapper.getBoundingClientRect().width,
-
-                    fragmentWidth:
-                        fragment.getBoundingClientRect().width,
-
-                    wrapperHeight:
-                        wrapper.getBoundingClientRect().height,
-
-                    fragmentHeight:
-                        fragment.getBoundingClientRect().height
-                }
-            );
-
             const height =
                 wrapper.getBoundingClientRect().height;
 
@@ -1822,7 +1754,7 @@ export class DocumentView {
     // --------------------------------------------- //
 
     // =========================================================
-    // MEDE A ALTURA DA PRIMEIRA LINHA VISUAL DE UM PARÁGRAFO
+    // MEDE O ESPAÇO NECESSÁRIO PARA A PRIMEIRA LINHA VISUAL
     // =========================================================
     private measureFirstVisualLineHeight(
         paragraph: Paragraph,
@@ -1835,279 +1767,32 @@ export class DocumentView {
             );
 
         // -----------------------------------------------------
-        // CRIA UMA CÓPIA DO PARÁGRAFO
+        // A altura real de uma linha é determinada pelo
+        // lineHeight do layout.
+        //
+        // Não devemos usar a altura total do wrapper aqui,
+        // pois ela pode incluir marginBottom e outras dimensões
+        // que pertencem ao bloco inteiro.
         // -----------------------------------------------------
 
-        const measurementElement =
-            document.createElement("p");
-
-        measurementElement.className =
-            element.className;
-
-        measurementElement.style.cssText =
-            element.style.cssText;
-
-        measurementElement.contentEditable =
-            "false";
-
-        measurementElement.dataset.paragraphId =
-            String(paragraph.id);
+        const firstLineHeight =
+            layout.lineHeight;
 
         // -----------------------------------------------------
-        // COPIA O CONTEÚDO
+        // Para decidir se um Character pode permanecer no final
+        // da página, precisamos considerar o espaço vertical que
+        // o próximo bloco precisa para começar.
+        //
+        // marginTop faz parte do início do próximo bloco.
+        //
+        // marginBottom NÃO entra aqui.
+        // Ele pertence ao espaço depois do bloco.
         // -----------------------------------------------------
 
-        const walker =
-            document.createTreeWalker(
-                element,
-                NodeFilter.SHOW_TEXT
-            );
-
-        let node:
-            Node | null;
-
-        while (
-            node = walker.nextNode()
-        ) {
-
-            const textNode =
-                node as Text;
-
-            const parent =
-                textNode.parentElement;
-
-            const clonedNode =
-                textNode.cloneNode(true) as Text;
-
-            if (
-                parent &&
-                parent !== element
-            ) {
-
-                const clonedParent =
-                    parent.cloneNode(false) as HTMLElement;
-
-                clonedParent.appendChild(
-                    clonedNode
-                );
-
-                measurementElement.appendChild(
-                    clonedParent
-                );
-
-            } else {
-
-                measurementElement.appendChild(
-                    clonedNode
-                );
-
-            }
-
-        }
-
-        // -----------------------------------------------------
-        // APLICA O LAYOUT REAL
-        // -----------------------------------------------------
-
-        measurementElement.style.marginTop =
-            `${layout.marginTop}px`;
-
-        measurementElement.style.marginBottom =
-            `${layout.marginBottom}px`;
-
-        measurementElement.style.lineHeight =
-            `${layout.lineHeight}px`;
-
-        measurementElement.style.width =
-            `${layout.width}px`;
-
-        measurementElement.style.maxWidth =
-            `${layout.maxWidth}px`;
-
-        measurementElement.style.marginLeft =
-            `${layout.marginLeft}px`;
-
-        measurementElement.style.textAlign =
-            layout.align;
-
-        // -----------------------------------------------------
-        // PÁGINA TEMPORÁRIA
-        // -----------------------------------------------------
-
-        const measurementPage =
-            document.createElement("div");
-
-        measurementPage.className =
-            "document-editor-page";
-
-        measurementPage.style.width =
-            `${PAGE_EDITOR.width}px`;
-
-        measurementPage.style.height =
-            `${PAGE_EDITOR.height}px`;
-
-        measurementPage.style.paddingTop =
-            `${PAGE_EDITOR.paddingTop}px`;
-
-        measurementPage.style.paddingBottom =
-            `${PAGE_EDITOR.paddingBottom}px`;
-
-        measurementPage.style.paddingLeft =
-            `${PAGE_EDITOR.paddingLeft}px`;
-
-        measurementPage.style.paddingRight =
-            `${PAGE_EDITOR.paddingRight}px`;
-
-        measurementPage.style.boxSizing =
-            "border-box";
-
-        measurementPage.style.position =
-            "absolute";
-
-        measurementPage.style.left =
-            "-100000px";
-
-        measurementPage.style.top =
-            "0";
-
-        // -----------------------------------------------------
-        // CONECTA ANTES DE MEDIR
-        // -----------------------------------------------------
-
-        this.root.appendChild(
-            measurementPage
+        return (
+            layout.marginTop +
+            firstLineHeight
         );
-
-        measurementPage.appendChild(
-            measurementElement
-        );
-
-        // -----------------------------------------------------
-        // AGORA O ELEMENTO TEM LAYOUT REAL
-        // -----------------------------------------------------
-
-        const lineOffsets =
-            this.getLineOffsets(
-                measurementElement
-            );
-
-        if (
-            lineOffsets.length === 0
-        ) {
-
-            measurementPage.remove();
-
-            return 0;
-
-        }
-
-        // -----------------------------------------------------
-        // PRIMEIRA LINHA
-        // -----------------------------------------------------
-
-        const firstLine =
-            lineOffsets[0];
-
-        const fragment =
-            this.createParagraphFragment(
-                measurementElement,
-                firstLine.start,
-                firstLine.end,
-                true
-            );
-
-        fragment.style.marginTop =
-            `${layout.marginTop}px`;
-
-        fragment.style.marginBottom =
-            `${layout.marginBottom}px`;
-
-        fragment.style.lineHeight =
-            `${layout.lineHeight}px`;
-
-        fragment.style.width =
-            `${layout.width}px`;
-
-        fragment.style.maxWidth =
-            `${layout.maxWidth}px`;
-
-        fragment.style.marginLeft =
-            `${layout.marginLeft}px`;
-
-        fragment.style.textAlign =
-            layout.align;
-
-        const wrapper =
-            this.createFragmentWrapper(
-                paragraph,
-                true
-            );
-
-        wrapper.appendChild(
-            fragment
-        );
-
-        measurementPage.innerHTML = "";
-
-        measurementPage.appendChild(
-            wrapper
-        );
-
-        this.positionParagraphActions(
-            wrapper,
-            fragment
-        );
-
-        const height =
-            wrapper.getBoundingClientRect()
-                .height;
-
-        console.log(
-            "[MEASURE FIRST VISUAL LINE]",
-            {
-                paragraphId:
-                    paragraph.id,
-
-                paragraphType:
-                    paragraph.type,
-
-                textLength:
-                    measurementElement.textContent?.length ?? 0,
-
-                lines:
-                    lineOffsets.length,
-
-                firstLineStart:
-                    firstLine.start,
-
-                firstLineEnd:
-                    firstLine.end,
-
-                firstLineText:
-                    measurementElement.textContent
-                        ?.slice(
-                            firstLine.start,
-                            firstLine.end
-                        ),
-
-                measurementElementWidth:
-                    measurementElement
-                        .getBoundingClientRect()
-                        .width,
-
-                measurementElementHeight:
-                    measurementElement
-                        .getBoundingClientRect()
-                        .height,
-
-                firstLineHeight:
-                    height
-            }
-        );
-
-        measurementPage.remove();
-
-        return height;
 
     }
 
@@ -2532,127 +2217,6 @@ export class DocumentView {
                             fragmentHeight <=
                             availableHeight;
 
-                        console.log(
-                            "[DEBUG PAGINATION DECISION]",
-                            {
-                                paragraphId:
-                                    paragraph.id,
-
-                                paragraphType:
-                                    paragraph.type,
-
-                                page:
-                                    this.pages.length,
-
-                                lineIndex,
-
-                                linesToTake,
-
-                                bestLines,
-
-                                totalLines:
-                                    lineOffsets.length,
-
-                                start,
-
-                                end,
-
-                                fragmentText:
-                                    fragment.textContent,
-
-                                fragmentHeight,
-
-                                currentHeight,
-
-                                availableHeight,
-
-                                fits,
-
-                                pageContentHeight:
-                                    PAGE_EDITOR.contentHeight,
-
-                                fragmentRect:
-                                    {
-                                        top:
-                                            fragment.getBoundingClientRect().top,
-
-                                        bottom:
-                                            fragment.getBoundingClientRect().bottom,
-
-                                        height:
-                                            fragment.getBoundingClientRect().height,
-                                    },
-
-                                pageRect:
-                                    {
-                                        top:
-                                            currentPage.getBoundingClientRect().top,
-
-                                        bottom:
-                                            currentPage.getBoundingClientRect().bottom,
-
-                                        height:
-                                            currentPage.getBoundingClientRect().height,
-                                    },
-
-                                lineOffsets:
-                                    lineOffsets.map(
-                                        (line, index) => ({
-                                            index,
-
-                                            start:
-                                                line.start,
-
-                                            end:
-                                                line.end,
-
-                                            text:
-                                                element.textContent?.slice(
-                                                    line.start,
-                                                    line.end
-                                                ),
-                                        })
-                                    ),
-                            }
-                        );
-
-                        console.log(
-                            "[DEBUG CANDIDATE]",
-                            {
-                                paragraphId:
-                                    paragraph.id,
-
-                                page:
-                                    this.pages.length,
-
-                                lineIndex,
-
-                                linesToTake,
-
-                                start,
-
-                                end,
-
-                                text:
-                                    fragment.textContent,
-
-                                fragmentHeight,
-
-                                currentHeight,
-
-                                availableHeight,
-
-                                fits,
-
-                                pageBottom:
-                                    currentHeight +
-                                    fragmentHeight,
-
-                                contentHeight:
-                                    PAGE_EDITOR.contentHeight
-                            }
-                        );
-
                         // -----------------------------------------------------
                         // UMA LINHA SOZINHA PRECISA ENTRAR EM PÁGINA VAZIA
                         // -----------------------------------------------------
@@ -2780,20 +2344,6 @@ export class DocumentView {
                         }
 
                     }
-
-                    console.log(
-                        "[BINARY SEARCH PERFORMANCE]",
-                        {
-                            paragraphId: paragraph.id,
-                            totalLines: lineOffsets.length,
-                            bestLines,
-                            duration:
-                                Math.round(
-                                    performance.now() -
-                                    binarySearchStart
-                                )
-                        }
-                    );
 
                     // =========================================================
                     // AGORA CRIAMOS DEFINITIVAMENTE O MELHOR FRAGMENTO

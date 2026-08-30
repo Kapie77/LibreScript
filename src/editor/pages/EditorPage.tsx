@@ -276,9 +276,9 @@ export default function EditorPage({
           onSave={saveProject}
           onSaveAs={saveProjectAs}
           onOpen={openProject}
-          onExportPDF={() =>
-            exportProjectToPDF(project)
-          }
+          onExportPDF={() => {
+                void exportProjectToPDF(project);
+          }}
 
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
