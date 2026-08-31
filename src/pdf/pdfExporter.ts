@@ -11,11 +11,13 @@ import { buildPdfPreparedBlocks } from
     "../layout/builders/buildPdfPreparedBlocks";
 import { save } from "@tauri-apps/plugin-dialog";
 import { writeFile } from "@tauri-apps/plugin-fs";
-
+import type { Settings } from "../types/settings";
 // ------------------------------------------------------------ //
 
 export async function exportProjectToPDF(
-    project: ScriptProject
+    project: ScriptProject,
+    pageNumberPosition:
+        Settings["pageNumberPosition"]
 ) {
 
     const doc =
@@ -218,35 +220,84 @@ export async function exportProjectToPDF(
     // NUMERAÇÃO
     // =========================================================
 
-    const totalPages =
-        doc.getNumberOfPages();
-
-    for (
-        let page = 2;
-        page <= totalPages;
-        page++
+    if (
+        pageNumberPosition !== "none"
     ) {
 
-        doc.setPage(
-            page
-        );
+        const totalPages =
+            doc.getNumberOfPages();
 
-        doc.setFont(
-            "courier",
-            "normal"
-        );
+        for (
+            let page = 2;
+            page <= totalPages;
+            page++
+        ) {
 
-        doc.setFontSize(
-            10
-        );
+            doc.setPage(
+                page
+            );
 
-        doc.text(
-            String(
-                page - 1
-            ),
-            190,
-            10
-        );
+            doc.setFont(
+                "courier",
+                "normal"
+            );
+
+            doc.setFontSize(
+                10
+            );
+
+            const pageNumber =
+                String(
+                    page - 1
+                );
+
+            switch (
+                pageNumberPosition
+            ) {
+
+                case "top-right":
+
+                    doc.text(
+                        pageNumber,
+                        190,
+                        10
+                    );
+
+                    break;
+
+                case "top-left":
+
+                    doc.text(
+                        pageNumber,
+                        20,
+                        10
+                    );
+
+                    break;
+
+                case "bottom-right":
+
+                    doc.text(
+                        pageNumber,
+                        190,
+                        287
+                    );
+
+                    break;
+
+                case "bottom-left":
+
+                    doc.text(
+                        pageNumber,
+                        20,
+                        287
+                    );
+
+                    break;
+
+            }
+
+        }
 
     }
 
