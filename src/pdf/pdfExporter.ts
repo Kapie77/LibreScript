@@ -271,18 +271,9 @@ export async function exportProjectToPDF(
 
     if (!filePath) {
 
-        console.log(
-            "[PDF] Exportação cancelada pelo usuário"
-        );
-
         return;
 
     }
-
-    console.log(
-        "[PDF] Caminho escolhido:",
-        filePath
-    );
 
     const pdfArrayBuffer =
         doc.output("arraybuffer");
@@ -295,11 +286,6 @@ export async function exportProjectToPDF(
     await writeFile(
         filePath,
         pdfBytes
-    );
-
-    console.log(
-        "[PDF] PDF salvo com sucesso:",
-        filePath
     );
 
 }

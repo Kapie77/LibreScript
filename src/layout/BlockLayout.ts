@@ -33,6 +33,7 @@ do PDF.
 */
 
 import type { ScriptBlock } from "../types/script";
+import { PAGE_EDITOR } from "./config/PageEditor";
 
 // =======================================================
 // PAGE CONTENT
@@ -48,56 +49,44 @@ Portanto:
 
     850 - 60 - 60 = 730px
 
-A largura de 624px usada pelo roteiro é uma
-largura interna específica da diagramação de
-screenplay, menor que toda a área disponível
-da página.
+O roteiro utiliza uma área interna de 624px.
+
+Essa área é centralizada dentro dos 730px disponíveis.
 */
 
 const CONTENT_WIDTH = 624;
 
-const FULL_WIDTH = CONTENT_WIDTH;
+const PAGE_CONTENT_WIDTH =
+    PAGE_EDITOR.contentWidth;
+
+/*
+Espaço restante nas laterais da área útil:
+
+    730 - 624 = 106px
+
+Dividido igualmente:
+
+    106 / 2 = 53px
+*/
+
+const CONTENT_OFFSET =
+    (
+        PAGE_CONTENT_WIDTH -
+        CONTENT_WIDTH
+    ) / 2;
+
+const FULL_WIDTH =
+    CONTENT_WIDTH;
 
 // =======================================================
 // SCREENPLAY COLUMNS
 // =======================================================
-
-/*
-A disposição segue a convenção visual de roteiros:
-
-SCENE / ACTION
-
-    começam na margem esquerda da área de conteúdo.
-
-
-CHARACTER
-
-    fica deslocado para a direita.
-
-
-DIALOGUE
-
-    começa mais à esquerda que o Character.
-
-
-PARENTHETICAL
-
-    fica entre o início do Dialogue e o Character.
-*/
 
 // -------------------------------------------------------
 // CHARACTER
 // -------------------------------------------------------
 
 const CHARACTER_WIDTH = 216;
-
-/*
-O centro do Character fica aproximadamente em:
-
-255 + 108 = 363px
-
-dentro da área de conteúdo.
-*/
 
 const CHARACTER_MARGIN_LEFT = 220;
 
@@ -107,13 +96,6 @@ const CHARACTER_MARGIN_LEFT = 220;
 
 const DIALOGUE_WIDTH = 336;
 
-/*
-O diálogo começa mais à esquerda.
-
-Isso permite que ele fique visualmente sob o
-Character sem ficar centralizado na página.
-*/
-
 const DIALOGUE_MARGIN_LEFT = 145;
 
 // -------------------------------------------------------
@@ -121,12 +103,6 @@ const DIALOGUE_MARGIN_LEFT = 145;
 // -------------------------------------------------------
 
 const PARENTHETICAL_WIDTH = 216;
-
-/*
-O parenthetical fica entre o diálogo e o personagem.
-
-Ele não deve ser centralizado como o Character.
-*/
 
 const PARENTHETICAL_MARGIN_LEFT = 235;
 
@@ -223,7 +199,7 @@ export function getEditorBlockLayout(
 
                 maxWidth: FULL_WIDTH,
 
-                marginLeft: 0,
+                marginLeft: CONTENT_OFFSET,
 
                 marginTop: 0,
 
@@ -255,7 +231,7 @@ export function getEditorBlockLayout(
 
                 maxWidth: FULL_WIDTH,
 
-                marginLeft: 0,
+                marginLeft: CONTENT_OFFSET,
 
                 marginTop: 0,
 
@@ -290,7 +266,7 @@ export function getEditorBlockLayout(
 
                 maxWidth: CHARACTER_WIDTH,
 
-                marginLeft: CHARACTER_MARGIN_LEFT,
+                marginLeft: CONTENT_OFFSET + CHARACTER_MARGIN_LEFT,
 
                 marginTop: CHARACTER_MARGIN_TOP,
 
@@ -322,7 +298,7 @@ export function getEditorBlockLayout(
 
                 maxWidth: PARENTHETICAL_WIDTH,
 
-                marginLeft: PARENTHETICAL_MARGIN_LEFT,
+                marginLeft: CONTENT_OFFSET + PARENTHETICAL_MARGIN_LEFT,
 
                 marginTop: PARENTHETICAL_MARGIN_TOP,
 
@@ -354,7 +330,7 @@ export function getEditorBlockLayout(
 
                 maxWidth: DIALOGUE_WIDTH,
 
-                marginLeft: DIALOGUE_MARGIN_LEFT,
+                marginLeft: CONTENT_OFFSET + DIALOGUE_MARGIN_LEFT,
 
                 marginTop: DIALOGUE_MARGIN_TOP,
 
@@ -386,7 +362,7 @@ export function getEditorBlockLayout(
 
                 maxWidth: FULL_WIDTH,
 
-                marginLeft: 0,
+                marginLeft: CONTENT_OFFSET,
 
                 marginTop: 0,
 
@@ -418,7 +394,7 @@ export function getEditorBlockLayout(
 
                 maxWidth: FULL_WIDTH,
 
-                marginLeft: 0,
+                marginLeft: CONTENT_OFFSET,
 
                 marginTop: 0,
 
@@ -450,7 +426,7 @@ export function getEditorBlockLayout(
 
                 maxWidth: FULL_WIDTH,
 
-                marginLeft: 0,
+                marginLeft: CONTENT_OFFSET,
 
                 marginTop: 0,
 
