@@ -310,15 +310,10 @@ export default function EditorPage({
             engine.replaceCurrentSearchResult(
 
                 currentResult.paragraphId,
-
                 searchTerm,
-
                 replaceTerm,
-
                 caseSensitive,
-
                 ignoreAccents,
-
                 currentResult.occurrenceIndex
 
             );
@@ -385,6 +380,18 @@ export default function EditorPage({
               allowDeleteBlocks: !prev.allowDeleteBlocks,
             }))
           }
+
+          pageNumberPosition={
+              settings.pageNumberPosition
+          }
+
+          onChangePageNumberPosition={(position) =>
+              setSettings(prev => ({
+                  ...prev,
+                  pageNumberPosition:
+                      position,
+              }))
+          }
         />
         
         
@@ -440,6 +447,9 @@ export default function EditorPage({
           engine={engine}
           allowMoveBlocks={settings.allowMoveBlocks}
           allowDeleteBlocks={settings.allowDeleteBlocks}
+          pageNumberPosition={
+              settings.pageNumberPosition
+          }
           onSave={saveProject}
           onOpen={openProject}
       />

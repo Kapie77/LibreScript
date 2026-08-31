@@ -37,6 +37,7 @@ import type {
 
 import { getDefaultBlockContent }
 from "../../layout/templates/ScriptBlockTemplates";
+import type { Settings } from "../../types/settings";
 // --------------------------------------------------------------------- //
 export class EditorEngine {
 
@@ -165,6 +166,7 @@ saveProject() {
         root: HTMLDivElement,
         allowMoveBlocks: boolean,
         allowDeleteBlocks: boolean,
+        pageNumberPosition: Settings["pageNumberPosition"],
         onSave: () => void,
         onOpen: () => void
     ) {
@@ -183,6 +185,7 @@ saveProject() {
             this,
             allowMoveBlocks,
             allowDeleteBlocks,
+            pageNumberPosition,
             onSave,
             onOpen
 

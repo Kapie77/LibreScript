@@ -186,25 +186,46 @@
    NÚMERO DA PÁGINA
 ========================================================= */
 .document-page-number {
-
     position: absolute;
-
-    top: 24px;
-    right: 60px;
-
     font-family:
         "Courier Prime",
         monospace;
 
     font-size: 12px;
-
     line-height: 1;
-
     color: var(--text-main);
-
     user-select: none;
     pointer-events: none;
-
     z-index: 10;
+}
 
+/* =========================================================
+   SUBMENU - NÚMERO DA PÁGINA
+========================================================= */
+.page-number-menu-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.page-number-menu-trigger {
+    position: relative;
+}
+
+.page-number-position-menu {
+    position: absolute;
+    left: calc(100% + 8px);
+    top: 0;
+    min-width: 190px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    box-shadow: var(--shadow);
+    padding: 4px 0;
+    z-index: 1000;
+}
+
+.default-option {
+    margin-left: 6px;
+    opacity: 0.6;
+    font-size: 11px;
 }

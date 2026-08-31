@@ -40,6 +40,22 @@ type Props = {
   onToggleMoveBlocks: () => void;
   onToggleDeleteBlocks: () => void;
 
+  pageNumberPosition:
+    "top-right"
+    | "top-left"
+    | "bottom-right"
+    | "bottom-left"
+    | "none";
+
+  onChangePageNumberPosition: (
+    position:
+      | "top-right"
+      | "top-left"
+      | "bottom-right"
+      | "bottom-left"
+      | "none"
+  ) => void;
+
   caseSensitive: boolean;
 
   setCaseSensitive:
@@ -83,6 +99,9 @@ export default function FileBar({
   onToggleMoveBlocks,
   onToggleDeleteBlocks,
 
+  pageNumberPosition,
+  onChangePageNumberPosition,
+
   caseSensitive,
   setCaseSensitive,
 
@@ -97,7 +116,15 @@ export default function FileBar({
 // ------------------------------------------------- //
 
 // Função para ativar/desativar barra inferior e barra flutuante
-const [activeMenu, setActiveMenu] = useState<"file" | "view" | null>(null);
+const [activeMenu, setActiveMenu] =
+  useState<
+    "file"
+    | "view"
+    | null
+  >(null);
+
+const [showPageNumberMenu, setShowPageNumberMenu] =
+  useState(false);
 
 // substituir termos pesquisados
 const [showReplace, setShowReplace] =
@@ -253,13 +280,20 @@ useEffect(() => {
 
       <button
         className="menu-button"
-        onClick={() =>
-          setActiveMenu(
-            activeMenu === "view"
-              ? null
-              : "view"
-          )
-        }
+        onClick={() => {
+
+          if (activeMenu === "view") {
+
+            setActiveMenu(null);
+            setShowPageNumberMenu(false);
+
+            return;
+
+          }
+
+          setActiveMenu("view");
+
+        }}
 
         onMouseEnter={() => {
           if (activeMenu)
@@ -315,6 +349,122 @@ useEffect(() => {
               {allowDeleteBlocks ? "✓" : ""}
             </span>
           </button>
+
+          {/* NUMERAÇÃO PÁGINA */}
+          <hr />
+            <div className="page-number-menu-wrapper">
+
+              <button
+                className="view-menu-item page-number-menu-trigger"
+                onMouseEnter={() =>
+                  setShowPageNumberMenu(true)
+                }
+              >
+                <span>🔢 Número da página</span>
+                <span>›</span>
+              </button>
+
+              {showPageNumberMenu && (
+                <div
+                  className="page-number-position-menu"
+                  onMouseEnter={() =>
+                    setShowPageNumberMenu(true)
+                  }
+                  onMouseLeave={() =>
+                    setShowPageNumberMenu(false)
+                  }
+                >
+
+                <button
+                  className="view-menu-item"
+                  onClick={() =>
+                    onChangePageNumberPosition(
+                      "top-right"
+                    )
+                  }
+                >
+                  <span>
+                    Superior direito
+                    <small className="default-option">
+                      (Padrão)
+                    </small>
+                  </span>
+
+                  <span>
+                    {pageNumberPosition === "top-right"
+                      ? "✓"
+                      : ""}
+                  </span>
+                </button>
+
+                <button
+                  className="view-menu-item"
+                  onClick={() =>
+                    onChangePageNumberPosition(
+                      "top-left"
+                    )
+                  }
+                >
+                  <span>Superior esquerdo</span>
+                  <span>
+                    {pageNumberPosition === "top-left"
+                      ? "✓"
+                      : ""}
+                  </span>
+                </button>
+
+                <button
+                  className="view-menu-item"
+                  onClick={() =>
+                    onChangePageNumberPosition(
+                      "bottom-right"
+                    )
+                  }
+                >
+                  <span>Inferior direito</span>
+                  <span>
+                    {pageNumberPosition === "bottom-right"
+                      ? "✓"
+                      : ""}
+                  </span>
+                </button>
+
+                <button
+                  className="view-menu-item"
+                  onClick={() =>
+                    onChangePageNumberPosition(
+                      "bottom-left"
+                    )
+                  }
+                >
+                  <span>Inferior esquerdo</span>
+                  <span>
+                    {pageNumberPosition === "bottom-left"
+                      ? "✓"
+                      : ""}
+                  </span>
+                </button>
+
+                <button
+                  className="view-menu-item"
+                  onClick={() =>
+                    onChangePageNumberPosition(
+                      "none"
+                    )
+                  }
+                >
+                  <span>Não mostrar</span>
+                  <span>
+                    {pageNumberPosition === "none"
+                      ? "✓"
+                      : ""}
+                  </span>
+                </button>
+
+              </div>
+            )}
+          </div>
+          {/* FIM NUMERAÇÃO PÁGINA*/}
 
         </div>
       )}

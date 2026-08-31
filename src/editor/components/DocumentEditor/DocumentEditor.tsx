@@ -4,6 +4,7 @@
 import "./DocumentEditor.css";
 import { useEffect, useRef } from "react";
 import { EditorEngine } from "../../../editor/engine/EditorEngine";
+import type { Settings } from "../../../types/settings";
 
 // -------------------------------------------------------- //
 
@@ -12,9 +13,10 @@ type Props = {
     engine: EditorEngine;
     allowMoveBlocks: boolean;
     allowDeleteBlocks: boolean;
+    pageNumberPosition:
+        Settings["pageNumberPosition"];
     onSave: () => void;
     onOpen: () => void;
-
 };
 
 // -------------------------------------------------------- //
@@ -24,6 +26,7 @@ export default function DocumentEditor({
     engine,
     allowMoveBlocks,
     allowDeleteBlocks,
+    pageNumberPosition,
     onSave,
     onOpen,
 
@@ -56,6 +59,7 @@ export default function DocumentEditor({
             rootRef.current,
             allowMoveBlocks,
             allowDeleteBlocks,
+            pageNumberPosition,
             () => {
                 onSaveRef.current();
             },
@@ -73,10 +77,9 @@ export default function DocumentEditor({
     }, [
 
         engine,
-
         allowMoveBlocks,
-
         allowDeleteBlocks,
+        pageNumberPosition,
 
     ]);
 

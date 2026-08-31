@@ -13,7 +13,7 @@ import { ClipboardManager } from "../clipboard/ClipboardManager";
 
 import { getEditorBlockLayout } from "../../layout";
 import { PAGE_EDITOR } from "../../layout/config/PageEditor";
-
+import type { Settings } from "../../types/settings";
 // --------------------------------------------------------- //
 
 export class DocumentView {
@@ -31,6 +31,7 @@ export class DocumentView {
     private editor: EditController;
     private allowMoveBlocks: boolean;
     private allowDeleteBlocks: boolean;
+    private pageNumberPosition: Settings["pageNumberPosition"];
     private onSave: () => void;
 
     // =========================================================
@@ -67,6 +68,7 @@ export class DocumentView {
         engine: EditorEngine,
         allowMoveBlocks: boolean,
         allowDeleteBlocks: boolean,
+        pageNumberPosition: Settings["pageNumberPosition"],
         onSave: () => void,
         onOpen: () => void,
     ) {
@@ -77,6 +79,7 @@ export class DocumentView {
         this.engine = engine;
         this.allowMoveBlocks = allowMoveBlocks;
         this.allowDeleteBlocks = allowDeleteBlocks;
+        this.pageNumberPosition = pageNumberPosition;
         this.onSave = onSave;
 
         this.root.addEventListener(
@@ -195,7 +198,10 @@ export class DocumentView {
         // FICA FORA DA ÁREA SELECIONÁVEL
         // -----------------------------------------------------
 
-        if (pageNumber > 1) {
+        if (
+            pageNumber > 1 &&
+            this.pageNumberPosition !== "none"
+        ) {
 
             const pageNumberElement =
                 document.createElement("div");
@@ -211,6 +217,56 @@ export class DocumentView {
 
             pageNumberElement.style.pointerEvents =
                 "none";
+
+            // -----------------------------------------------------
+            // POSIÇÃO DO NÚMERO DA PÁGINA
+            // -----------------------------------------------------
+
+            switch (
+                this.pageNumberPosition
+            ) {
+
+                case "top-right":
+
+                    pageNumberElement.style.top =
+                        "24px";
+
+                    pageNumberElement.style.right =
+                        "60px";
+
+                    break;
+
+                case "top-left":
+
+                    pageNumberElement.style.top =
+                        "24px";
+
+                    pageNumberElement.style.left =
+                        "60px";
+
+                    break;
+
+                case "bottom-right":
+
+                    pageNumberElement.style.bottom =
+                        "24px";
+
+                    pageNumberElement.style.right =
+                        "60px";
+
+                    break;
+
+                case "bottom-left":
+
+                    pageNumberElement.style.bottom =
+                        "24px";
+
+                    pageNumberElement.style.left =
+                        "60px";
+
+                    break;
+
+            }
 
             pageWrapper.appendChild(
                 pageNumberElement
