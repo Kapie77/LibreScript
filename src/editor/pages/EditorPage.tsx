@@ -277,7 +277,10 @@ export default function EditorPage({
           onSaveAs={saveProjectAs}
           onOpen={openProject}
           onExportPDF={() => {
-                void exportProjectToPDF(project);
+                void exportProjectToPDF(
+                    project,
+                    settings.pageNumberPosition
+                );
           }}
 
           searchTerm={searchTerm}
