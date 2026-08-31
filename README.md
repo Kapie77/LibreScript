@@ -162,11 +162,17 @@ Por exemplo:
 ```npm install @tauri-apps/api```
 
 4. Instalar outras dependencias
-```npm install @tauri-apps/plugin-dialog @tauri-apps/plugin-fs```
+```
+npm install @tauri-apps/plugin-dialog @tauri-apps/plugin-fs
+```
 
-```npm run tauri add dialog```
+```
+npm run tauri add dialog
+```
 
-```npm run tauri add fs```
+```
+npm run tauri add fs
+```
 
 5. Mude o arquivo ```src-tauri/capabilities/default.json``` para isso:
 ```bash
@@ -189,7 +195,20 @@ Por exemplo:
 }
 ```
 
-6. Precisamos apenas garantir que os pacotes JavaScript correspondentes também estejam instalados agora:
+6. Configurando para iniciar maximizado
+7. Abra o arquivo **tauri.conf.json** na pasta "src-tauri" e acrescente ```"maximized": true``` depois de fullscreen, exemplo de como deve ficar:
+```bash
+{
+        "title": "LibreScript",
+        "width": 800,
+        "height": 600,
+        "resizable": true,
+        "fullscreen": false,
+        "maximized": true
+}
+```
+
+9. Precisamos apenas garantir que os pacotes JavaScript correspondentes também estejam instalados agora:
 ```bash
 npm install @tauri-apps/plugin-dialog @tauri-apps/plugin-fs
 ```
