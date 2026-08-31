@@ -196,7 +196,7 @@ npm run tauri add fs
 ```
 
 6. Configurando para iniciar maximizado
-7. Abra o arquivo **tauri.conf.json** na pasta "src-tauri" e acrescente ```"maximized": true``` depois de fullscreen, exemplo de como deve ficar:
+Abra o arquivo **tauri.conf.json** na pasta "src-tauri" e acrescente ```"maximized": true``` depois de fullscreen, exemplo de como deve ficar:
 ```bash
 {
         "title": "LibreScript",
@@ -208,7 +208,7 @@ npm run tauri add fs
 }
 ```
 
-9. Precisamos apenas garantir que os pacotes JavaScript correspondentes também estejam instalados agora:
+7. Precisamos apenas garantir que os pacotes JavaScript correspondentes também estejam instalados agora:
 ```bash
 npm install @tauri-apps/plugin-dialog @tauri-apps/plugin-fs
 ```
