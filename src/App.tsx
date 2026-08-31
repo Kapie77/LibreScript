@@ -73,6 +73,7 @@ function App() {
                 showNavigator: false,
                 showToolbar: true,
                 showStatusBar: true,
+                pageNumberPosition: "top-right",
             };
 
         });
