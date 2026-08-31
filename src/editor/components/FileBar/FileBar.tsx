@@ -221,13 +221,21 @@ useEffect(() => {
 
         <button
           className="menu-button"
-          onClick={() =>
-            setActiveMenu(
-              activeMenu === "file"
-                ? null
-                : "file"
-            )
-          }
+          onClick={() => {
+
+              if (activeMenu === "file") {
+
+                setActiveMenu(null);
+                setShowPageNumberMenu(false);
+
+                return;
+
+              }
+
+              setActiveMenu("file");
+              setShowPageNumberMenu(false);
+
+            }}
 
           onMouseEnter={() => {
             if (activeMenu)
