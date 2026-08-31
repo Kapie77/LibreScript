@@ -288,6 +288,15 @@ export class DocumentView {
                 paragraph.type
             );
 
+        wrapper.style.width =
+            `${layout.width}px`;
+
+        wrapper.style.maxWidth =
+            `${layout.maxWidth}px`;
+
+        wrapper.style.marginLeft =
+            `${layout.marginLeft}px`;
+
         p.className =
             layout.className;
 
@@ -298,7 +307,7 @@ export class DocumentView {
             `${layout.maxWidth}px`;
 
         p.style.marginLeft =
-            `${layout.marginLeft}px`;
+            "0px";
 
         p.style.marginTop =
             `${layout.marginTop}px`;
@@ -1402,50 +1411,6 @@ export class DocumentView {
 
             }
 
-            // -------------------------------------------------
-            // DEBUG
-            // -------------------------------------------------
-
-            if (
-                text.length > 1000
-            ) {
-
-                console.log(
-                    "[LINE OFFSETS OPTIMIZED]",
-                    {
-                        textLength:
-                            text.length,
-
-                        textNodes:
-                            textNodes.length,
-
-                        lines:
-                            offsets.length,
-
-                        lastOffset:
-                            offsets[
-                                offsets.length - 1
-                            ],
-
-                        lastLineText:
-                            text.slice(
-                                offsets[
-                                    offsets.length - 1
-                                ].start,
-                                offsets[
-                                    offsets.length - 1
-                                ].end
-                            ),
-
-                        lastCharacter:
-                            text.charAt(
-                                text.length - 1
-                            )
-                    }
-                );
-
-            }
-
             return offsets;
 
         }
@@ -1655,7 +1620,7 @@ export class DocumentView {
                 `${layout.maxWidth}px`;
 
             fragment.style.marginLeft =
-                `${layout.marginLeft}px`;
+                "0px";
 
             fragment.style.textAlign =
                 layout.align;
@@ -1669,6 +1634,15 @@ export class DocumentView {
                     paragraph,
                     true
                 );
+
+            wrapper.style.width =
+                `${layout.width}px`;
+
+            wrapper.style.maxWidth =
+                `${layout.maxWidth}px`;
+
+            wrapper.style.marginLeft =
+                `${layout.marginLeft}px`;
 
             wrapper.appendChild(
                 fragment
@@ -2156,7 +2130,7 @@ export class DocumentView {
                             `${layout.maxWidth}px`;
 
                         fragment.style.marginLeft =
-                            `${layout.marginLeft}px`;
+                            "0px";
 
                         fragment.style.textAlign =
                             layout.align;
@@ -2170,6 +2144,15 @@ export class DocumentView {
                                 paragraph,
                                 isFirstFragment
                             );
+
+                        fragmentWrapper.style.width =
+                            `${layout.width}px`;
+
+                        fragmentWrapper.style.maxWidth =
+                            `${layout.maxWidth}px`;
+
+                        fragmentWrapper.style.marginLeft =
+                            `${layout.marginLeft}px`;
 
                         fragmentWrapper.appendChild(
                             fragment
@@ -2465,7 +2448,7 @@ export class DocumentView {
                             `${layout.maxWidth}px`;
 
                         fragment.style.marginLeft =
-                            `${layout.marginLeft}px`;
+                            "0px";
 
                         fragment.style.textAlign =
                             layout.align;
@@ -2475,6 +2458,15 @@ export class DocumentView {
                                 paragraph,
                                 isFirstFragment
                             );
+
+                        fragmentWrapper.style.width =
+                            `${layout.width}px`;
+
+                        fragmentWrapper.style.maxWidth =
+                            `${layout.maxWidth}px`;
+
+                        fragmentWrapper.style.marginLeft =
+                            `${layout.marginLeft}px`;
 
                         fragmentWrapper.appendChild(
                             fragment
@@ -2494,50 +2486,10 @@ export class DocumentView {
                                 .getBoundingClientRect()
                                 .height;
 
-                        const previousHeight =
-                            currentHeight;
-
                         currentHeight +=
                             fragmentHeight;
 
-                        console.log(
-                            "[DEBUG PAGINATION FRAGMENT]",
-                            {
-                                paragraphId:
-                                    paragraph.id,
-
-                                paragraphType:
-                                    paragraph.type,
-
-                                page:
-                                    this.pages.length,
-
-                                lineIndex,
-
-                                bestLines,
-
-                                start,
-
-                                end,
-
-                                fragmentText:
-                                    fragment.textContent,
-
-                                fragmentHeight,
-
-                                previousHeight,
-
-                                currentHeight,
-
-                                contentHeight:
-                                    PAGE_EDITOR.contentHeight,
-
-                                remaining:
-                                    PAGE_EDITOR.contentHeight -
-                                    currentHeight
-                            }
-                        );
-
+ 
                         lineIndex +=
                             bestLines;
 

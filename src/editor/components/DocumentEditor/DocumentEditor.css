@@ -48,6 +48,7 @@
     font-family:
         "Courier Prime",
         monospace;
+    /*outline: 2px solid blue;*/
 }
 
 /*=========================================================
@@ -80,6 +81,8 @@
     white-space: pre-wrap;
     word-break: break-word;
     color: var(--text-main);
+
+    /*outline: 2px solid green;*/
 }
 
 /*=========================================================
@@ -98,13 +101,17 @@
     position: relative;
     width: 100%;
     display: flow-root;
+
+    /*outline: 2px solid red;*/
 }
 
 /*===== AÇÕES DO PARÁGRAFO =====*/
 .paragraph-actions {
     position: absolute;
-    right: 8px;
-    left: auto;
+
+    left: 100%;
+    right: auto;
+
     top: 0;
     transform: translateY(-50%);
 
