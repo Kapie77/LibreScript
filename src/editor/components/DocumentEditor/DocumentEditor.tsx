@@ -5,16 +5,16 @@ import "./DocumentEditor.css";
 import { useEffect, useRef } from "react";
 import { EditorEngine } from "../../../editor/engine/EditorEngine";
 import type { Settings } from "../../../types/settings";
+import type { ScriptProject } from "../../../types/project";
 
 // -------------------------------------------------------- //
 
 type Props = {
-
     engine: EditorEngine;
     allowMoveBlocks: boolean;
     allowDeleteBlocks: boolean;
-    pageNumberPosition:
-        Settings["pageNumberPosition"];
+    pageNumberPosition: Settings["pageNumberPosition"];
+    project: ScriptProject;
     onSave: () => void;
     onOpen: () => void;
 };
@@ -24,6 +24,7 @@ type Props = {
 export default function DocumentEditor({
 
     engine,
+    project,
     allowMoveBlocks,
     allowDeleteBlocks,
     pageNumberPosition,
@@ -60,6 +61,7 @@ export default function DocumentEditor({
             allowMoveBlocks,
             allowDeleteBlocks,
             pageNumberPosition,
+            project,
             () => {
                 onSaveRef.current();
             },
@@ -77,6 +79,7 @@ export default function DocumentEditor({
     }, [
 
         engine,
+        project,
         allowMoveBlocks,
         allowDeleteBlocks,
         pageNumberPosition,

@@ -23,6 +23,7 @@ import DocumentEditor from "../components/DocumentEditor/DocumentEditor";
 import { useEditorDocument } from "../hooks/useEditorDocument";
 import { useEngineState } from "../hooks/useEngineState";
 import { getCurrentWindow } from "@tauri-apps/api/window";
+import TitlePageDialog from "../components/TitlePageDialog/TitlePageDialog";
 
 // HOOKS //
 import { useProjectFile } from "../hooks/useProjectFile";
@@ -122,6 +123,9 @@ export default function EditorPage({
       };
 
   }, [engine]);
+
+  // TITLE PAGE
+    const [showTitlePageDialog, setShowTitlePageDialog] = useState(false);
 
   // filePath
   // (mostra o arquivo que está sendo editado)
@@ -276,6 +280,9 @@ export default function EditorPage({
           onSave={saveProject}
           onSaveAs={saveProjectAs}
           onOpen={openProject}
+          onCover={() =>
+                setShowTitlePageDialog(true)
+          }
           onExportPDF={() => {
                 void exportProjectToPDF(
                     project,
@@ -448,6 +455,7 @@ export default function EditorPage({
       {/*Editor canvas*/}
       <DocumentEditor
           engine={engine}
+          project={project}
           allowMoveBlocks={settings.allowMoveBlocks}
           allowDeleteBlocks={settings.allowDeleteBlocks}
           pageNumberPosition={
@@ -471,6 +479,20 @@ export default function EditorPage({
         )}
 
         </div>
+
+        {/* CAPA */}
+        {showTitlePageDialog && (
+
+            <TitlePageDialog
+                project={project}
+                setProject={setProject}
+                onClose={() =>
+                    setShowTitlePageDialog(false)
+                }
+            />
+
+        )}
+        {/* FIM DA CAPA*/}
 
     </div>
 

@@ -22,6 +22,7 @@ type Props = {
   onNextResult: () => void;
   onPrevResult: () => void;
   onToggleNavigator: () => void;
+  onCover: () => void;
 
   replaceTerm: string;
   setReplaceTerm: React.Dispatch<React.SetStateAction<string>>;
@@ -86,6 +87,7 @@ export default function FileBar({
   onNextResult,
   onPrevResult,
   onToggleNavigator,
+  onCover,
 
   showNavigator,
   showToolbar,
@@ -278,6 +280,21 @@ useEffect(() => {
             >
               Exportar PDF
             </button>
+
+            {/* CAPA */}
+            <hr />
+            <button
+                onClick={() => {
+
+                    setActiveMenu(null);
+
+                    onCover();
+
+                }}
+            >
+                📄 Title Page...
+            </button>
+            {/* FIM DA CAPA */}
 
           </div>
         )}

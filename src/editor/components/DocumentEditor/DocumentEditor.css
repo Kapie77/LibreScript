@@ -229,3 +229,56 @@
     opacity: 0.6;
     font-size: 11px;
 }
+
+/* =========================================================
+   CAPA
+========================================================= */
+.document-editor-title-page-wrapper {
+    flex-shrink: 0;
+}
+
+.document-editor-title-page {
+    background: var(--bg-card);
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /*outline: 2px solid blue;*/
+}
+
+.document-editor-title-page-content {
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    /*outline: 2px solid green;*/
+}
+
+.document-editor-title-page-title {
+    font-family: "Courier New", Courier, monospace;
+    font-size: 28px;
+    font-weight: bold;
+    text-transform: uppercase;
+    /*outline: 2px solid red;*/
+}
+
+.document-editor-title-page-subtitle {
+    margin-top: 12px;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 18px;
+}
+
+.document-editor-title-page-author {
+    margin-top: 80px;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 16px;
+}
+
+.document-editor-title-page-date {
+    margin-top: 20px;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 14px;
+}

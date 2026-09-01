@@ -2,7 +2,7 @@
 // src/editor/hooks/
 
 // Funções de:
-// Leitor de aruqivo lscript
+// Leitor de arquivo lscript
 // Abrir projeto
 // Salvar projeto
 // Novo projeto
@@ -17,6 +17,13 @@ import {
     writeTextFile,
 } from "@tauri-apps/plugin-fs";
 // ----------------------------------------------------------//
+
+const defaultTitlePage = (): ScriptProject["titlePage"] => ({
+    enabled: false,
+    title: "",
+    subtitle: "",
+    date: "",
+});
 
 
 type Props = {
@@ -83,10 +90,30 @@ export function useProjectFile({
             const content =
                 await readTextFile(path);
 
-            const loadedProject =
+            const parsedProject =
                 JSON.parse(
                     content
-                ) as ScriptProject;
+                ) as Partial<ScriptProject>;
+
+            const loadedProject: ScriptProject = {
+
+                title:
+                    parsedProject.title ??
+                    "",
+
+                author:
+                    parsedProject.author ??
+                    "",
+
+                blocks:
+                    parsedProject.blocks ??
+                    [],
+
+                titlePage:
+                    parsedProject.titlePage ??
+                    defaultTitlePage(),
+
+            };
 
             // -----------------------------------------
             // GUARDA O ARQUIVO ATUAL
@@ -172,6 +199,8 @@ export function useProjectFile({
             title: "",
             author: "",
             blocks: [],
+            titlePage:
+                defaultTitlePage(),
         });
 
         onSaved();

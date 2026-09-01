@@ -14,6 +14,7 @@ import { ClipboardManager } from "../clipboard/ClipboardManager";
 import { getEditorBlockLayout } from "../../layout";
 import { PAGE_EDITOR } from "../../layout/config/PageEditor";
 import type { Settings } from "../../types/settings";
+import type { ScriptProject } from "../../types/project";
 // --------------------------------------------------------- //
 
 export class DocumentView {
@@ -32,6 +33,8 @@ export class DocumentView {
     private allowMoveBlocks: boolean;
     private allowDeleteBlocks: boolean;
     private pageNumberPosition: Settings["pageNumberPosition"];
+    private project: ScriptProject;
+    private titlePageElement: HTMLDivElement | null = null;
     private onSave: () => void;
 
     // =========================================================
@@ -69,6 +72,7 @@ export class DocumentView {
         allowMoveBlocks: boolean,
         allowDeleteBlocks: boolean,
         pageNumberPosition: Settings["pageNumberPosition"],
+        project: ScriptProject,
         onSave: () => void,
         onOpen: () => void,
     ) {
@@ -80,6 +84,7 @@ export class DocumentView {
         this.allowMoveBlocks = allowMoveBlocks;
         this.allowDeleteBlocks = allowDeleteBlocks;
         this.pageNumberPosition = pageNumberPosition;
+        this.project = project;
         this.onSave = onSave;
 
         this.root.addEventListener(
@@ -299,6 +304,149 @@ export class DocumentView {
         );
 
         return page;
+
+    }
+
+    // =========================================================
+    // CREATE COVER
+    // =========================================================
+    private createTitlePage(): HTMLDivElement {
+
+        const wrapper =
+            document.createElement("div");
+
+        wrapper.className =
+            "document-editor-title-page-wrapper";
+
+        wrapper.style.position =
+            "relative";
+
+        wrapper.style.width =
+            `${PAGE_EDITOR.width}px`;
+
+        wrapper.style.height =
+            `${PAGE_EDITOR.height}px`;
+
+        wrapper.style.boxSizing =
+            "border-box";
+
+        const page =
+            document.createElement("div");
+
+        page.className =
+            "document-editor-title-page";
+
+        page.style.width =
+            `${PAGE_EDITOR.width}px`;
+
+        page.style.height =
+            `${PAGE_EDITOR.height}px`;
+
+        page.style.boxSizing =
+            "border-box";
+
+        // -----------------------------------------------------
+        // CONTEÚDO
+        // -----------------------------------------------------
+
+        const content =
+            document.createElement("div");
+
+        content.className =
+            "document-editor-title-page-content";
+
+        // -----------------------------------------------------
+        // TÍTULO
+        // -----------------------------------------------------
+
+        const title = document.createElement("div");
+
+        title.className = "document-editor-title-page-title";
+
+        title.textContent = this.project.titlePage.title;
+
+        content.appendChild(
+            title
+        );
+
+        // -----------------------------------------------------
+        // SUBTÍTULO
+        // -----------------------------------------------------
+
+        if (
+            this.project.titlePage.subtitle?.trim()
+        ) {
+
+            const subtitle =
+                document.createElement("div");
+
+            subtitle.className =
+                "document-editor-title-page-subtitle";
+
+            subtitle.textContent =
+                this.project.titlePage.subtitle;
+
+            content.appendChild(
+                subtitle
+            );
+
+        }
+
+        // -----------------------------------------------------
+        // AUTOR
+        // -----------------------------------------------------
+
+        const author =
+            document.createElement("div");
+
+        author.className =
+            "document-editor-title-page-author";
+
+        author.textContent =
+            this.project.author;
+
+        content.appendChild(
+            author
+        );
+
+        // -----------------------------------------------------
+        // DATA
+        // -----------------------------------------------------
+
+        if (
+            this.project.titlePage.date?.trim()
+        ) {
+
+            const date =
+                document.createElement("div");
+
+            date.className =
+                "document-editor-title-page-date";
+
+            date.textContent =
+                this.project.titlePage.date;
+
+            content.appendChild(
+                date
+            );
+
+        }
+
+        // -----------------------------------------------------
+        // MONTA
+        // -----------------------------------------------------
+
+        page.appendChild(
+            content
+        );
+
+        wrapper.appendChild(
+            page
+        );
+
+        this.titlePageElement = wrapper;
+
+        return wrapper;
 
     }
 
@@ -1923,7 +2071,31 @@ export class DocumentView {
         this.pages = [];
 
         // -----------------------------------------------------
-        // PRIMEIRA PÁGINA
+        // CAPA
+        // -----------------------------------------------------
+
+        if (
+            this.titlePageElement
+        ) {
+
+            this.titlePageElement.remove();
+
+            this.titlePageElement = null;
+
+        }
+
+        if (
+            this.project.titlePage.enabled
+        ) {
+
+            this.root.appendChild(
+                this.createTitlePage()
+            );
+
+        }
+
+        // -----------------------------------------------------
+        // PRIMEIRA PÁGINA DO ROTEIRO
         // -----------------------------------------------------
 
         let currentPage =
@@ -2662,6 +2834,8 @@ export class DocumentView {
         this.elements.clear();
 
         this.wrappers.clear();
+
+        this.titlePageElement = null;
 
         this.root.replaceChildren();
 

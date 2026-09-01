@@ -1,0 +1,197 @@
+/* TitlePageDialog.css */
+/* src/editor/components/TitlePageDialog/ */
+
+/* =========================================================
+   FUNDO
+========================================================= */
+.title-page-dialog-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+/* =========================================================
+   JANELA
+========================================================= */
+.title-page-dialog {
+    width: 460px;
+    max-width: calc(100vw - 40px);
+    background: var(--bg-card);
+    color: var(--text-main);
+    border:
+        1px solid var(--border-color);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+/* =========================================================
+   CABEÇALHO
+========================================================= */
+.title-page-dialog-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom:
+        1px solid var(--border-color);
+}
+
+.title-page-dialog-header h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.title-page-dialog-close {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--text-main);
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.title-page-dialog-close:hover {
+    background: var(--bg-hover);
+}
+
+/* =========================================================
+   CONTEÚDO
+========================================================= */
+.title-page-dialog-content {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* =========================================================
+   CHECKBOX
+========================================================= */
+.title-page-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    user-select: none;
+}
+
+.title-page-checkbox input {
+    accent-color:
+        var(--accent);
+}
+
+/* =========================================================
+   CAMPOS
+========================================================= */
+.title-page-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.title-page-field label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.title-page-field input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 9px 10px;
+    border:
+        1px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--bg-main);
+    color: var(--text-main);
+    outline: none;
+    font-family: inherit;
+    font-size: 14px;
+    transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+.title-page-field input::placeholder {
+    color: var(--text-secondary);
+}
+
+.title-page-field input:focus {
+    border-color:
+        var(--accent);
+
+    box-shadow:
+        0 0 0 2px
+        color-mix(
+            in srgb,
+            var(--accent) 20%,
+            transparent
+        );
+}
+
+/* =========================================================
+   RODAPÉ
+========================================================= */
+.title-page-dialog-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 14px 20px;
+    border-top:
+        1px solid var(--border-color);
+}
+
+/* =========================================================
+   BOTÕES
+========================================================= */
+.title-page-dialog-footer button {
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 14px;
+    transition:
+        background 0.15s ease,
+        border-color 0.15s ease;
+}
+
+/* =========================================================
+   CANCELAR
+========================================================= */
+.title-page-cancel-button {
+    border:
+        1px solid var(--border-color);
+    background: transparent;
+    color: var(--text-main);
+}
+
+.title-page-cancel-button:hover {
+    background:
+        var(--bg-hover);
+}
+
+/* =========================================================
+   SALVAR
+========================================================= */
+.title-page-save-button {
+    border:
+        1px solid var(--accent);
+    background:
+        var(--accent);
+    color: white;
+}
+
+.title-page-save-button:hover {
+    filter: brightness(1.08);
+}
