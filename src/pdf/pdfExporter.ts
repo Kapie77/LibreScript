@@ -55,74 +55,140 @@ export async function exportProjectToPDF(
         );
 
     // =========================================================
-    // CAPA
+    // PÁGINA DE TÍTULO
     // =========================================================
 
-    doc.setFont(
-        "courier",
-        "bold"
-    );
+    if (
+        project.titlePage.enabled
+    ) {
 
-    doc.setFontSize(
-        24
-    );
+        doc.setFont(
+            "courier",
+            "bold"
+        );
 
-    doc.text(
-        project.title ||
-            "Sem título",
-        105,
-        y,
-        {
-            align: "center",
+        doc.setFontSize(
+            24
+        );
+
+        doc.text(
+            project.titlePage.title ||
+                "Sem título",
+            105,
+            y,
+            {
+                align: "center",
+            }
+        );
+
+        // ---------------------------------------------------------
+        // SUBTÍTULO
+        // ---------------------------------------------------------
+
+        if (
+            project.titlePage.subtitle?.trim()
+        ) {
+
+            y += 15;
+
+            doc.setFont(
+                "courier",
+                "normal"
+            );
+
+            doc.setFontSize(
+                18
+            );
+
+            doc.text(
+                project.titlePage.subtitle,
+                105,
+                y,
+                {
+                    align: "center",
+                }
+            );
+
         }
-    );
 
-    y += 40;
+        // ---------------------------------------------------------
+        // AUTOR
+        // ---------------------------------------------------------
 
-    doc.setFont(
-        "courier",
-        "normal"
-    );
+        y += 40;
 
-    doc.setFontSize(
-        14
-    );
+        doc.setFont(
+            "courier",
+            "normal"
+        );
 
-    doc.text(
-        "Escrito por",
-        105,
-        y,
-        {
-            align: "center",
+        doc.setFontSize(
+            14
+        );
+
+        doc.text(
+            "Escrito por",
+            105,
+            y,
+            {
+                align: "center",
+            }
+        );
+
+        y += 20;
+
+        doc.setFont(
+            "courier",
+            "bold"
+        );
+
+        doc.text(
+            project.author ||
+                "Desconhecido",
+            105,
+            y,
+            {
+                align: "center",
+            }
+        );
+
+        // ---------------------------------------------------------
+        // DATA
+        // ---------------------------------------------------------
+
+        if (
+            project.titlePage.date?.trim()
+        ) {
+
+            y += 20;
+
+            doc.setFont(
+                "courier",
+                "normal"
+            );
+
+            doc.setFontSize(
+                14
+            );
+
+            doc.text(
+                project.titlePage.date,
+                105,
+                y,
+                {
+                    align: "center",
+                }
+            );
+
         }
-    );
 
-    y += 20;
+        // =========================================================
+        // PRIMEIRA PÁGINA DO ROTEIRO
+        // =========================================================
 
-    doc.setFont(
-        "courier",
-        "bold"
-    );
+        doc.addPage();
 
-    doc.text(
-        project.author ||
-            "Desconhecido",
-        105,
-        y,
-        {
-            align: "center",
-        }
-    );
-
-    // =========================================================
-    // PRIMEIRA PÁGINA DE CONTEÚDO
-    // =========================================================
-
-    doc.addPage();
-
-    doc.setFontSize(
-        12
-    );
+    }
 
     // =========================================================
     // CONTEÚDO
@@ -227,8 +293,13 @@ export async function exportProjectToPDF(
         const totalPages =
             doc.getNumberOfPages();
 
+        const firstNumberedPage =
+            project.titlePage.enabled
+                ? 2
+                : 1;
+
         for (
-            let page = 3;
+            let page = firstNumberedPage;
             page <= totalPages;
             page++
         ) {
@@ -248,7 +319,9 @@ export async function exportProjectToPDF(
 
             const pageNumber =
                 String(
-                    page - 1
+                    project.titlePage.enabled
+                        ? page - 1
+                        : page
                 );
 
             switch (

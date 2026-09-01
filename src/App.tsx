@@ -31,16 +31,29 @@ function App() {
     // =========================================================
 
     const [project, setProject] =
-        useState<ScriptProject>(() => ({
-          
-            title: "",
-            author: "",
-            blocks:
-                structuredClone(
-                    sampleScript
-                ),
+      useState<ScriptProject>(() => ({
 
-        }));
+          title: "",
+          author: "",
+
+          blocks:
+              structuredClone(
+                  sampleScript
+              ),
+
+          titlePage: {
+
+              enabled: false,
+
+              title: "",
+
+              subtitle: "",
+
+              date: "",
+
+          },
+
+      }));
 
 
     // =========================================================
