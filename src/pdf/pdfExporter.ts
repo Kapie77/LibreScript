@@ -228,7 +228,7 @@ export async function exportProjectToPDF(
             doc.getNumberOfPages();
 
         for (
-            let page = 2;
+            let page = 3;
             page <= totalPages;
             page++
         ) {
