@@ -18,13 +18,167 @@ import {
 } from "@tauri-apps/plugin-fs";
 // ----------------------------------------------------------//
 
-const defaultTitlePage = (): ScriptProject["titlePage"] => ({
-    enabled: false,
-    title: "",
-    subtitle: "",
-    date: "",
-});
+const defaultTitlePage =
+    (): ScriptProject["titlePage"] => ({
 
+        enabled: false,
+        title: "",
+        primaryCredit: {
+            type: "written-by",
+            name: "",
+        },
+        storyBy: "",
+        subtitle: "",
+        basedOn: "",
+        basedOnBy: "",
+        draft: "",
+        draftPosition: "center",
+        date: "",
+        copyright: "",
+        datePosition: "center",
+        contact: {
+            address: "",
+            phone: "",
+            email: "",
+        },
+
+    });
+
+    // =============================
+    // FUNÇÃO DE NORMALIZAÇÃO
+    // =============================
+    const normalizeTitlePage = (
+        raw?: Partial<ScriptProject["titlePage"]>
+    ): ScriptProject["titlePage"] => {
+
+        const defaults =
+            defaultTitlePage();
+
+        // -----------------------------------------------------
+        // PROJETO NOVO
+        // -----------------------------------------------------
+
+        if (!raw) {
+
+            return defaults;
+
+        }
+
+        // -----------------------------------------------------
+        // COMPATIBILIDADE COM PROJETOS ANTIGOS
+        // -----------------------------------------------------
+
+        const legacy =
+            raw as Partial<
+                ScriptProject["titlePage"]
+            > & {
+
+                credit?: string;
+
+                author?: string;
+
+            };
+
+        let primaryCredit =
+            defaults.primaryCredit;
+
+        // -----------------------------------------------------
+        // FORMATO NOVO
+        // -----------------------------------------------------
+
+        if (raw.primaryCredit) {
+
+            primaryCredit = {
+
+                type:
+                    raw.primaryCredit.type,
+
+                name:
+                    raw.primaryCredit.name ?? "",
+
+            };
+
+        }
+
+        // -----------------------------------------------------
+        // FORMATO ANTIGO
+        // -----------------------------------------------------
+
+        else if (
+            legacy.credit ||
+            legacy.author
+        ) {
+
+            primaryCredit = {
+
+                type:
+                    legacy.credit === "screenplay-by"
+                        ? "screenplay-by"
+                        : "written-by",
+
+                name:
+                    legacy.author ?? "",
+
+            };
+
+        }
+
+        // -----------------------------------------------------
+        // RESULTADO NORMALIZADO
+        // -----------------------------------------------------
+
+        return {
+
+            ...defaults,
+
+            ...raw,
+
+            primaryCredit,
+
+            storyBy:
+                raw.storyBy ?? "",
+
+            subtitle:
+                raw.subtitle ?? "",
+
+            basedOn:
+                raw.basedOn ?? "",
+
+            basedOnBy:
+                raw.basedOnBy ?? "",
+
+            draft:
+                raw.draft ?? "",
+
+            draftPosition:
+                raw.draftPosition === "left" ||
+                raw.draftPosition === "right" ||
+                raw.draftPosition === "center"
+                    ? raw.draftPosition
+                    : "center",
+
+            date: raw.date ?? "",
+
+            datePosition:
+                raw.datePosition === "left" ||
+                raw.datePosition === "right" ||
+                raw.datePosition === "center"
+                    ? raw.datePosition
+                    : "center",
+
+            copyright: raw.copyright ?? "",
+
+            contact: {
+
+                ...defaults.contact,
+
+                ...(raw.contact ?? {}),
+
+            },
+
+        };
+
+    };
 
 type Props = {
     engine: EditorEngine;
@@ -110,8 +264,9 @@ export function useProjectFile({
                     [],
 
                 titlePage:
-                    parsedProject.titlePage ??
-                    defaultTitlePage(),
+                    normalizeTitlePage(
+                        parsedProject.titlePage
+                    ),
 
             };
 
@@ -160,7 +315,9 @@ export function useProjectFile({
 
     };
 
-    // Open project
+    // ===========================
+    // OPEN PROJECT
+    // ===========================
     const openProject = () => {
 
         void handleFileOpen();
@@ -355,6 +512,8 @@ export function useProjectFile({
         await saveProjectAs();
 
     }, [project, onSaved, saveProjectAs]);
+
+
 // ----------------------------------------------------------------- //
     return {
 

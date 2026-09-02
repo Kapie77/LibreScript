@@ -308,7 +308,7 @@ export class DocumentView {
     }
 
     // =========================================================
-    // CREATE COVER
+    // CREATE TITLE PAGE
     // =========================================================
     private createTitlePage(): HTMLDivElement {
 
@@ -359,11 +359,15 @@ export class DocumentView {
         // TÍTULO
         // -----------------------------------------------------
 
-        const title = document.createElement("div");
+        const title =
+            document.createElement("div");
 
-        title.className = "document-editor-title-page-title";
+        title.className =
+            "document-editor-title-page-title";
 
-        title.textContent = this.project.titlePage.title;
+        title.textContent =
+            this.project.titlePage.title ||
+            "Sem título";
 
         content.appendChild(
             title
@@ -393,29 +397,201 @@ export class DocumentView {
         }
 
         // -----------------------------------------------------
-        // AUTOR
+        // CRÉDITO PRINCIPAL
         // -----------------------------------------------------
 
-        const author =
-            document.createElement("div");
+        const primaryCredit =
+            this.project.titlePage.primaryCredit;
 
-        author.className =
-            "document-editor-title-page-author";
+        if (
+            primaryCredit.name?.trim()
+        ) {
 
-        author.textContent =
-            this.project.author;
+            const credit =
+                document.createElement("div");
 
-        content.appendChild(
-            author
-        );
+            credit.className =
+                "document-editor-title-page-credit";
+
+            switch (
+                primaryCredit.type
+            ) {
+
+                case "screenplay-by":
+
+                    credit.textContent =
+                        "Screenplay by";
+
+                    break;
+
+                case "written-by":
+                default:
+
+                    credit.textContent =
+                        "Written by";
+
+                    break;
+
+            }
+
+            content.appendChild(
+                credit
+            );
+
+            // -------------------------------------------------
+            // NOME
+            // -------------------------------------------------
+
+            const author =
+                document.createElement("div");
+
+            author.className =
+                "document-editor-title-page-author";
+
+            author.textContent =
+                primaryCredit.name;
+
+            content.appendChild(
+                author
+            );
+
+        }
 
         // -----------------------------------------------------
-        // DATA
+        // HISTÓRIA POR
         // -----------------------------------------------------
 
         if (
-            this.project.titlePage.date?.trim()
+            this.project.titlePage.storyBy?.trim()
         ) {
+
+            const storyCredit =
+                document.createElement("div");
+
+            storyCredit.className =
+                "document-editor-title-page-credit";
+
+            storyCredit.textContent =
+                "Story by";
+
+            content.appendChild(
+                storyCredit
+            );
+
+            const storyAuthor =
+                document.createElement("div");
+
+            storyAuthor.className =
+                "document-editor-title-page-author";
+
+            storyAuthor.textContent =
+                this.project.titlePage.storyBy;
+
+            content.appendChild(
+                storyAuthor
+            );
+
+        }
+
+        // -----------------------------------------------------
+        // BASED ON
+        // -----------------------------------------------------
+
+        if (
+            this.project.titlePage.basedOn?.trim()
+        ) {
+
+            const basedOn =
+                document.createElement("div");
+
+            basedOn.className =
+                "document-editor-title-page-based-on";
+
+            basedOn.textContent =
+                `Based on ${this.project.titlePage.basedOn}`;
+
+            content.appendChild(
+                basedOn
+            );
+
+            // -------------------------------------------------
+            // AUTOR DA OBRA ORIGINAL
+            // -------------------------------------------------
+
+            if (
+                this.project.titlePage.basedOnBy?.trim()
+            ) {
+
+                const basedOnBy =
+                    document.createElement("div");
+
+                basedOnBy.className =
+                    "document-editor-title-page-based-on-by";
+
+                basedOnBy.textContent =
+                    `by ${this.project.titlePage.basedOnBy}`;
+
+                content.appendChild(
+                    basedOnBy
+                );
+
+            }
+
+        }
+
+        // ---------------------------------------------------------
+        // DRAFT
+        // ---------------------------------------------------------
+
+        if (this.project.titlePage.draft?.trim()) {
+
+            const draft =
+                document.createElement("div");
+
+            draft.className =
+                "document-editor-title-page-draft";
+
+            draft.textContent =
+                this.project.titlePage.draft;
+
+            const draftPosition =
+                this.project.titlePage.draftPosition;
+
+            if (draftPosition === "left") {
+
+                draft.style.left = "60px";
+                draft.style.right = "auto";
+                draft.style.bottom = "165px";
+                draft.style.transform = "none";
+                draft.style.textAlign = "left";
+
+            } else if (draftPosition === "right") {
+
+                draft.style.left = "auto";
+                draft.style.right = "60px";
+                draft.style.bottom = "115px";
+                draft.style.transform = "none";
+                draft.style.textAlign = "right";
+
+            } else {
+
+                draft.style.left = "50%";
+                draft.style.right = "auto";
+                draft.style.bottom = "185px";
+                draft.style.transform =
+                    "translateX(-50%)";
+                draft.style.textAlign = "center";
+
+            }
+
+            page.appendChild(draft);
+        }
+
+        // ---------------------------------------------------------
+        // DATA
+        // ---------------------------------------------------------
+
+        if (this.project.titlePage.date?.trim()) {
 
             const date =
                 document.createElement("div");
@@ -426,10 +602,128 @@ export class DocumentView {
             date.textContent =
                 this.project.titlePage.date;
 
+            const datePosition =
+                this.project.titlePage.datePosition;
+
+            if (datePosition === "left") {
+
+                date.style.left = "60px";
+                date.style.right = "auto";
+                date.style.bottom = "140px";
+                date.style.transform = "none";
+                date.style.textAlign = "left";
+
+            } else if (datePosition === "right") {
+
+                date.style.left = "auto";
+                date.style.right = "60px";
+                date.style.bottom = "90px";
+                date.style.transform = "none";
+                date.style.textAlign = "right";
+
+            } else {
+
+                date.style.left = "50%";
+                date.style.right = "auto";
+                date.style.bottom = "160px";
+                date.style.transform =
+                    "translateX(-50%)";
+                date.style.textAlign = "center";
+
+            }
+
+            page.appendChild(date);
+        }
+
+        // -----------------------------------------------------
+        // CONTATO
+        // -----------------------------------------------------
+
+        const contact =
+            this.project.titlePage.contact;
+
+        if (
+            contact.address?.trim() ||
+            contact.phone?.trim() ||
+            contact.email?.trim()
+        ) {
+
+            const contactElement =
+                document.createElement("div");
+
+            contactElement.className =
+                "document-editor-title-page-contact";
+
+            if (
+                contact.address?.trim()
+            ) {
+
+                const address =
+                    document.createElement("div");
+
+                address.textContent =
+                    contact.address;
+
+                contactElement.appendChild(
+                    address
+                );
+
+            }
+
+            if (
+                contact.phone?.trim()
+            ) {
+
+                const phone =
+                    document.createElement("div");
+
+                phone.textContent =
+                    contact.phone;
+
+                contactElement.appendChild(
+                    phone
+                );
+
+            }
+
+            if (
+                contact.email?.trim()
+            ) {
+
+                const email =
+                    document.createElement("div");
+
+                email.textContent =
+                    contact.email;
+
+                contactElement.appendChild(
+                    email
+                );
+
+            }
+
             content.appendChild(
-                date
+                contactElement
             );
 
+        }
+
+        // ---------------------------------------------------------
+        // COPYRIGHT
+        // ---------------------------------------------------------
+
+        if (this.project.titlePage.copyright?.trim()) {
+
+            const copyright =
+                document.createElement("div");
+
+            copyright.className =
+                "document-editor-title-page-copyright";
+
+            copyright.textContent =
+                this.project.titlePage.copyright;
+
+            page.appendChild(copyright);
         }
 
         // -----------------------------------------------------
@@ -444,7 +738,8 @@ export class DocumentView {
             page
         );
 
-        this.titlePageElement = wrapper;
+        this.titlePageElement =
+            wrapper;
 
         return wrapper;
 

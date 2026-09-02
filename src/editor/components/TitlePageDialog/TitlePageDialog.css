@@ -18,14 +18,16 @@
    JANELA
 ========================================================= */
 .title-page-dialog {
-    width: 460px;
+    width: 520px;
     max-width: calc(100vw - 40px);
+    max-height: calc(100vh - 40px);
+    display: flex;
+    flex-direction: column;
     background: var(--bg-card);
     color: var(--text-main);
-    border:
-        1px solid var(--border-color);
-    border-radius: 10px;
-    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
     overflow: hidden;
 }
 
@@ -39,6 +41,8 @@
     padding: 16px 20px;
     border-bottom:
         1px solid var(--border-color);
+
+    flex-shrink: 0;
 }
 
 .title-page-dialog-header h2 {
@@ -69,9 +73,15 @@
 ========================================================= */
 .title-page-dialog-content {
     padding: 20px;
+
     display: flex;
     flex-direction: column;
     gap: 16px;
+
+    flex: 1;
+    min-height: 0;
+
+    overflow-y: auto;
 }
 
 /* =========================================================
@@ -106,7 +116,8 @@
     color: var(--text-main);
 }
 
-.title-page-field input {
+.title-page-field input,
+.title-page-field select {
     width: 100%;
     box-sizing: border-box;
     padding: 9px 10px;
@@ -127,7 +138,8 @@
     color: var(--text-secondary);
 }
 
-.title-page-field input:focus {
+.title-page-field input:focus,
+.title-page-field select:focus {
     border-color:
         var(--accent);
 
@@ -140,6 +152,12 @@
         );
 }
 
+.title-page-fields-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
 /* =========================================================
    RODAPÉ
 ========================================================= */
@@ -150,6 +168,7 @@
     padding: 14px 20px;
     border-top:
         1px solid var(--border-color);
+    flex-shrink: 0;
 }
 
 /* =========================================================
@@ -194,4 +213,24 @@
 
 .title-page-save-button:hover {
     filter: brightness(1.08);
+}
+
+/* =========================================================
+   SEÇÃO
+========================================================= */
+.title-page-section {
+    margin-top: 4px;
+    padding-top: 16px;
+
+    border-top:
+        1px solid var(--border-color);
+}
+
+.title-page-section h3 {
+    margin: 0 0 12px;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    color: var(--text-main);
 }

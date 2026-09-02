@@ -281,21 +281,6 @@ useEffect(() => {
               Exportar PDF
             </button>
 
-            {/* CAPA */}
-            <hr />
-            <button
-                onClick={() => {
-
-                    setActiveMenu(null);
-
-                    onCover();
-
-                }}
-            >
-                📄 Title Page...
-            </button>
-            {/* FIM DA CAPA */}
-
           </div>
         )}
 
@@ -495,18 +480,32 @@ useEffect(() => {
       )}
       </div>
 
+      {/* CAPA */}
+       <button
+        onClick={() => {
+
+          setActiveMenu(null);
+
+          onCover();
+
+          }}
+          >
+          Title Page
+        </button>
+        {/* FIM DA CAPA */}
+
       <button
         onMouseDown={(e) => e.preventDefault()}
         onClick={onUndo}
       >
-        ↶ Desfazer
+        ↶ {/* desfazer */}
       </button>
 
       <button
         onMouseDown={(e) => e.preventDefault()}
         onClick={onRedo}
       >
-        ↷ Refazer
+        ↷  {/* refazer */}
       </button>
 
 
