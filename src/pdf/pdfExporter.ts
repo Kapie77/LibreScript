@@ -62,6 +62,12 @@ export async function exportProjectToPDF(
         project.titlePage.enabled
     ) {
 
+        let titleY = 65;
+
+        // -----------------------------------------------------
+        // TÍTULO
+        // -----------------------------------------------------
+
         doc.setFont(
             "courier",
             "bold"
@@ -72,24 +78,26 @@ export async function exportProjectToPDF(
         );
 
         doc.text(
-            project.titlePage.title ||
-                "Sem título",
+            (
+                project.titlePage.title ||
+                "Sem título"
+            ).toUpperCase(),
             105,
-            y,
+            titleY,
             {
                 align: "center",
             }
         );
 
-        // ---------------------------------------------------------
+        // -----------------------------------------------------
         // SUBTÍTULO
-        // ---------------------------------------------------------
+        // -----------------------------------------------------
 
         if (
             project.titlePage.subtitle?.trim()
         ) {
 
-            y += 15;
+            titleY += 12;
 
             doc.setFont(
                 "courier",
@@ -103,7 +111,7 @@ export async function exportProjectToPDF(
             doc.text(
                 project.titlePage.subtitle,
                 105,
-                y,
+                titleY,
                 {
                     align: "center",
                 }
@@ -111,56 +119,260 @@ export async function exportProjectToPDF(
 
         }
 
-        // ---------------------------------------------------------
-        // AUTOR
-        // ---------------------------------------------------------
+        // -----------------------------------------------------
+        // CRÉDITO PRINCIPAL
+        // -----------------------------------------------------
 
-        y += 40;
-
-        doc.setFont(
-            "courier",
-            "normal"
-        );
-
-        doc.setFontSize(
-            14
-        );
-
-        doc.text(
-            "Escrito por",
-            105,
-            y,
-            {
-                align: "center",
-            }
-        );
-
-        y += 20;
-
-        doc.setFont(
-            "courier",
-            "bold"
-        );
-
-        doc.text(
-            project.author ||
-                "Desconhecido",
-            105,
-            y,
-            {
-                align: "center",
-            }
-        );
-
-        // ---------------------------------------------------------
-        // DATA
-        // ---------------------------------------------------------
+        const primaryCredit =
+            project.titlePage.primaryCredit;
 
         if (
-            project.titlePage.date?.trim()
+            primaryCredit.name?.trim()
         ) {
 
-            y += 20;
+            titleY += 35;
+
+            doc.setFont(
+                "courier",
+                "normal"
+            );
+
+            doc.setFontSize(
+                14
+            );
+
+            const creditLabel =
+                primaryCredit.type ===
+                "screenplay-by"
+                    ? "Screenplay by"
+                    : "Written by";
+
+            doc.text(
+                creditLabel,
+                105,
+                titleY,
+                {
+                    align: "center",
+                }
+            );
+
+            // -------------------------------------------------
+            // NOME
+            // -------------------------------------------------
+
+            titleY += 10;
+
+            doc.setFont(
+                "courier",
+                "bold"
+            );
+
+            doc.setFontSize(
+                14
+            );
+
+            doc.text(
+                primaryCredit.name,
+                105,
+                titleY,
+                {
+                    align: "center",
+                }
+            );
+
+        }
+
+        // -----------------------------------------------------
+        // STORY BY
+        // -----------------------------------------------------
+
+        if (
+            project.titlePage.storyBy?.trim()
+        ) {
+
+            titleY += 25;
+
+            doc.setFont(
+                "courier",
+                "normal"
+            );
+
+            doc.setFontSize(
+                14
+            );
+
+            doc.text(
+                "Story by",
+                105,
+                titleY,
+                {
+                    align: "center",
+                }
+            );
+
+            titleY += 10;
+
+            doc.setFont(
+                "courier",
+                "bold"
+            );
+
+            doc.text(
+                project.titlePage.storyBy,
+                105,
+                titleY,
+                {
+                    align: "center",
+                }
+            );
+
+        }
+
+        // -----------------------------------------------------
+        // BASED ON
+        // -----------------------------------------------------
+
+        if (
+            project.titlePage.basedOn?.trim()
+        ) {
+
+            titleY += 25;
+
+            doc.setFont(
+                "courier",
+                "normal"
+            );
+
+            doc.setFontSize(
+                14
+            );
+
+            doc.text(
+                `Based on ${project.titlePage.basedOn}`,
+                105,
+                titleY,
+                {
+                    align: "center",
+                }
+            );
+
+            // -------------------------------------------------
+            // AUTOR DA OBRA ORIGINAL
+            // -------------------------------------------------
+
+            if (
+                project.titlePage.basedOnBy?.trim()
+            ) {
+
+                titleY += 5;
+
+                doc.text(
+                    `by ${project.titlePage.basedOnBy}`,
+                    105,
+                    titleY,
+                    {
+                        align: "center",
+                    }
+                );
+
+            }
+
+        }
+
+        // -----------------------------------------------------
+        // DRAFT
+        // -----------------------------------------------------
+
+        if (project.titlePage.draft?.trim()) {
+
+            let draftX = 105;
+            let draftY = 245;
+            let draftAlign: "left" | "center" | "right" = "center";
+
+            switch (project.titlePage.draftPosition) {
+
+                case "left":
+
+                    draftX = 20;
+                    draftY = 235;
+                    draftAlign = "left";
+
+                    break;
+
+                case "right":
+
+                    draftX = 190;
+                    draftY = 250;
+                    draftAlign = "right";
+
+                    break;
+
+                case "center":
+                default:
+
+                    draftX = 105;
+                    draftY = 230;
+                    draftAlign = "center";
+
+                    break;
+            }
+
+            doc.setFont(
+                "courier",
+                "normal"
+            );
+
+            doc.setFontSize(
+                14
+            );
+
+            doc.text(
+                project.titlePage.draft,
+                draftX,
+                draftY,
+                {
+                    align: draftAlign,
+                }
+            );
+        }
+
+        // -----------------------------------------------------
+        // DATA
+        // -----------------------------------------------------
+
+        if (project.titlePage.date?.trim()) {
+
+            let dateX = 105;
+            let dateY = 260;
+            let dateAlign: "left" | "center" | "right" = "center";
+
+            switch (project.titlePage.datePosition) {
+
+                case "left":
+
+                    dateX = 20;
+                    dateY = 243;
+                    dateAlign = "left";
+
+                    break;
+
+                case "right":
+
+                    dateX = 190;
+                    dateY = 257;
+                    dateAlign = "right";
+
+                    break;
+
+                case "center":
+                default:
+
+                    dateX = 105;
+                    dateY = 238;
+                    dateAlign = "center";
+
+                    break;
+            }
 
             doc.setFont(
                 "courier",
@@ -173,18 +385,130 @@ export async function exportProjectToPDF(
 
             doc.text(
                 project.titlePage.date,
-                105,
-                y,
+                dateX,
+                dateY,
                 {
-                    align: "center",
+                    align: dateAlign,
                 }
             );
+        }
+
+        // -----------------------------------------------------
+        // CONTATO
+        // -----------------------------------------------------
+
+        const contact =
+            project.titlePage.contact;
+
+        if (
+            contact.address?.trim() ||
+            contact.phone?.trim() ||
+            contact.email?.trim()
+        ) {
+
+            let contactY =
+                250;
+
+            doc.setFont(
+                "courier",
+                "normal"
+            );
+
+            doc.setFontSize(
+                10
+            );
+
+            if (
+                contact.address?.trim()
+            ) {
+
+                doc.text(
+                    contact.address,
+                    20,
+                    contactY
+                );
+
+                contactY += 5;
+
+            }
+
+            if (
+                contact.phone?.trim()
+            ) {
+
+                doc.text(
+                    contact.phone,
+                    20,
+                    contactY
+                );
+
+                contactY += 5;
+
+            }
+
+            if (
+                contact.email?.trim()
+            ) {
+
+                doc.text(
+                    contact.email,
+                    20,
+                    contactY
+                );
+
+            }
 
         }
 
-        // =========================================================
+        // -----------------------------------------------------
+        // COPYRIGHT
+        // -----------------------------------------------------
+
+        if (project.titlePage.copyright?.trim()) {
+
+            doc.setFont(
+                "courier",
+                "normal"
+            );
+
+            doc.setFontSize(
+                10
+            );
+
+            const copyrightLines =
+                doc.splitTextToSize(
+                    project.titlePage.copyright,
+                    150
+                );
+
+            const copyrightLineHeight =
+                4;
+
+            const copyrightBottom =
+                8;
+
+            const copyrightY =
+                297 -
+                copyrightBottom -
+                (
+                    (copyrightLines.length - 1) *
+                    copyrightLineHeight
+                );
+
+            doc.text(
+                copyrightLines,
+                105,
+                copyrightY,
+                {
+                    align: "center",
+                    lineHeightFactor: 1.0,
+                }
+            );
+        }
+
+        // =====================================================
         // PRIMEIRA PÁGINA DO ROTEIRO
-        // =========================================================
+        // =====================================================
 
         doc.addPage();
 

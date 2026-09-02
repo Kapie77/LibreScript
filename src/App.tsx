@@ -18,43 +18,51 @@ import HistoryPage from "./editor/pages/History/HistoryPage";
 
 function App() {
 
-    // =========================================================
-    // HISTÓRICO
-    // =========================================================
-
-    const [historyEntries, setHistoryEntries] =
-        useState<HistoryEntry[]>([]);
+  // =========================================================
+  // HISTÓRICO
+  // =========================================================
+  const [historyEntries, setHistoryEntries] = useState<HistoryEntry[]>([]);
 
 
-    // =========================================================
-    // PROJETO
-    // =========================================================
+  // =========================================================
+  // PROJETO
+  // =========================================================
 
-    const [project, setProject] =
+  const [project, setProject] =
       useState<ScriptProject>(() => ({
-
+        
           title: "",
           author: "",
-
           blocks:
               structuredClone(
                   sampleScript
               ),
-
           titlePage: {
-
               enabled: false,
-
               title: "",
+              primaryCredit: {
 
+                  type: "written-by",
+                  name: "",
+
+              },
+              storyBy: "",
               subtitle: "",
-
+              basedOn: "",
+              basedOnBy: "",
+              draft: "",
+              draftPosition: "center",
               date: "",
-
+              copyright: "",
+              datePosition: "center",
+              contact: {
+                  address: "",
+                  phone: "",
+                  email: "",
+              },
           },
 
       }));
-
 
     // =========================================================
     // CONFIGURAÇÕES
