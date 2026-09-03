@@ -15,6 +15,7 @@ import { getEditorBlockLayout } from "../../layout";
 import { PAGE_EDITOR } from "../../layout/config/PageEditor";
 import type { Settings } from "../../types/settings";
 import type { ScriptProject } from "../../types/project";
+import { convertFileSrc } from "@tauri-apps/api/core";
 // --------------------------------------------------------- //
 
 export class DocumentView {
@@ -34,6 +35,7 @@ export class DocumentView {
     private allowDeleteBlocks: boolean;
     private pageNumberPosition: Settings["pageNumberPosition"];
     private project: ScriptProject;
+    private projectFilePath: string | null;
     private titlePageElement: HTMLDivElement | null = null;
     private onSave: () => void;
 
@@ -73,6 +75,7 @@ export class DocumentView {
         allowDeleteBlocks: boolean,
         pageNumberPosition: Settings["pageNumberPosition"],
         project: ScriptProject,
+        projectFilePath: string | null,
         onSave: () => void,
         onOpen: () => void,
     ) {
@@ -85,6 +88,7 @@ export class DocumentView {
         this.allowDeleteBlocks = allowDeleteBlocks;
         this.pageNumberPosition = pageNumberPosition;
         this.project = project;
+        this.projectFilePath = projectFilePath;
         this.onSave = onSave;
 
         this.root.addEventListener(
@@ -346,33 +350,147 @@ export class DocumentView {
             "border-box";
 
         // -----------------------------------------------------
+        // APARÊNCIA DA PÁGINA
+        // -----------------------------------------------------
+
+        const visualMode = this.project.titlePage.visualMode;
+
+        const imagePath = this.resolveTitlePageImagePath();
+
+        // -----------------------------------------------------
+        // IMAGEM DE FUNDO
+        // -----------------------------------------------------
+
+        if (
+            visualMode === "background" &&
+            imagePath?.trim()
+        ) {
+
+            const background = document.createElement("img");
+
+            background.className = "document-editor-title-page-background";
+
+            background.src = convertFileSrc(imagePath);
+
+            page.appendChild(
+                background
+            );
+        }
+
+        // -----------------------------------------------------
         // CONTEÚDO
         // -----------------------------------------------------
 
-        const content =
-            document.createElement("div");
+        const content = document.createElement("div");
 
-        content.className =
-            "document-editor-title-page-content";
+        content.className = "document-editor-title-page-content";
 
         // -----------------------------------------------------
-        // TÍTULO
+        // TÍTULO / IMAGEM
         // -----------------------------------------------------
 
-        const title =
-            document.createElement("div");
+        if (
+            visualMode === "image" &&
+            imagePath?.trim()
+        ) {
 
-        title.className =
-            "document-editor-title-page-title";
+            const image =
+                document.createElement("img");
 
-        title.textContent =
-            this.project.titlePage.title ||
-            "Sem título";
+            image.className =
+                "document-editor-title-page-image";
 
-        content.appendChild(
-            title
-        );
+            image.src =
+                convertFileSrc(imagePath);
 
+            content.appendChild(
+                image
+            );
+
+        } else {
+
+            const title =
+                document.createElement("div");
+
+            title.className =
+                "document-editor-title-page-title";
+
+            title.textContent =
+                this.project.titlePage.title ||
+                "Sem título";
+
+            content.appendChild(
+                title
+            );
+
+        }
+
+        // -----------------------------------------------------
+        // EPISÓDIO — SÉRIE
+        // -----------------------------------------------------
+
+        if (
+            this.project.format === "series"
+        ) {
+
+            const episodeNumber =
+                this.project.series.episodeNumber?.trim();
+
+            const episodeTitle =
+                this.project.series.episodeTitle?.trim();
+
+            if (
+                episodeNumber ||
+                episodeTitle
+            ) {
+
+                const episode =
+                    document.createElement("div");
+
+                episode.className =
+                    "document-editor-title-page-episode";
+
+                if (episodeNumber) {
+
+                    const number =
+                        document.createElement("div");
+
+                    number.className =
+                        "document-editor-title-page-episode-number";
+
+                    number.textContent =
+                        `Episode ${episodeNumber}`;
+
+                    episode.appendChild(
+                        number
+                    );
+
+                }
+
+                if (episodeTitle) {
+
+                    const name =
+                        document.createElement("div");
+
+                    name.className =
+                        "document-editor-title-page-episode-title";
+
+                    name.textContent =
+                        episodeTitle;
+
+                    episode.appendChild(
+                        name
+                    );
+
+                }
+
+                content.appendChild(
+                    episode
+                );
+
+            }
+
+        }
         // -----------------------------------------------------
         // SUBTÍTULO
         // -----------------------------------------------------
@@ -491,6 +609,41 @@ export class DocumentView {
                 storyAuthor
             );
 
+        }
+
+        // -----------------------------------------------------
+        // DIREÇÃO
+        // -----------------------------------------------------
+
+        if (
+            this.project.titlePage.directedBy?.trim()
+        ) {
+
+            const directedCredit =
+                document.createElement("div");
+
+            directedCredit.className =
+                "document-editor-title-page-credit";
+
+            directedCredit.textContent =
+                "Directed by";
+
+            content.appendChild(
+                directedCredit
+            );
+
+            const directedAuthor =
+                document.createElement("div");
+
+            directedAuthor.className =
+                "document-editor-title-page-author";
+
+            directedAuthor.textContent =
+                this.project.titlePage.directedBy;
+
+            content.appendChild(
+                directedAuthor
+            );
         }
 
         // -----------------------------------------------------
@@ -743,6 +896,60 @@ export class DocumentView {
 
         return wrapper;
 
+    }
+
+    // =========================================================
+    // TITLE PAGE IMAGE PATH
+    // =========================================================
+    private resolveTitlePageImagePath(): string | null {
+
+        const imagePath =
+            this.project.titlePage.imagePath;
+
+        if (!imagePath?.trim()) {
+
+            return null;
+
+        }
+
+        // Caminho absoluto antigo
+        if (
+            /^[A-Za-z]:[\\/]/.test(imagePath) ||
+            imagePath.startsWith("/")
+        ) {
+
+            return imagePath;
+
+        }
+
+        if (!this.projectFilePath) {
+
+            return null;
+
+        }
+
+        const normalizedProjectPath =
+            this.projectFilePath.replace(
+                /\\/g,
+                "/"
+            );
+
+        const lastSlash =
+            normalizedProjectPath.lastIndexOf("/");
+
+        if (lastSlash === -1) {
+
+            return null;
+
+        }
+
+        const projectDirectory =
+            normalizedProjectPath.substring(
+                0,
+                lastSlash
+            );
+
+        return `${projectDirectory}/${imagePath}`;
     }
 
     // =========================================================

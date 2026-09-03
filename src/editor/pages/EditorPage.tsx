@@ -150,11 +150,12 @@ export default function EditorPage({
 
   // Função abrir/criar/salvar projeto e handle open file
   const {
-      openProject,
-      newProject,
-      saveProject,
-      saveProjectAs,
-  } = useProjectFile({
+        openProject,
+        newProject,
+        saveProject,
+        saveProjectAs,
+        importProjectAsset,
+    } = useProjectFile({
 
       engine,
       project,
@@ -286,9 +287,10 @@ export default function EditorPage({
           onExportPDF={() => {
                 void exportProjectToPDF(
                     project,
-                    settings.pageNumberPosition
+                    settings.pageNumberPosition,
+                    filePath
                 );
-          }}
+           }}
 
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
@@ -456,6 +458,7 @@ export default function EditorPage({
       <DocumentEditor
           engine={engine}
           project={project}
+          projectFilePath={filePath}
           allowMoveBlocks={settings.allowMoveBlocks}
           allowDeleteBlocks={settings.allowDeleteBlocks}
           pageNumberPosition={
@@ -489,6 +492,7 @@ export default function EditorPage({
                 onClose={() =>
                     setShowTitlePageDialog(false)
                 }
+                importProjectAsset={importProjectAsset}
             />
 
         )}

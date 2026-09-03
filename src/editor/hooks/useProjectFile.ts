@@ -15,6 +15,8 @@ import { open, save } from "@tauri-apps/plugin-dialog";
 import {
     readTextFile,
     writeTextFile,
+    mkdir,
+    copyFile,
 } from "@tauri-apps/plugin-fs";
 // ----------------------------------------------------------//
 
@@ -22,12 +24,15 @@ const defaultTitlePage =
     (): ScriptProject["titlePage"] => ({
 
         enabled: false,
+        visualMode: "text",
+        imagePath: "",
         title: "",
         primaryCredit: {
             type: "written-by",
             name: "",
         },
         storyBy: "",
+        directedBy: "",
         subtitle: "",
         basedOn: "",
         basedOnBy: "",
@@ -135,8 +140,20 @@ const defaultTitlePage =
 
             primaryCredit,
 
+            visualMode:
+                raw.visualMode === "image" ||
+                raw.visualMode === "background"
+                    ? raw.visualMode
+                    : "text",
+
+            imagePath:
+                raw.imagePath ?? "",
+
             storyBy:
                 raw.storyBy ?? "",
+
+            directedBy:
+                raw.directedBy ?? "",
 
             subtitle:
                 raw.subtitle ?? "",
@@ -180,6 +197,22 @@ const defaultTitlePage =
 
     };
 
+    // ==================================
+    // FUNÇÃO DE NORMALIZAÇÃO (SERIE)
+    // ==================================
+    function normalizeSeries(
+        series?: Partial<ScriptProject["series"]>
+    ): ScriptProject["series"] {
+
+        return {
+            episodeNumber:
+                series?.episodeNumber ?? "",
+
+            episodeTitle:
+                series?.episodeTitle ?? "",
+        };
+    }
+
 type Props = {
     engine: EditorEngine;
     project: ScriptProject;
@@ -211,6 +244,117 @@ export function useProjectFile({
 
     // guarda arquivo atualmente associado
     const filePathRef = useRef<string | null>(null);
+
+    // pega o caminho da imagem de capa (title page)
+    const getProjectFilePath = () => {
+        return filePathRef.current;
+    };
+
+    // função que importa o asset
+    const importProjectAsset = async (
+        sourcePath: string
+    ): Promise<string | null> => {
+
+        const projectPath =
+            filePathRef.current;
+
+        if (!projectPath) {
+
+            alert(
+                "Salve o projeto antes de adicionar uma imagem à página de título."
+            );
+
+            return null;
+
+        }
+
+        try {
+
+            // -------------------------------------------------
+            // DIRETÓRIO DO PROJETO
+            // -------------------------------------------------
+
+            const normalizedProjectPath =
+                projectPath.replace(/\\/g, "/");
+
+            const lastSlash =
+                normalizedProjectPath.lastIndexOf("/");
+
+            const projectDirectory =
+                normalizedProjectPath.substring(
+                    0,
+                    lastSlash
+                );
+
+            // -------------------------------------------------
+            // DIRETÓRIO DOS ASSETS
+            // -------------------------------------------------
+
+            const assetsDirectory =
+                `${projectDirectory}/assets/title-page`;
+
+            await mkdir(
+                assetsDirectory,
+                {
+                    recursive: true,
+                }
+            );
+
+            // -------------------------------------------------
+            // NOME DO ARQUIVO
+            // -------------------------------------------------
+
+            const normalizedSourcePath =
+                sourcePath.replace(/\\/g, "/");
+
+            const sourceFileName =
+                normalizedSourcePath.substring(
+                    normalizedSourcePath.lastIndexOf("/") + 1
+                );
+
+            // -------------------------------------------------
+            // CAMINHO FINAL
+            // -------------------------------------------------
+
+            const destinationPath =
+                `${assetsDirectory}/${sourceFileName}`;
+
+            // -------------------------------------------------
+            // COPIA
+            // -------------------------------------------------
+
+            await copyFile(
+                sourcePath,
+                destinationPath
+            );
+
+            // -------------------------------------------------
+            // CAMINHO RELATIVO AO PROJETO
+            // -------------------------------------------------
+
+            return `assets/title-page/${sourceFileName}`;
+
+        } catch (error) {
+
+            console.error(
+                "[ASSET] erro ao importar imagem:",
+                error
+            );
+
+            console.error(
+                "[ASSET] sourcePath:",
+                sourcePath
+            );
+
+            console.error(
+                "[ASSET] projectPath:",
+                projectPath
+            );
+
+            return null;
+
+        }
+    };
 
     // Handle File Open
     // Leitor de arquivo lscript
@@ -249,25 +393,29 @@ export function useProjectFile({
                     content
                 ) as Partial<ScriptProject>;
 
+            // compatibilidade com projetos antigos
             const loadedProject: ScriptProject = {
+                title: parsedProject.title ?? "",
 
-                title:
-                    parsedProject.title ??
-                    "",
+                author: parsedProject.author ?? "",
 
-                author:
-                    parsedProject.author ??
-                    "",
+                format:
+                    parsedProject.format === "series"
+                        ? "series"
+                        : "film",
+
+                series:
+                    normalizeSeries(
+                        parsedProject.series
+                    ),
 
                 blocks:
-                    parsedProject.blocks ??
-                    [],
+                    parsedProject.blocks ?? [],
 
                 titlePage:
                     normalizeTitlePage(
                         parsedProject.titlePage
                     ),
-
             };
 
             // -----------------------------------------
@@ -355,9 +503,13 @@ export function useProjectFile({
         setProject({
             title: "",
             author: "",
+            format: "film",
+            series: {
+                episodeNumber: "",
+                episodeTitle: "",
+            },
             blocks: [],
-            titlePage:
-                defaultTitlePage(),
+            titlePage: defaultTitlePage(),
         });
 
         onSaved();
@@ -522,6 +674,8 @@ export function useProjectFile({
         saveProject,
         saveProjectAs,
         handleFileOpen,
+        getProjectFilePath,
+        importProjectAsset,
 
     };
 

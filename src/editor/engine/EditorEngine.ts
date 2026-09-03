@@ -169,6 +169,7 @@ saveProject() {
         allowDeleteBlocks: boolean,
         pageNumberPosition: Settings["pageNumberPosition"],
         project: ScriptProject,
+        projectFilePath: string | null,
         onSave: () => void,
         onOpen: () => void
     ) {
@@ -189,6 +190,7 @@ saveProject() {
             allowDeleteBlocks,
             pageNumberPosition,
             project,
+            projectFilePath,
             onSave,
             onOpen
 

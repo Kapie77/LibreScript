@@ -15,6 +15,7 @@ type Props = {
     allowDeleteBlocks: boolean;
     pageNumberPosition: Settings["pageNumberPosition"];
     project: ScriptProject;
+    projectFilePath: string | null;
     onSave: () => void;
     onOpen: () => void;
 };
@@ -25,6 +26,7 @@ export default function DocumentEditor({
 
     engine,
     project,
+    projectFilePath,
     allowMoveBlocks,
     allowDeleteBlocks,
     pageNumberPosition,
@@ -62,6 +64,7 @@ export default function DocumentEditor({
             allowDeleteBlocks,
             pageNumberPosition,
             project,
+            projectFilePath,
             () => {
                 onSaveRef.current();
             },
@@ -80,6 +83,7 @@ export default function DocumentEditor({
 
         engine,
         project,
+        projectFilePath,
         allowMoveBlocks,
         allowDeleteBlocks,
         pageNumberPosition,

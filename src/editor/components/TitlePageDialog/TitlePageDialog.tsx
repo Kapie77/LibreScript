@@ -5,6 +5,7 @@
 
 import "./TitlePageDialog.css";
 import { useState } from "react";
+import { open } from "@tauri-apps/plugin-dialog";
 import type {
     ScriptProject,
     TitlePageCreditType,
@@ -23,6 +24,10 @@ type Props = {
 
     onClose: () => void;
 
+    importProjectAsset: (
+        sourcePath: string
+    ) => Promise<string | null>;
+
 };
 
 // -------------------------------------------------------- //
@@ -32,6 +37,7 @@ export default function TitlePageDialog({
     project,
     setProject,
     onClose,
+    importProjectAsset,
 
 }: Props) {
 
@@ -136,6 +142,52 @@ export default function TitlePageDialog({
     };
 
     // ----------------------------------------------------
+    // SELECIONAR IMAGEM DA PÁGINA DE TÍTULO
+    // ----------------------------------------------------
+
+    const handleSelectImage = async () => {
+        try {
+            const selected = await open({
+                multiple: false,
+                directory: false,
+                filters: [
+                    {
+                        name: "Imagens",
+                        extensions: [
+                            "png",
+                            "jpg",
+                            "jpeg",
+                            "webp",
+                        ],
+                    },
+                ],
+            });
+
+            if (typeof selected !== "string") {
+                return;
+            }
+
+            const importedPath =
+                await importProjectAsset(selected);
+
+            if (!importedPath) {
+                return;
+            }
+
+            updateTitlePage(
+                "imagePath",
+                importedPath
+            );
+
+        } catch (error) {
+            console.error(
+                "Erro ao selecionar imagem:",
+                error
+            );
+        }
+    };
+
+    // ----------------------------------------------------
     // SALVAR
     // ----------------------------------------------------
     const handleSave = () => {
@@ -145,6 +197,7 @@ export default function TitlePageDialog({
         ) {
 
             if (
+                draft.titlePage.visualMode === "text" &&
                 !draft.titlePage.title.trim()
             ) {
 
@@ -230,11 +283,83 @@ export default function TitlePageDialog({
 
                 </div>
 
-                {/* CONTEÚDO */}
+                {/* CORPO */}
 
-                <div className="title-page-dialog-content">
+                <div className="title-page-dialog-body">
 
-                    {/* USAR PÁGINA DE TÍTULO */}
+                    {/* =================================================
+                    BARRA LATERAL — FORMATO
+                    ================================================= */}
+
+                    <aside className="title-page-format-sidebar">
+
+                        <div className="title-page-format-sidebar-title">
+                            FORMATO
+                        </div>
+
+                        <button
+                            type="button"
+                            className={
+                                `title-page-format-button ${
+                                    draft.format === "film"
+                                        ? "active"
+                                        : ""
+                                }`
+                            }
+                            onClick={() =>
+                                setDraft(prev => ({
+                                    ...prev,
+                                    format: "film",
+                                }))
+                            }
+                        >
+
+                            <span className="title-page-format-icon">
+                                🎬
+                            </span>
+
+                            <span className="title-page-format-name">
+                                Filme
+                            </span>
+
+                        </button>
+
+                        <button
+                            type="button"
+                            className={
+                                `title-page-format-button ${
+                                    draft.format === "series"
+                                        ? "active"
+                                        : ""
+                                }`
+                            }
+                            onClick={() =>
+                                setDraft(prev => ({
+                                    ...prev,
+                                    format: "series",
+                                }))
+                            }
+                        >
+
+                            <span className="title-page-format-icon">
+                                📺
+                            </span>
+
+                            <span className="title-page-format-name">
+                                Série
+                            </span>
+
+                        </button>
+
+                    </aside>
+
+                    {/* =================================================
+                    CONTEÚDO
+                    ================================================= */}
+
+                    <div className="title-page-dialog-content">
+
+                        {/* USAR PÁGINA DE TÍTULO */}
 
                     <label className="title-page-checkbox">
 
@@ -254,6 +379,112 @@ export default function TitlePageDialog({
                         Usar página de título
 
                     </label>
+
+                    {/* ---------------------------------- */}
+                    {/* APARÊNCIA                          */}
+                    {/* ---------------------------------- */}
+
+                    <div className="title-page-section">
+
+                        <h3>
+                            Aparência
+                        </h3>
+
+                    </div>
+
+                    <div className="title-page-field">
+
+                        <label>
+                            Tipo
+                        </label>
+
+                        <select
+                            value={
+                                draft.titlePage.visualMode
+                            }
+                            onChange={(event) =>
+                                updateTitlePage(
+                                    "visualMode",
+                                    event.target.value as
+                                        | "text"
+                                        | "image"
+                                        | "background"
+                                )
+                            }
+                        >
+
+                            <option value="text">
+                                Texto
+                            </option>
+
+                            <option value="image">
+                                Imagem no lugar do título
+                            </option>
+
+                            <option value="background">
+                                Imagem de fundo
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    {(
+                        draft.titlePage.visualMode === "image" ||
+                        draft.titlePage.visualMode === "background"
+                    ) && (
+
+                        <div className="title-page-image-selector">
+
+                            <div className="title-page-field">
+
+                                <label>
+                                    Imagem
+                                </label>
+
+                                <button
+                                    type="button"
+                                    className="title-page-image-button"
+                                    onClick={handleSelectImage}
+                                >
+                                    Selecionar imagem...
+                                </button>
+
+                            </div>
+
+                            {draft.titlePage.imagePath && (
+
+                                <div className="title-page-image-selected">
+
+                                    <span
+                                        className="title-page-image-path"
+                                        title={
+                                            draft.titlePage.imagePath
+                                        }
+                                    >
+                                        {draft.titlePage.imagePath}
+                                    </span>
+
+                                    <button
+                                        type="button"
+                                        className="title-page-image-remove"
+                                        onClick={() =>
+                                            updateTitlePage(
+                                                "imagePath",
+                                                ""
+                                            )
+                                        }
+                                    >
+                                        Remover
+                                    </button>
+
+                                </div>
+
+                            )}
+
+                        </div>
+
+                    )}
 
                     {/* TÍTULO */}
 
@@ -278,6 +509,92 @@ export default function TitlePageDialog({
                         />
 
                     </div>
+                    
+                    {/* --------------------------------------------------- */}
+                    {draft.format === "series" && (
+
+                        <>
+                            {/* ---------------------------------- */}
+                            {/* SÉRIE                              */}
+                            {/* ---------------------------------- */}
+
+                            <div className="title-page-section">
+
+                                <h3>
+                                    Episódio
+                                </h3>
+
+                            </div>
+
+                            <div className="title-page-fields-row">
+
+                                <div className="title-page-field">
+
+                                    <label>
+                                        Número
+                                    </label>
+
+                                    <input
+                                        type="text"
+                                        value={
+                                            draft.series.episodeNumber
+                                        }
+                                        onChange={(event) =>
+                                            setDraft(prev => ({
+                                                ...prev,
+
+                                                series: {
+
+                                                    ...prev.series,
+
+                                                    episodeNumber:
+                                                        event.target.value,
+
+                                                },
+
+                                            }))
+                                        }
+                                        placeholder="Ex.: 01"
+                                    />
+
+                                </div>
+
+                                <div className="title-page-field">
+
+                                    <label>
+                                        Nome
+                                    </label>
+
+                                    <input
+                                        type="text"
+                                        value={
+                                            draft.series.episodeTitle
+                                        }
+                                        onChange={(event) =>
+                                            setDraft(prev => ({
+                                                ...prev,
+
+                                                series: {
+
+                                                    ...prev.series,
+
+                                                    episodeTitle:
+                                                        event.target.value,
+
+                                                },
+
+                                            }))
+                                        }
+                                        placeholder="Nome do episódio"
+                                    />
+
+                                </div>
+
+                            </div>
+
+                        </>
+
+                    )}
 
                     {/* ---------------------------------- */}
                     {/* CRÉDITO PRINCIPAL                  */}
@@ -367,6 +684,28 @@ export default function TitlePageDialog({
                             placeholder="Opcional"
                         />
 
+                    </div>
+
+                    {/* DIREÇÃO */}
+                    <div className="title-page-field">
+
+                        <label>
+                            Directed by
+                        </label>
+
+                        <input
+                            type="text"
+                            value={
+                                draft.titlePage.directedBy
+                            }
+                            onChange={(event) =>
+                                updateTitlePage(
+                                    "directedBy",
+                                    event.target.value
+                                )
+                            }
+                            placeholder="Opcional"
+                        />
                     </div>
 
                     {/* SUBTÍTULO */}
@@ -667,6 +1006,7 @@ export default function TitlePageDialog({
                     </div>
 
                 </div>
+            </div>
 
                 {/* RODAPÉ */}
 

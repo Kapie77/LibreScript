@@ -233,7 +233,6 @@
 /* =========================================================
    PÁGINA DE TÍTULO
 ========================================================= */
-
 .document-editor-title-page-wrapper {
     flex-shrink: 0;
 }
@@ -252,25 +251,44 @@
         monospace;
 }
 
+.document-editor-title-page-image {
+    max-width: 650px;
+    max-height: 250px;
+    object-fit: contain;
+    display: block;
+}
+
+.document-editor-title-page-background {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+    pointer-events: none;
+}
+
 /* =========================================================
    CONTEÚDO
 ========================================================= */
-
 .document-editor-title-page-content {
     width: 100%;
     height: 100%;
-
     box-sizing: border-box;
-
     display: flex;
     flex-direction: column;
-
     align-items: center;
     justify-content: center;
-
     text-align: center;
+    position: relative;
+    z-index: 1;
 }
 
+.document-editor-title-page-draft,
+.document-editor-title-page-date,
+.document-editor-title-page-copyright {
+    z-index: 1;
+}
 /* =========================================================
    TÍTULO
 ========================================================= */
@@ -316,7 +334,6 @@
 /* =========================================================
    CRÉDITO PRINCIPAL
 ========================================================= */
-
 .document-editor-title-page-credit {
     margin-top: 60px;
 
@@ -329,6 +346,11 @@
     line-height: 1.2;
 
     text-align: center;
+}
+
+.document-editor-title-page-credit
+~ .document-editor-title-page-credit {
+    margin-top: 24px;
 }
 
 /* =========================================================
@@ -484,4 +506,23 @@
     line-height: 1.3;
 
     text-align: center;
+}
+
+/* =========================================================
+   SERIE EPISODE
+========================================================= */
+.document-editor-title-page-episode {
+    margin-top: 24px;
+    text-align: center;
+}
+
+.document-editor-title-page-episode-number {
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.document-editor-title-page-episode-title {
+    margin-top: 6px;
+    font-size: 20px;
+    font-weight: 500;
 }
