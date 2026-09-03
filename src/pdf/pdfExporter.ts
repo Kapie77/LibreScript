@@ -10,14 +10,191 @@ import { PAGE_PDF } from "../layout/config/PagePDF";
 import { buildPdfPreparedBlocks } from
     "../layout/builders/buildPdfPreparedBlocks";
 import { save } from "@tauri-apps/plugin-dialog";
-import { writeFile } from "@tauri-apps/plugin-fs";
+import {
+    readFile,
+    writeFile,
+} from "@tauri-apps/plugin-fs";
 import type { Settings } from "../types/settings";
-// ------------------------------------------------------------ //
+
+// ------------------------------------------------------------
+// TITLE PAGE IMAGE
+// ------------------------------------------------------------
+
+function resolveTitlePageImagePath(
+    project: ScriptProject,
+    projectFilePath: string | null
+): string | null {
+
+    const imagePath =
+        project.titlePage.imagePath;
+
+    if (!imagePath?.trim()) {
+
+        return null;
+
+    }
+
+    // Caminho absoluto
+    if (
+        /^[A-Za-z]:[\\/]/.test(imagePath) ||
+        imagePath.startsWith("/")
+    ) {
+
+        return imagePath;
+
+    }
+
+    if (!projectFilePath) {
+
+        return null;
+
+    }
+
+    const normalizedProjectPath =
+        projectFilePath.replace(
+            /\\/g,
+            "/"
+        );
+
+    const lastSlash =
+        normalizedProjectPath.lastIndexOf("/");
+
+    if (lastSlash === -1) {
+
+        return null;
+
+    }
+
+    const projectDirectory =
+        normalizedProjectPath.substring(
+            0,
+            lastSlash
+        );
+
+    return `${projectDirectory}/${imagePath}`;
+}
+
+// ------------------------------------------------------------
+// IMAGE DATA
+// ------------------------------------------------------------
+
+type PdfImageFormat =
+    | "PNG"
+    | "JPEG";
+
+interface PdfImageData {
+
+    dataUrl: string;
+
+    format: PdfImageFormat;
+
+}
+
+// ------------------------------------------------------------
+// LOAD IMAGE
+// ------------------------------------------------------------
+
+async function loadImageAsDataUrl(
+    imagePath: string
+): Promise<PdfImageData | null> {
+
+    try {
+
+        const bytes =
+            await readFile(
+                imagePath
+            );
+
+        let binary = "";
+
+        const chunkSize =
+            0x8000;
+
+        for (
+            let i = 0;
+            i < bytes.length;
+            i += chunkSize
+        ) {
+
+            const chunk =
+                bytes.subarray(
+                    i,
+                    Math.min(
+                        i + chunkSize,
+                        bytes.length
+                    )
+                );
+
+            binary += String.fromCharCode(
+                ...chunk
+            );
+
+        }
+
+        const base64 =
+            btoa(binary);
+
+        const extension =
+            imagePath
+                .split(".")
+                .pop()
+                ?.toLowerCase();
+
+        switch (extension) {
+
+            case "jpg":
+            case "jpeg":
+
+                return {
+                    dataUrl:
+                        `data:image/jpeg;base64,${base64}`,
+
+                    format:
+                        "JPEG",
+                };
+
+            case "png":
+
+                return {
+                    dataUrl:
+                        `data:image/png;base64,${base64}`,
+
+                    format:
+                        "PNG",
+                };
+
+            default:
+
+                console.warn(
+                    "Formato de imagem não suportado no PDF:",
+                    imagePath
+                );
+
+                return null;
+
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Não foi possível carregar a imagem da página de título:",
+            error
+        );
+
+        return null;
+
+    }
+}
+
+// ============================================================
+// EXPORT PROJECT TO PDF
+// ============================================================
 
 export async function exportProjectToPDF(
     project: ScriptProject,
     pageNumberPosition:
-        Settings["pageNumberPosition"]
+        Settings["pageNumberPosition"],
+    projectFilePath: string | null
 ) {
 
     const doc =
@@ -55,6 +232,23 @@ export async function exportProjectToPDF(
         );
 
     // =========================================================
+    // IMAGEM DA PÁGINA DE TÍTULO
+    // =========================================================
+
+    const titlePageImagePath =
+        resolveTitlePageImagePath(
+            project,
+            projectFilePath
+        );
+
+    const titlePageImage =
+        titlePageImagePath
+            ? await loadImageAsDataUrl(
+                titlePageImagePath
+            )
+            : null;
+
+    // =========================================================
     // PÁGINA DE TÍTULO
     // =========================================================
 
@@ -65,29 +259,191 @@ export async function exportProjectToPDF(
         let titleY = 65;
 
         // -----------------------------------------------------
-        // TÍTULO
+        // IMAGEM DE FUNDO
         // -----------------------------------------------------
 
-        doc.setFont(
-            "courier",
-            "bold"
-        );
+        if (
+            project.titlePage.visualMode ===
+                "background" &&
+            titlePageImage
+        ) {
 
-        doc.setFontSize(
-            24
-        );
+            doc.addImage(
+                titlePageImage.dataUrl,
+                titlePageImage.format,
+                0,
+                0,
+                210,
+                297
+            );
 
-        doc.text(
-            (
-                project.titlePage.title ||
-                "Sem título"
-            ).toUpperCase(),
-            105,
-            titleY,
-            {
-                align: "center",
+        }
+
+        // -----------------------------------------------------
+        // IMAGEM / TÍTULO
+        // -----------------------------------------------------
+
+        if (
+            project.titlePage.visualMode === "image" &&
+            titlePageImage
+        ) {
+
+            // Mantém a proporção da imagem.
+            const imageProperties =
+                doc.getImageProperties(
+                    titlePageImage.dataUrl
+                );
+
+            const maxWidth =
+                150;
+
+            const maxHeight =
+                60;
+
+            const imageRatio =
+                imageProperties.width /
+                imageProperties.height;
+
+            let imageWidth =
+                maxWidth;
+
+            let imageHeight =
+                imageWidth /
+                imageRatio;
+
+            if (
+                imageHeight >
+                maxHeight
+            ) {
+
+                imageHeight =
+                    maxHeight;
+
+                imageWidth =
+                    imageHeight *
+                    imageRatio;
             }
-        );
+
+            const imageX =
+                (
+                    210 -
+                    imageWidth
+                ) / 2;
+
+            const imageY =
+                titleY - 20;
+
+            doc.addImage(
+                titlePageImage.dataUrl,
+                titlePageImage.format,
+                imageX,
+                imageY,
+                imageWidth,
+                imageHeight
+            );
+
+            titleY +=
+                imageHeight + 15;
+
+        } else {
+
+            // -------------------------------------------------
+            // TÍTULO
+            // -------------------------------------------------
+
+            doc.setFont(
+                "courier",
+                "bold"
+            );
+
+            doc.setFontSize(
+                24
+            );
+
+            doc.text(
+                (
+                    project.titlePage.title ||
+                    "Sem título"
+                ).toUpperCase(),
+                105,
+                titleY,
+                {
+                    align: "center",
+                }
+            );
+        }
+
+        // -----------------------------------------------------
+        // EPISÓDIO — SÉRIE
+        // -----------------------------------------------------
+
+        if (
+            project.format === "series" &&
+            (
+                project.series.episodeNumber?.trim() ||
+                project.series.episodeTitle?.trim()
+            )
+        ) {
+
+            titleY += 12;
+
+            // ---------------------------------------------
+            // NÚMERO
+            // ---------------------------------------------
+
+            if (
+                project.series.episodeNumber?.trim()
+            ) {
+
+                doc.setFont(
+                    "courier",
+                    "normal"
+                );
+
+                doc.setFontSize(
+                    16
+                );
+
+                doc.text(
+                    `Episode ${project.series.episodeNumber}`,
+                    105,
+                    titleY,
+                    {
+                        align: "center",
+                    }
+                );
+
+                titleY += 7;
+            }
+
+            // ---------------------------------------------
+            // TÍTULO DO EPISÓDIO
+            // ---------------------------------------------
+
+            if (
+                project.series.episodeTitle?.trim()
+            ) {
+
+                doc.setFont(
+                    "courier",
+                    "normal"
+                );
+
+                doc.setFontSize(
+                    20
+                );
+
+                doc.text(
+                    project.series.episodeTitle,
+                    105,
+                    titleY,
+                    {
+                        align: "center",
+                    }
+                );
+
+            }
+        }
 
         // -----------------------------------------------------
         // SUBTÍTULO
@@ -229,6 +585,52 @@ export async function exportProjectToPDF(
         }
 
         // -----------------------------------------------------
+        // DIRECTED BY
+        // -----------------------------------------------------
+
+        if (
+            project.titlePage.directedBy?.trim()
+        ) {
+
+            titleY += 25;
+
+            doc.setFont(
+                "courier",
+                "normal"
+            );
+
+            doc.setFontSize(
+                14
+            );
+
+            doc.text(
+                "Directed by",
+                105,
+                titleY,
+                {
+                    align: "center",
+                }
+            );
+
+            titleY += 10;
+
+            doc.setFont(
+                "courier",
+                "bold"
+            );
+
+            doc.text(
+                project.titlePage.directedBy,
+                105,
+                titleY,
+                {
+                    align: "center",
+                }
+            );
+
+        }
+
+        // -----------------------------------------------------
         // BASED ON
         // -----------------------------------------------------
 
@@ -283,13 +685,23 @@ export async function exportProjectToPDF(
         // DRAFT
         // -----------------------------------------------------
 
-        if (project.titlePage.draft?.trim()) {
+        if (
+            project.titlePage.draft?.trim()
+        ) {
 
             let draftX = 105;
-            let draftY = 245;
-            let draftAlign: "left" | "center" | "right" = "center";
 
-            switch (project.titlePage.draftPosition) {
+            let draftY = 245;
+
+            let draftAlign:
+                "left" |
+                "center" |
+                "right" =
+                    "center";
+
+            switch (
+                project.titlePage.draftPosition
+            ) {
 
                 case "left":
 
@@ -315,6 +727,7 @@ export async function exportProjectToPDF(
                     draftAlign = "center";
 
                     break;
+
             }
 
             doc.setFont(
@@ -334,19 +747,30 @@ export async function exportProjectToPDF(
                     align: draftAlign,
                 }
             );
+
         }
 
         // -----------------------------------------------------
         // DATA
         // -----------------------------------------------------
 
-        if (project.titlePage.date?.trim()) {
+        if (
+            project.titlePage.date?.trim()
+        ) {
 
             let dateX = 105;
-            let dateY = 260;
-            let dateAlign: "left" | "center" | "right" = "center";
 
-            switch (project.titlePage.datePosition) {
+            let dateY = 260;
+
+            let dateAlign:
+                "left" |
+                "center" |
+                "right" =
+                    "center";
+
+            switch (
+                project.titlePage.datePosition
+            ) {
 
                 case "left":
 
@@ -372,6 +796,7 @@ export async function exportProjectToPDF(
                     dateAlign = "center";
 
                     break;
+
             }
 
             doc.setFont(
@@ -391,6 +816,7 @@ export async function exportProjectToPDF(
                     align: dateAlign,
                 }
             );
+
         }
 
         // -----------------------------------------------------
@@ -464,7 +890,9 @@ export async function exportProjectToPDF(
         // COPYRIGHT
         // -----------------------------------------------------
 
-        if (project.titlePage.copyright?.trim()) {
+        if (
+            project.titlePage.copyright?.trim()
+        ) {
 
             doc.setFont(
                 "courier",
@@ -491,7 +919,10 @@ export async function exportProjectToPDF(
                 297 -
                 copyrightBottom -
                 (
-                    (copyrightLines.length - 1) *
+                    (
+                        copyrightLines.length -
+                        1
+                    ) *
                     copyrightLineHeight
                 );
 
@@ -504,6 +935,7 @@ export async function exportProjectToPDF(
                     lineHeightFactor: 1.0,
                 }
             );
+
         }
 
         // =====================================================
@@ -532,7 +964,9 @@ export async function exportProjectToPDF(
 
             }
 
-            y = PAGE_PDF.paddingTop + 4;
+            y =
+                PAGE_PDF.paddingTop +
+                4;
 
             pageFragments.forEach(
                 (
@@ -703,11 +1137,13 @@ export async function exportProjectToPDF(
     // =========================================================
 
     const fileName =
-        project.title.trim() || "Roteiro";
+        project.title.trim() ||
+        "Roteiro";
 
     const filePath =
         await save({
-            defaultPath: `${fileName}.pdf`,
+            defaultPath:
+                `${fileName}.pdf`,
 
             filters: [
                 {
@@ -724,7 +1160,9 @@ export async function exportProjectToPDF(
     }
 
     const pdfArrayBuffer =
-        doc.output("arraybuffer");
+        doc.output(
+            "arraybuffer"
+        );
 
     const pdfBytes =
         new Uint8Array(

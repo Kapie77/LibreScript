@@ -33,12 +33,19 @@ function App() {
         
           title: "",
           author: "",
+          format: "film",
+          series: {
+              episodeNumber: "",
+              episodeTitle: "",
+          },
           blocks:
               structuredClone(
                   sampleScript
               ),
           titlePage: {
               enabled: false,
+              visualMode: "text",
+              imagePath: "",
               title: "",
               primaryCredit: {
 
@@ -47,6 +54,7 @@ function App() {
 
               },
               storyBy: "",
+              directedBy: "",
               subtitle: "",
               basedOn: "",
               basedOnBy: "",

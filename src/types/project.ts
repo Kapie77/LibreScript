@@ -5,9 +5,10 @@ import type { ScriptBlock } from "./script";
 
 // ---------------------------------------------------- //
 
-export type TitlePageCreditType =
-    | "written-by"
-    | "screenplay-by";
+export interface ScriptSeriesInfo {
+    episodeNumber: string;
+    episodeTitle: string;
+}
 
 // ---------------------------------------------------- //
 
@@ -26,23 +27,44 @@ export interface TitlePageContact {
 
 // ---------------------------------------------------- //
 
+// filme ou serie
+export type ScriptFormat =
+    | "film"
+    | "series";
+
+// draft
 export type TitlePageDraftPosition =
     | "left"
     | "center"
     | "right";
 
+// data
 export type TitlePageDatePosition =
     | "left"
     | "center"
     | "right";
 
+// imagem
+export type TitlePageVisualMode =
+    | "text"
+    | "image"
+    | "background";
+
+    // written by e screen play by
+export type TitlePageCreditType =
+    | "written-by"
+    | "screenplay-by";
+
 // ---------------------------------------------------- //
 
 export interface ScriptTitlePage {
     enabled: boolean;
+    visualMode: TitlePageVisualMode;
+    imagePath: string;
     title: string;
     primaryCredit: TitlePagePrimaryCredit;
     storyBy: string;
+    directedBy: string;
     subtitle: string;
     basedOn: string;
     basedOnBy: string;
@@ -59,6 +81,8 @@ export interface ScriptTitlePage {
 export interface ScriptProject {
     title: string;
     author: string;
+    format: ScriptFormat;
+    series: ScriptSeriesInfo;
     blocks: ScriptBlock[];
     titlePage: ScriptTitlePage;
 }
