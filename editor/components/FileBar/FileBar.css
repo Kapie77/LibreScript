@@ -1,0 +1,651 @@
+/*/  FileBar.css */
+/* src/editor/components/FileBar/ */
+
+/* Barra quadrada e ocupando tudo igual LibreOffice
+.filebar {
+  position: fixed;
+  top: 70px;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: var(--shadow);
+  z-index: 5000;
+  backdrop-filter: blur(10px);
+}
+*/
+
+.filebar {
+  position: fixed;
+  top: 75px;
+  left: 12px;
+  right: 12px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  z-index: 5000;
+  backdrop-filter: blur(10px);
+}
+
+.filebar button {
+  height: 38px;
+  padding: 0 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-hover);
+  color: var(--text-main);
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.filebar button:hover {
+  
+  transform: translateY(-1px);
+}
+
+.filebar button:active {
+  transform: translateY(0);
+}
+
+/* =========================================================
+   BARRA COMPLETA DE PESQUISA
+   ========================================================= */
+
+.search-container {
+
+    margin-left: auto;
+
+    height: 38px;
+
+    display: flex;
+    align-items: center;
+
+    gap: 2px;
+
+    padding: 0 5px;
+
+    background: var(--bg-card);
+
+    border: 1px solid var(--border-color);
+
+    border-radius: 9px;
+
+    box-sizing: border-box;
+
+    position: relative;
+
+    box-shadow: none;
+
+    overflow: visible;
+}
+
+/* =========================================================
+   CAMPO DE PESQUISA
+========================================================= */
+/*
+.filebar-search {
+    height: 38px;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 0 4px 0 10px;
+    background: var(--bg-card);
+    border:
+        1px solid
+        var(--border-color);
+
+    border-radius: 8px;
+    box-sizing: border-box;
+}
+*/
+
+.filebar-search {
+    height: 32px;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 0 4px 0 7px;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    box-sizing: border-box;
+}
+
+/*
+.filebar-search input {
+    width: 220px;
+    height: 30px;
+    padding: 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--text-main);
+    font-size: 14px;
+}
+.filebar-search input::placeholder {
+
+    color: var(--text-secondary);
+
+}
+*/
+
+.filebar-search input {
+
+    width: 220px;
+
+    height: 30px;
+
+    padding: 0 4px;
+
+    border: none;
+
+    outline: none;
+
+    background: transparent;
+
+    color: var(--text-main);
+
+    font-size: 14px;
+}
+
+.filebar-search input::placeholder {
+
+    color: var(--text-secondary);
+
+}
+
+/* --- Marca o termo pesquisado --- */
+.search-match { 
+    background: rgba(255, 235, 59, 0.20); 
+    border-radius: 6px; 
+}
+
+.search-highlight {
+  background: #ffeb3b;
+  color: black;
+  padding: 0 2px;
+  border-radius: 2px;
+}
+
+/* =========================================================
+   OPÇÕES DA BUSCA
+========================================================= */
+.search-option-button {
+
+    width: 28px !important;
+    min-width: 28px !important;
+
+    height: 28px !important;
+    min-height: 28px !important;
+
+    padding: 0 !important;
+
+    border: none !important;
+
+    border-radius: 5px !important;
+
+    background: transparent !important;
+
+    color: var(--text-secondary);
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    cursor: pointer;
+
+    box-shadow: none !important;
+
+    transform: none !important;
+
+    transition:
+        background 0.15s ease,
+        color 0.15s ease;
+}
+
+.search-option-button:hover {
+
+    background: var(--bg-hover) !important;
+
+    color: var(--text-main);
+
+}
+
+.search-option-button.active {
+
+    background: var(--bg-hover) !important;
+
+    color: var(--text-main);
+
+}
+
+/* ========================
+      MENU DROP DOWN
+=========================== */
+.filebar-menu {
+  position: relative;
+}
+
+.menu-button {
+  font-weight: 600;
+}
+
+.filebar-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  min-width: 220px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  padding: 8px;
+  z-index: 3000;
+}
+
+.filebar-dropdown button {
+  width: 100%;
+  text-align: left;
+
+  border: none;
+  background: transparent;
+
+  padding: 10px;
+
+  border-radius: 6px;
+}
+
+.filebar-dropdown button:hover {
+  background: var(--bg-hover);
+}
+
+.filebar-dropdown hr {
+  border: none;
+  border-top: 1px solid var(--border-color);
+  margin: 6px 0;
+}
+
+.filebar-menu {
+  position: relative;
+  z-index: 4000;
+}
+
+/* ========================
+        VIEW MENU
+=========================== */
+.view-menu-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    width: 100%;
+
+    padding: 10px 14px;
+
+    border: none;
+    background: transparent;
+
+    color: var(--text-main);
+    font-size: 14px;
+
+    cursor: pointer;
+    border-radius: 8px;
+}
+
+.view-menu-item:hover {
+    background: var(--bg-hover);
+}
+
+.view-menu-item span:last-child {
+    color: var(--accent);
+    font-weight: bold;
+}
+
+/* =========================================================
+   BOTÕES DA BUSCA
+========================================================= */
+.search-expand-button {
+
+    width: 28px !important;
+    min-width: 28px !important;
+
+    height: 28px !important;
+    min-height: 28px !important;
+
+    padding: 0 !important;
+
+    border: none !important;
+
+    border-radius: 5px !important;
+
+    background: transparent !important;
+
+    color: var(--text-secondary);
+
+    font-size: 17px;
+
+    font-weight: 400;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    cursor: pointer;
+
+    box-shadow: none !important;
+
+    transform: none !important;
+
+    transition:
+        background 0.15s ease,
+        color 0.15s ease,
+        transform 0.15s ease;
+}
+
+.search-expand-button:hover {
+
+    background: var(--bg-hover) !important;
+
+    color: var(--text-main);
+
+}
+
+.search-expand-button.active {
+
+    transform: rotate(90deg) !important;
+
+    background: var(--bg-hover) !important;
+
+    color: var(--text-main);
+
+}
+/* =========================================================
+   PAINEL DE SUBSTITUIÇÃO
+========================================================= */
+.search-replace-panel {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    z-index: 6000;
+    white-space: nowrap;
+}
+
+/* =========================================================
+   CONTAINER
+========================================================= */
+
+.search-replace-panel {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px;
+    background: var(--bg-card);
+    border:
+        1px solid
+        var(--border-color);
+    border-radius: 6px;
+    box-shadow: var(--shadow);
+
+    height: 48px;
+    min-height: 48px;
+}
+
+
+/* =========================================================
+   INPUT
+========================================================= */
+.replace-input {
+
+    width: 220px;
+    height: 28px;
+    padding: 0 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    outline: none;
+    background: var(--bg-main);
+    color: var(--text-main);
+    font-size: 13px;
+    box-sizing: border-box;
+}
+
+.replace-input::placeholder {
+    color: var(--text-secondary);
+}
+
+.replace-input:focus {
+    border-color: var(--accent);
+}
+
+/* =========================================================
+   BOTÕES
+========================================================= */
+.replace-button,
+.replace-all-button {
+
+    height: 28px;
+    min-height: 28px;
+    padding: 0 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: var(--bg-card);
+    color: var(--text-main);
+    cursor: pointer;
+    font-size: 12px;
+    white-space: nowrap;
+    box-sizing: border-box;
+    transition:
+        background 0.15s ease,
+        color 0.15s ease,
+        border-color 0.15s ease;
+}
+
+.replace-button:hover,
+.replace-all-button:hover {
+
+    background: var(--bg-hover);
+    border-color: var(--accent);
+}
+
+
+/* =========================================================
+   CONTADOR
+========================================================= */
+.search-counter {
+    min-width: 42px;
+    padding: 0 4px;
+    color: var(--text-secondary);
+    font-size: 12px;
+    text-align: center;
+    white-space: nowrap;
+}
+
+/* ================================================
+    BOTÕES PRÓXIMO E ANTERIOR
+================================================= */
+.search-nav-button {
+
+    width: 28px !important;
+    min-width: 28px !important;
+
+    height: 28px !important;
+    min-height: 28px !important;
+
+    padding: 0 !important;
+
+    border: none !important;
+
+    border-radius: 5px !important;
+
+    background: transparent !important;
+
+    color: var(--text-secondary);
+
+    font-size: 14px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    cursor: pointer;
+
+    box-shadow: none !important;
+
+    transform: none !important;
+
+    transition:
+        background 0.15s ease,
+        color 0.15s ease;
+}
+
+.search-nav-button:hover {
+
+    background: var(--bg-hover) !important;
+
+    color: var(--text-main);
+
+}
+
+.search-nav-button:active {
+
+    background: var(--border-color) !important;
+
+}
+
+/* =========================================================
+   FERRAMENTAS DE FORMATAÇÃO
+========================================================= */
+
+.filebar-format-tools {
+
+  position: absolute;
+
+  left: 50%;
+
+  transform: translateX(-50%);
+
+  height: 100%;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 2px;
+
+  white-space: nowrap;
+
+}
+
+
+/* =========================================================
+   BOTÃO DE FORMATAÇÃO
+========================================================= */
+
+.format-tool-button {
+
+  width: 34px !important;
+  min-width: 34px !important;
+
+  height: 34px !important;
+  min-height: 34px !important;
+
+  padding: 0 !important;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid transparent !important;
+
+  border-radius: 7px !important;
+
+  background: transparent !important;
+
+  color: var(--text-main);
+
+  font-size: 15px;
+
+  cursor: pointer;
+
+  box-shadow: none !important;
+
+  transform: none !important;
+
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+
+.format-tool-button:hover:not(:disabled) {
+
+  background: var(--bg-hover) !important;
+
+  border-color: var(--border-color) !important;
+
+}
+
+
+.format-tool-button:active:not(:disabled) {
+
+  background: var(--border-color) !important;
+
+}
+
+
+.format-tool-button:disabled {
+
+  opacity: 0.35;
+
+  cursor: default;
+
+}
+
+
+/* =========================================================
+   SEPARADOR
+========================================================= */
+
+.format-tool-separator {
+
+  width: 1px;
+
+  height: 24px;
+
+  margin: 0 6px;
+
+  background: var(--border-color);
+
+}
