@@ -298,6 +298,14 @@ export default function EditorPage({
                 engine.toggleStrike()
           }
 
+          onLowercaseText={() =>
+            engine.lowercaseText()
+          }
+
+          onUppercaseText={() =>
+            engine.uppercaseText()
+          }
+
           onSetParagraphAlignment={(alignment) =>
                 engine.setParagraphAlignment(alignment)
           }

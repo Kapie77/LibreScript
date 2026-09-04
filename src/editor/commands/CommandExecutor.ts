@@ -20,7 +20,9 @@ import type {
     ToggleItalicCommand,
     ToggleUnderlineCommand,
     ToggleStrikeCommand,
-    SetParagraphAlignmentCommand
+    SetParagraphAlignmentCommand,
+    LowercaseTextCommand,
+    UppercaseTextCommand,
 } from "./EditorCommands";
 
 import type { PasteMultiParagraphCommand } from "./text/PasteMultiParagraphCommand";
@@ -394,6 +396,28 @@ public applyToggleStrike(
 
     );
 
+}
+
+// applyLowercaseText //
+public applyLowercaseText(
+    command: LowercaseTextCommand
+) {
+    return this.model.lowercaseText(
+        command.paragraphId,
+        command.startOffset,
+        command.endOffset
+    );
+}
+
+// applyUppercaseText //
+public applyUppercaseText(
+    command: UppercaseTextCommand
+) {
+    return this.model.uppercaseText(
+        command.paragraphId,
+        command.startOffset,
+        command.endOffset
+    );
 }
 
 // applySetParagraphAlignment //
@@ -1294,6 +1318,64 @@ public applySetParagraphAlignment(
 
                 };
 
+            }
+
+            // LOWER CASE TEXT //
+            case "LOWERCASE_TEXT": {
+                const result =
+                    this.applyLowercaseText(command);
+
+                if (!result) {
+                    return null;
+                }
+
+                return {
+                    command,
+                    undoData: {
+                        paragraphs: [
+                            {
+                                paragraphId:
+                                    command.paragraphId,
+
+                                previousRuns:
+                                    result.previousRuns,
+
+                                newRuns:
+                                    result.newRuns,
+                            },
+                        ],
+                    },
+                    timestamp: Date.now(),
+                };
+            }
+
+            // UPPER CASE TEXT //
+            case "UPPERCASE_TEXT": {
+                const result =
+                    this.applyUppercaseText(command);
+
+                if (!result) {
+                    return null;
+                }
+
+                return {
+                    command,
+                    undoData: {
+                        paragraphs: [
+                            {
+                                paragraphId:
+                                    command.paragraphId,
+
+                                previousRuns:
+                                    result.previousRuns,
+
+                                newRuns:
+                                    result.newRuns,
+                            },
+                        ],
+                    },
+                    timestamp: Date.now(),
+                };
             }
 
             // SET PARAGRAPH ALIGNMENT //

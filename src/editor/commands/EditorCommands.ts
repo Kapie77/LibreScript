@@ -139,6 +139,20 @@ export interface SetParagraphAlignmentCommand {
     alignment: ParagraphAlignment;
 }
 
+export interface LowercaseTextCommand {
+    type: "LOWERCASE_TEXT";
+    paragraphId: number;
+    startOffset: number;
+    endOffset: number;
+}
+
+export interface UppercaseTextCommand {
+    type: "UPPERCASE_TEXT";
+    paragraphId: number;
+    startOffset: number;
+    endOffset: number;
+}
+
 export type EditorCommand =
 
     | InsertParagraphCommand
@@ -161,4 +175,6 @@ export type EditorCommand =
     | ToggleItalicCommand
     | ToggleUnderlineCommand
     | ToggleStrikeCommand
-    | SetParagraphAlignmentCommand;
+    | SetParagraphAlignmentCommand
+    | LowercaseTextCommand
+    | UppercaseTextCommand;

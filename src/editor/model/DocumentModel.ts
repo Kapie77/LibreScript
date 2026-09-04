@@ -2075,6 +2075,324 @@ export class DocumentModel {
 
     }
 
+    // lowercaseText //
+    public lowercaseText(
+        paragraphId: number,
+        startOffset: number,
+        endOffset: number
+    ): {
+        previousRuns: TextRun[];
+        newRuns: TextRun[];
+    } | null {
+        const paragraph =
+            this.getParagraphById(paragraphId);
+
+        if (!paragraph) {
+            return null;
+        }
+
+        if (startOffset === endOffset) {
+            return null;
+        }
+
+        const contentLength =
+            paragraph.content.length;
+
+        const start =
+            Math.max(
+                0,
+                Math.min(
+                    startOffset,
+                    contentLength
+                )
+            );
+
+        const end =
+            Math.max(
+                0,
+                Math.min(
+                    endOffset,
+                    contentLength
+                )
+            );
+
+        if (start >= end) {
+            return null;
+        }
+
+        const previousRuns =
+            structuredClone(
+                paragraph.getRuns()
+            );
+
+        const newRuns: TextRun[] = [];
+
+        let currentOffset = 0;
+
+        for (
+            const run of paragraph.getRuns()
+        ) {
+
+            const runStart =
+                currentOffset;
+
+            const runEnd =
+                currentOffset +
+                run.text.length;
+
+            currentOffset =
+                runEnd;
+
+            // Run completamente antes da seleção
+            if (
+                runEnd <= start
+            ) {
+
+                newRuns.push(
+                    structuredClone(run)
+                );
+
+                continue;
+            }
+
+            // Run completamente depois da seleção
+            if (
+                runStart >= end
+            ) {
+
+                newRuns.push(
+                    structuredClone(run)
+                );
+
+                continue;
+            }
+
+            // Parte antes da seleção
+            if (
+                start > runStart
+            ) {
+
+                newRuns.push({
+                    ...structuredClone(run),
+                    text: run.text.slice(
+                        0,
+                        start - runStart
+                    ),
+                });
+
+            }
+
+            // Parte selecionada
+            const selectedStart =
+                Math.max(
+                    0,
+                    start - runStart
+                );
+
+            const selectedEnd =
+                Math.min(
+                    run.text.length,
+                    end - runStart
+                );
+
+            const selectedText =
+                run.text.slice(
+                    selectedStart,
+                    selectedEnd
+                );
+
+            newRuns.push({
+                ...structuredClone(run),
+                text: selectedText.toLowerCase(),
+            });
+
+            // Parte depois da seleção
+            if (
+                end < runEnd
+            ) {
+
+                newRuns.push({
+                    ...structuredClone(run),
+                    text: run.text.slice(
+                        end - runStart
+                    ),
+                });
+
+            }
+
+        }
+
+        paragraph.setRuns(
+            newRuns
+        );
+
+        return {
+            previousRuns,
+            newRuns: structuredClone(
+                paragraph.getRuns()
+            ),
+        };
+    }
+
+    // uppercaseText //
+    public uppercaseText(
+        paragraphId: number,
+        startOffset: number,
+        endOffset: number
+    ): {
+        previousRuns: TextRun[];
+        newRuns: TextRun[];
+    } | null {
+        const paragraph =
+            this.getParagraphById(paragraphId);
+
+        if (!paragraph) {
+            return null;
+        }
+
+        if (startOffset === endOffset) {
+            return null;
+        }
+
+        const contentLength =
+            paragraph.content.length;
+
+        const start =
+            Math.max(
+                0,
+                Math.min(
+                    startOffset,
+                    contentLength
+                )
+            );
+
+        const end =
+            Math.max(
+                0,
+                Math.min(
+                    endOffset,
+                    contentLength
+                )
+            );
+
+        if (start >= end) {
+            return null;
+        }
+
+        const previousRuns =
+            structuredClone(
+                paragraph.getRuns()
+            );
+
+        const newRuns: TextRun[] = [];
+
+        let currentOffset = 0;
+
+        for (
+            const run of paragraph.getRuns()
+        ) {
+
+            const runStart =
+                currentOffset;
+
+            const runEnd =
+                currentOffset +
+                run.text.length;
+
+            currentOffset =
+                runEnd;
+
+            // Run completamente antes da seleção
+            if (
+                runEnd <= start
+            ) {
+
+                newRuns.push(
+                    structuredClone(run)
+                );
+
+                continue;
+            }
+
+            // Run completamente depois da seleção
+            if (
+                runStart >= end
+            ) {
+
+                newRuns.push(
+                    structuredClone(run)
+                );
+
+                continue;
+            }
+
+            // Parte antes da seleção
+            if (
+                start > runStart
+            ) {
+
+                newRuns.push({
+                    ...structuredClone(run),
+                    text: run.text.slice(
+                        0,
+                        start - runStart
+                    ),
+                });
+
+            }
+
+            // Parte selecionada
+            const selectedStart =
+                Math.max(
+                    0,
+                    start - runStart
+                );
+
+            const selectedEnd =
+                Math.min(
+                    run.text.length,
+                    end - runStart
+                );
+
+            const selectedText =
+                run.text.slice(
+                    selectedStart,
+                    selectedEnd
+                );
+
+            newRuns.push({
+                ...structuredClone(run),
+                text: selectedText.toUpperCase(),
+            });
+
+            // Parte depois da seleção
+            if (
+                end < runEnd
+            ) {
+
+                newRuns.push({
+                    ...structuredClone(run),
+                    text: run.text.slice(
+                        end - runStart
+                    ),
+                });
+
+            }
+
+        }
+
+        paragraph.setRuns(
+            newRuns
+        );
+
+        return {
+            previousRuns,
+            newRuns: structuredClone(
+                paragraph.getRuns()
+            ),
+        };
+    }
+
     // updateParagraphContent //
     public updateParagraphContent(
         id: number,

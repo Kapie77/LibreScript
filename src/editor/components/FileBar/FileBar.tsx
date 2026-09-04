@@ -20,6 +20,8 @@ type Props = {
   onToggleItalic: () => void;
   onToggleUnderline: () => void;
   onToggleStrike: () => void;
+  onLowercaseText: () => void;
+  onUppercaseText: () => void;
   onSetParagraphAlignment: (
       alignment: ParagraphAlignment
   ) => void;
@@ -92,6 +94,8 @@ export default function FileBar({
   onToggleItalic,
   onToggleUnderline,
   onToggleStrike,
+  onLowercaseText,
+  onUppercaseText,
   onSetParagraphAlignment,
   searchTerm,
   setSearchTerm,
@@ -617,6 +621,30 @@ useEffect(() => {
             ≡
         </button>
         {/*FIM DOS BOTÕES DE ALINHAMENTO*/}
+
+        {/*MAIUSCULO E MINUSCULO*/}
+        <span className="format-tool-separator" />
+
+        <button
+            type="button"
+            className="format-tool-button"
+            title="Transformar em minúsculas"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={onLowercaseText}
+        >
+            <span style={{ fontSize: "13px" }}>a</span>
+        </button>
+
+        <button
+            type="button"
+            className="format-tool-button"
+            title="Transformar em maiúsculas"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={onUppercaseText}
+        >
+            <span style={{ fontSize: "13px" }}>A</span>
+        </button>
+        {/*FIM DO MAIUSCULO E MINUSCULO*/}
 
       </div>
       {/* FIM FERRAMENTAS DE FORMATAÇÃO */}

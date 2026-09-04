@@ -487,6 +487,92 @@ saveProject() {
 
     }
 
+    // lowercaseText //
+    public lowercaseText() {
+        const selection =
+            this.documentView?.saveSelection();
+
+        if (!selection) {
+            return;
+        }
+
+        if (
+            selection.anchorParagraphId !==
+            selection.focusParagraphId
+        ) {
+            return;
+        }
+
+        const startOffset =
+            Math.min(
+                selection.anchorOffset,
+                selection.focusOffset
+            );
+
+        const endOffset =
+            Math.max(
+                selection.anchorOffset,
+                selection.focusOffset
+            );
+
+        if (
+            startOffset === endOffset
+        ) {
+            return;
+        }
+
+        this.execute({
+            type: "LOWERCASE_TEXT",
+            paragraphId:
+                selection.anchorParagraphId,
+            startOffset,
+            endOffset,
+        });
+    }
+
+    // uppercaseText //
+    public uppercaseText() {
+        const selection =
+            this.documentView?.saveSelection();
+
+        if (!selection) {
+            return;
+        }
+
+        if (
+            selection.anchorParagraphId !==
+            selection.focusParagraphId
+        ) {
+            return;
+        }
+
+        const startOffset =
+            Math.min(
+                selection.anchorOffset,
+                selection.focusOffset
+            );
+
+        const endOffset =
+            Math.max(
+                selection.anchorOffset,
+                selection.focusOffset
+            );
+
+        if (
+            startOffset === endOffset
+        ) {
+            return;
+        }
+
+        this.execute({
+            type: "UPPERCASE_TEXT",
+            paragraphId:
+                selection.anchorParagraphId,
+            startOffset,
+            endOffset,
+        });
+    }
+
     // setParagraphAlignment //
     public setParagraphAlignment(
         alignment: ParagraphAlignment
@@ -1469,6 +1555,34 @@ saveProject() {
 
                 }
 
+                // LOWERCASE TEXT AND UPPERCASE TEXT //
+                case "LOWERCASE_TEXT":
+                case "UPPERCASE_TEXT": {
+
+                    const undo =
+                        executed.undoData as FormatRunsUndoData;
+
+                    for (const paragraph of undo.paragraphs) {
+
+                        const paragraphModel =
+                            this.document.getParagraphById(
+                                paragraph.paragraphId
+                            );
+
+                        if (!paragraphModel) {
+                            continue;
+                        }
+
+                        paragraphModel.setRuns(
+                            structuredClone(
+                                paragraph.previousRuns
+                            )
+                        );
+
+                    }
+
+                    break;
+                }
                 // SET PARAGRAPH ALIGNMENT //
                 case "SET_PARAGRAPH_ALIGNMENT": {
 
@@ -1492,6 +1606,7 @@ saveProject() {
                 }
 
                 
+                // INSERT TEXT //
                 case "INSERT_TEXT": {
 
                     const paragraph =
@@ -1541,6 +1656,7 @@ saveProject() {
                 }
 
                 
+                // DELETE TEXT //
                 case "DELETE_TEXT": {
 
                     const paragraph =
@@ -1589,6 +1705,7 @@ saveProject() {
 
                 }
 
+                // DELTE PARAGRAPH //
                 case "DELETE_PARAGRAPH": {
 
                     const undo =
@@ -1606,6 +1723,7 @@ saveProject() {
 
                 }
 
+                // REPLACE TEXT //
                 case "REPLACE_TEXT": {
 
                     const paragraph =
@@ -1656,6 +1774,7 @@ saveProject() {
 
                 }
 
+                // REPLACE ALL //
                 case "REPLACE_ALL": {
 
                     const undo =
@@ -1669,6 +1788,7 @@ saveProject() {
 
                 }
 
+                // REPLACE SELECTION //
                 case "REPLACE_SELECTION": {
 
                     const undo = executed.undoData as {
@@ -1684,6 +1804,7 @@ saveProject() {
                     break;
                 }
 
+                // REPLACE SELECTION MULTI //
                 case "REPLACE_SELECTION_MULTI": {
 
                     const undo =
@@ -1723,6 +1844,7 @@ saveProject() {
 
                 }
 
+                // PASTE MULTI PARAGRAPH //
                 case "PASTE_MULTI_PARAGRAPH": {
 
                     const undo = executed.undoData as PasteMultiParagraphUndoData;
@@ -1757,6 +1879,7 @@ saveProject() {
 
                 }
 
+                // SPLIT PARAGRAPH //
                 case "SPLIT_PARAGRAPH": {
 
                     const undo =
@@ -1783,6 +1906,7 @@ saveProject() {
 
                 }
 
+                // MERGE PREVIOUS //
                 case "MERGE_PREVIOUS": {
 
                     const undo =
@@ -2072,6 +2196,35 @@ saveProject() {
 
                     break;
 
+                }
+
+                // LOWERCASE TEXT AND UPPERCASE TEXT //
+                case "LOWERCASE_TEXT":
+                case "UPPERCASE_TEXT": {
+
+                    const undo =
+                        executed.undoData as FormatRunsUndoData;
+
+                    for (const paragraph of undo.paragraphs) {
+
+                        const paragraphModel =
+                            this.document.getParagraphById(
+                                paragraph.paragraphId
+                            );
+
+                        if (!paragraphModel) {
+                            continue;
+                        }
+
+                        paragraphModel.setRuns(
+                            structuredClone(
+                                paragraph.newRuns
+                            )
+                        );
+
+                    }
+
+                    break;
                 }
 
                 // SET PARAGRAPH ALIGNMENT //
