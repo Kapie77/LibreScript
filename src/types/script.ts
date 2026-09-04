@@ -1,5 +1,7 @@
 // script.ts
 // src/types/
+import type { TextRun } from "../editor/document/TextRun";
+
 export type BlockType =
   | "scene"
   | "action"
@@ -12,8 +14,16 @@ export type BlockType =
   | "shot"
   | "transition";
 
+export type ParagraphAlignment =
+    | "left"
+    | "center"
+    | "right"
+    | "justify";
+
 export interface ScriptBlock {
   id: number;
   type: BlockType;
   content: string;
+  runs?: TextRun[];
+  alignment?: ParagraphAlignment;
 }
