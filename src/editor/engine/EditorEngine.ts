@@ -2,7 +2,7 @@
 // src/editor/engine/
 
 import type { EditorCommand } from "../commands/EditorCommands";
-import type { ScriptBlock } from "../../types/script";
+import type { ScriptBlock, ParagraphAlignment } from "../../types/script";
 
 import { DocumentModel } from "../model/DocumentModel";
 
@@ -33,6 +33,8 @@ import type {
     MoveParagraphUndoData,
     DeleteParagraphUndoData,
     ReplaceAllUndoData,
+    FormatRunsUndoData,
+    ParagraphAlignmentUndoData
 } from "../history/UndoData";
 
 import { getDefaultBlockContent }
@@ -346,6 +348,176 @@ saveProject() {
 
     }
     // ---------------- //
+
+    // toggleBold //
+    public toggleBold() {
+
+        const selection =
+            this.documentView?.saveSelection();
+
+        if (!selection) {
+
+            return;
+
+        }
+
+        this.execute({
+
+            type: "TOGGLE_BOLD",
+
+            selection: {
+
+                anchorParagraphId:
+                    selection.anchorParagraphId,
+
+                anchorOffset:
+                    selection.anchorOffset,
+
+                focusParagraphId:
+                    selection.focusParagraphId,
+
+                focusOffset:
+                    selection.focusOffset,
+
+            },
+
+        });
+
+    }
+
+    // toggleItalic //
+    public toggleItalic() {
+
+        const selection =
+            this.documentView?.saveSelection();
+
+        if (!selection) {
+            return;
+        }
+
+        this.execute({
+
+            type: "TOGGLE_ITALIC",
+
+            selection: {
+
+                anchorParagraphId:
+                    selection.anchorParagraphId,
+
+                anchorOffset:
+                    selection.anchorOffset,
+
+                focusParagraphId:
+                    selection.focusParagraphId,
+
+                focusOffset:
+                    selection.focusOffset,
+
+            },
+
+        });
+
+    }
+
+    // toggleUnderline //
+    public toggleUnderline() {
+
+        const selection =
+            this.documentView?.saveSelection();
+
+        if (!selection) {
+            return;
+        }
+
+        this.execute({
+
+            type: "TOGGLE_UNDERLINE",
+
+            selection: {
+
+                anchorParagraphId:
+                    selection.anchorParagraphId,
+
+                anchorOffset:
+                    selection.anchorOffset,
+
+                focusParagraphId:
+                    selection.focusParagraphId,
+
+                focusOffset:
+                    selection.focusOffset,
+
+            },
+
+        });
+
+    }
+
+    // toggleStrike //
+    public toggleStrike() {
+
+        const selection =
+            this.documentView?.saveSelection();
+
+        if (!selection) {
+            return;
+        }
+
+        this.execute({
+
+            type: "TOGGLE_STRIKE",
+
+            selection: {
+
+                anchorParagraphId:
+                    selection.anchorParagraphId,
+
+                anchorOffset:
+                    selection.anchorOffset,
+
+                focusParagraphId:
+                    selection.focusParagraphId,
+
+                focusOffset:
+                    selection.focusOffset,
+
+            },
+
+        });
+
+    }
+
+    // setParagraphAlignment //
+    public setParagraphAlignment(
+        alignment: ParagraphAlignment
+    ) {
+
+        const selection =
+            this.documentView?.saveSelection();
+
+        if (!selection) {
+            return;
+        }
+
+        if (
+            selection.anchorParagraphId !==
+            selection.focusParagraphId
+        ) {
+            return;
+        }
+
+        this.execute({
+
+            type: "SET_PARAGRAPH_ALIGNMENT",
+
+            paragraphId:
+                selection.anchorParagraphId,
+
+            alignment,
+
+        });
+
+    }
 
     // render //
     render() {
@@ -1176,6 +1348,149 @@ saveProject() {
 
                 }
 
+                // TOGGLE BOLD //
+                case "TOGGLE_BOLD": {
+
+                    const undo =
+                        executed.undoData as FormatRunsUndoData;
+
+                    for (const paragraph of undo.paragraphs) {
+
+                        const paragraphModel =
+                            this.document.getParagraphById(
+                                paragraph.paragraphId
+                            );
+
+                        if (!paragraphModel) {
+
+                            continue;
+
+                        }
+
+                        paragraphModel.setRuns(
+
+                            structuredClone(
+                                paragraph.previousRuns
+                            )
+
+                        );
+
+                    }
+
+                    break;
+                }
+                // ------------------------//
+
+                // TOGGLE ITALIC //
+                case "TOGGLE_ITALIC": {
+
+                    const undo =
+                        executed.undoData as FormatRunsUndoData;
+
+                    for (const paragraph of undo.paragraphs) {
+
+                        const paragraphModel =
+                            this.document.getParagraphById(
+                                paragraph.paragraphId
+                            );
+
+                        if (!paragraphModel) {
+                            continue;
+                        }
+
+                        paragraphModel.setRuns(
+                            structuredClone(
+                                paragraph.previousRuns
+                            )
+                        );
+
+                    }
+
+                    break;
+
+                }
+
+
+                // TOOGLE UNDERLINE //
+                case "TOGGLE_UNDERLINE": {
+
+                    const undo =
+                        executed.undoData as FormatRunsUndoData;
+
+                    for (const paragraph of undo.paragraphs) {
+
+                        const paragraphModel =
+                            this.document.getParagraphById(
+                                paragraph.paragraphId
+                            );
+
+                        if (!paragraphModel) {
+                            continue;
+                        }
+
+                        paragraphModel.setRuns(
+                            structuredClone(
+                                paragraph.previousRuns
+                            )
+                        );
+
+                    }
+
+                    break;
+
+                }
+
+                // TOGGLE STRIKE //
+                case "TOGGLE_STRIKE": {
+
+                    const undo =
+                        executed.undoData as FormatRunsUndoData;
+
+                    for (const paragraph of undo.paragraphs) {
+
+                        const paragraphModel =
+                            this.document.getParagraphById(
+                                paragraph.paragraphId
+                            );
+
+                        if (!paragraphModel) {
+                            continue;
+                        }
+
+                        paragraphModel.setRuns(
+                            structuredClone(
+                                paragraph.previousRuns
+                            )
+                        );
+
+                    }
+
+                    break;
+
+                }
+
+                // SET PARAGRAPH ALIGNMENT //
+                case "SET_PARAGRAPH_ALIGNMENT": {
+
+                    const undo =
+                        executed.undoData as ParagraphAlignmentUndoData;
+
+                    const paragraph =
+                        this.document.getParagraphById(
+                            undo.paragraphId
+                        );
+
+                    if (paragraph) {
+
+                        paragraph.alignment =
+                            undo.previousAlignment;
+
+                    }
+
+                    break;
+
+                }
+
                 
                 case "INSERT_TEXT": {
 
@@ -1640,7 +1955,148 @@ saveProject() {
 
                 }
 
-                // NOVO //
+                // TOGGLE BOLD //
+                case "TOGGLE_BOLD": {
+
+                    const undo =
+                        executed.undoData as FormatRunsUndoData;
+
+                    for (const paragraph of undo.paragraphs) {
+
+                        const paragraphModel =
+                            this.document.getParagraphById(
+                                paragraph.paragraphId
+                            );
+
+                        if (!paragraphModel) {
+
+                            continue;
+
+                        }
+
+                        paragraphModel.setRuns(
+
+                            structuredClone(
+                                paragraph.newRuns
+                            )
+
+                        );
+
+                    }
+
+                    break;
+                }
+
+                // TOGGLE ITALIC //
+                case "TOGGLE_ITALIC": {
+
+                    const undo =
+                        executed.undoData as FormatRunsUndoData;
+
+                    for (const paragraph of undo.paragraphs) {
+
+                        const paragraphModel =
+                            this.document.getParagraphById(
+                                paragraph.paragraphId
+                            );
+
+                        if (!paragraphModel) {
+                            continue;
+                        }
+
+                        paragraphModel.setRuns(
+                            structuredClone(
+                                paragraph.newRuns
+                            )
+                        );
+
+                    }
+
+                    break;
+
+                }
+
+                // TOGGLE UNDERLINE //
+                case "TOGGLE_UNDERLINE": {
+
+                    const undo =
+                        executed.undoData as FormatRunsUndoData;
+
+                    for (const paragraph of undo.paragraphs) {
+
+                        const paragraphModel =
+                            this.document.getParagraphById(
+                                paragraph.paragraphId
+                            );
+
+                        if (!paragraphModel) {
+                            continue;
+                        }
+
+                        paragraphModel.setRuns(
+                            structuredClone(
+                                paragraph.newRuns
+                            )
+                        );
+
+                    }
+
+                    break;
+
+                }
+
+                // TOGGLE STRIKE //
+                case "TOGGLE_STRIKE": {
+
+                    const undo =
+                        executed.undoData as FormatRunsUndoData;
+
+                    for (const paragraph of undo.paragraphs) {
+
+                        const paragraphModel =
+                            this.document.getParagraphById(
+                                paragraph.paragraphId
+                            );
+
+                        if (!paragraphModel) {
+                            continue;
+                        }
+
+                        paragraphModel.setRuns(
+                            structuredClone(
+                                paragraph.newRuns
+                            )
+                        );
+
+                    }
+
+                    break;
+
+                }
+
+                // SET PARAGRAPH ALIGNMENT //
+                case "SET_PARAGRAPH_ALIGNMENT": {
+
+                    const undo =
+                        executed.undoData as ParagraphAlignmentUndoData;
+
+                    const paragraph =
+                        this.document.getParagraphById(
+                            undo.paragraphId
+                        );
+
+                    if (paragraph) {
+
+                        paragraph.alignment =
+                            undo.newAlignment;
+
+                    }
+
+                    break;
+
+                }
+
+                // INSERT TEXT //
                 case "INSERT_TEXT": {
 
                     this.executor.applyInsertText(
@@ -1654,7 +2110,7 @@ saveProject() {
                 }
                 // ------
 
-                // NOVO //
+                // DELETE TEXT //
                 case "DELETE_TEXT": {
 
                     this.executor.applyDeleteText(
@@ -1678,7 +2134,7 @@ saveProject() {
 
                 }
 
-                // NOVO //
+                // REPLACE TEXT //
                 case "REPLACE_TEXT": {
 
                     this.executor.applyReplaceText(
@@ -1702,7 +2158,7 @@ saveProject() {
 
                 }
 
-                // NOVO //
+                // REPLACE SELECTION //
                 case "REPLACE_SELECTION": {
 
                     this.executor.applyReplaceSelection(
@@ -1716,7 +2172,7 @@ saveProject() {
                 }
                 // ------------ //
 
-                // NOVO //
+                // REPLACE SELECTION MULTI" //
                 case "REPLACE_SELECTION_MULTI": {
 
                     this.executor.applyReplaceSelectionMulti(
@@ -1730,7 +2186,7 @@ saveProject() {
                 }
                 // --------------/ /
 
-                // NOVO (NÃO TINHA ANTES) //
+                // MERGE NEXT //
                 case "MERGE_NEXT": {
 
                     this.executor.applyMergeNext(
@@ -1744,7 +2200,7 @@ saveProject() {
                 }
                 // ---------------------- //
 
-                // NOVO (NÃO TINHA ANTES) //
+                // MERGE PREVIOUS //
                 case "MERGE_PREVIOUS": {
 
                     this.executor.applyMergePrevious(
@@ -1781,7 +2237,7 @@ saveProject() {
 
                 }
 
-                // NOVO //
+                // SPLIT PARAGRAPH //
                 case "SPLIT_PARAGRAPH": {
 
                     const undo =

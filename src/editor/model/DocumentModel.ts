@@ -1,12 +1,13 @@
 // DocumentModel.ts
 // src/editor/model/
-import type { ScriptBlock } from "../../types/script";
+import type { ScriptBlock, ParagraphAlignment } from "../../types/script";
 import { Document } from "../document/Document";
 import { Paragraph } from "../document/Paragraph";
 import type { CaretSnapshot, SelectionSnapshot } from "../history/UndoData";
 import type { ReplaceSelectionMultiCommand } from "../commands/text/ReplaceSelectionMultiCommand";
 
 import { SearchService } from "../services/SearchService";
+import type { TextRun } from "../document/TextRun";
 // ----------------------------------------------------- //
 
 export class DocumentModel {
@@ -64,6 +65,7 @@ export class DocumentModel {
 
     }
 
+    // updateParagraph //
     updateParagraph(
 
         id: number,
@@ -100,6 +102,7 @@ export class DocumentModel {
 
     }
 
+    // deleteParagraph
     deleteParagraph(
 
         id: number
@@ -114,6 +117,7 @@ export class DocumentModel {
 
     }
 
+    // moveParagraph
     moveParagraph(
 
         id: number,
@@ -594,6 +598,41 @@ export class DocumentModel {
 
             },
 
+        };
+
+    }
+
+    // setParagraphAlignment //
+    public setParagraphAlignment(
+        paragraphId: number,
+        alignment: ParagraphAlignment
+    ): {
+        previousAlignment: ParagraphAlignment;
+        newAlignment: ParagraphAlignment;
+    } | null {
+
+        const paragraph =
+            this.getParagraphById(paragraphId);
+
+        if (!paragraph) {
+            return null;
+        }
+
+        const previousAlignment =
+            paragraph.alignment;
+
+        if (
+            previousAlignment === alignment
+        ) {
+            return null;
+        }
+
+        paragraph.alignment =
+            alignment;
+
+        return {
+            previousAlignment,
+            newAlignment: alignment,
         };
 
     }
@@ -1247,6 +1286,790 @@ export class DocumentModel {
                 current.type,
 
             caretAfter
+
+        };
+
+    }
+
+    // toggleBold //
+    public toggleBold(
+        paragraphId: number,
+        startOffset: number,
+        endOffset: number
+    ): {
+
+        previousRuns: TextRun[];
+
+        newRuns: TextRun[];
+
+    } | null {
+
+        const paragraph =
+            this.getParagraphById(paragraphId);
+
+        if (!paragraph) {
+
+            return null;
+
+        }
+
+        if (startOffset === endOffset) {
+
+            return null;
+
+        }
+
+        const contentLength =
+            paragraph.content.length;
+
+        const start =
+            Math.max(
+                0,
+                Math.min(
+                    startOffset,
+                    contentLength
+                )
+            );
+
+        const end =
+            Math.max(
+                0,
+                Math.min(
+                    endOffset,
+                    contentLength
+                )
+            );
+
+        if (start >= end) {
+
+            return null;
+
+        }
+
+        const previousRuns =
+            structuredClone(
+                paragraph.getRuns()
+            );
+
+        const newRuns =
+            [];
+
+        let currentOffset = 0;
+
+        const selectedRuns: TextRun[] = [];
+
+        let selectionOffset = 0;
+
+        for (const run of previousRuns) {
+
+            const runStart = selectionOffset;
+
+            const runEnd =
+                selectionOffset +
+                run.text.length;
+
+            selectionOffset = runEnd;
+
+            if (
+                runEnd > start &&
+                runStart < end &&
+                run.text.length > 0
+            ) {
+
+                selectedRuns.push(run);
+
+            }
+
+        }
+
+        const allSelectedBold =
+            selectedRuns.length > 0 &&
+            selectedRuns.every(
+                run => run.bold === true
+            );
+
+        for (const run of previousRuns) {
+
+            const runStart =
+                currentOffset;
+
+            const runEnd =
+                currentOffset +
+                run.text.length;
+
+            currentOffset =
+                runEnd;
+
+            // Run vazio não precisa participar
+            if (!run.text.length) {
+
+                continue;
+
+            }
+
+            // -------------------------------------------------
+            // Run completamente antes da seleção
+            // -------------------------------------------------
+
+            if (runEnd <= start) {
+
+                newRuns.push(
+                    structuredClone(run)
+                );
+
+                continue;
+
+            }
+
+            // -------------------------------------------------
+            // Run completamente depois da seleção
+            // -------------------------------------------------
+
+            if (runStart >= end) {
+
+                newRuns.push(
+                    structuredClone(run)
+                );
+
+                continue;
+
+            }
+
+            // -------------------------------------------------
+            // Existe interseção entre o run e a seleção
+            // -------------------------------------------------
+
+            const selectionStart =
+                Math.max(
+                    start,
+                    runStart
+                ) - runStart;
+
+            const selectionEnd =
+                Math.min(
+                    end,
+                    runEnd
+                ) - runStart;
+
+            // Texto antes da seleção
+            if (selectionStart > 0) {
+
+                newRuns.push({
+
+                    ...structuredClone(run),
+
+                    text:
+                        run.text.slice(
+                            0,
+                            selectionStart
+                        ),
+
+                });
+
+            }
+
+            // Texto selecionado
+            const selectedText =
+                run.text.slice(
+                    selectionStart,
+                    selectionEnd
+                );
+
+            if (selectedText.length > 0) {
+
+                newRuns.push({
+
+                    ...structuredClone(run),
+
+                    text:
+                        selectedText,
+
+                    bold:
+                        !allSelectedBold,
+
+                });
+
+            }
+
+            // Texto depois da seleção
+            if (
+                selectionEnd <
+                run.text.length
+            ) {
+
+                newRuns.push({
+
+                    ...structuredClone(run),
+
+                    text:
+                        run.text.slice(
+                            selectionEnd
+                        ),
+
+                });
+
+            }
+
+        }
+
+        paragraph.setRuns(
+            newRuns
+        );
+
+        return {
+
+            previousRuns,
+
+            newRuns:
+                structuredClone(
+                    paragraph.getRuns()
+                ),
+
+        };
+
+    }
+
+    // toggleItalic //
+    public toggleItalic(
+        paragraphId: number,
+        startOffset: number,
+        endOffset: number
+    ): {
+        previousRuns: TextRun[];
+        newRuns: TextRun[];
+    } | null {
+
+        const paragraph =
+            this.getParagraphById(paragraphId);
+
+        if (!paragraph) {
+            return null;
+        }
+
+        if (startOffset === endOffset) {
+            return null;
+        }
+
+        const contentLength =
+            paragraph.content.length;
+
+        const start =
+            Math.max(
+                0,
+                Math.min(startOffset, contentLength)
+            );
+
+        const end =
+            Math.max(
+                0,
+                Math.min(endOffset, contentLength)
+            );
+
+        if (start >= end) {
+            return null;
+        }
+
+        const previousRuns =
+            structuredClone(
+                paragraph.getRuns()
+            );
+
+        const selectedRuns: TextRun[] = [];
+
+        let currentOffset = 0;
+
+        for (const run of paragraph.getRuns()) {
+
+            const runStart =
+                currentOffset;
+
+            const runEnd =
+                currentOffset + run.text.length;
+
+            currentOffset =
+                runEnd;
+
+            if (
+                runEnd <= start ||
+                runStart >= end
+            ) {
+                continue;
+            }
+
+            selectedRuns.push(run);
+
+        }
+
+        const allSelectedItalic =
+            selectedRuns.length > 0 &&
+            selectedRuns.every(
+                run => run.italic === true
+            );
+
+        const newRuns: TextRun[] = [];
+
+        currentOffset = 0;
+
+        for (const run of paragraph.getRuns()) {
+
+            const runStart =
+                currentOffset;
+
+            const runEnd =
+                currentOffset + run.text.length;
+
+            currentOffset =
+                runEnd;
+
+            if (
+                runEnd <= start ||
+                runStart >= end
+            ) {
+
+                newRuns.push(
+                    structuredClone(run)
+                );
+
+                continue;
+            }
+
+            // Parte antes da seleção
+            if (runStart < start) {
+
+                newRuns.push({
+
+                    ...structuredClone(run),
+
+                    text:
+                        run.text.slice(
+                            0,
+                            start - runStart
+                        ),
+
+                });
+
+            }
+
+            // Parte selecionada
+            const selectedStart =
+                Math.max(
+                    start,
+                    runStart
+                );
+
+            const selectedEnd =
+                Math.min(
+                    end,
+                    runEnd
+                );
+
+            newRuns.push({
+
+                ...structuredClone(run),
+
+                text:
+                    run.text.slice(
+                        selectedStart - runStart,
+                        selectedEnd - runStart
+                    ),
+
+                italic:
+                    !allSelectedItalic,
+
+            });
+
+            // Parte depois da seleção
+            if (runEnd > end) {
+
+                newRuns.push({
+
+                    ...structuredClone(run),
+
+                    text:
+                        run.text.slice(
+                            end - runStart
+                        ),
+
+                });
+
+            }
+
+        }
+
+        paragraph.setRuns(newRuns);
+
+        return {
+
+            previousRuns,
+
+            newRuns:
+                structuredClone(
+                    paragraph.getRuns()
+                ),
+
+        };
+
+    }
+
+    // toggleUnderline //
+    public toggleUnderline(
+        paragraphId: number,
+        startOffset: number,
+        endOffset: number
+    ): {
+        previousRuns: TextRun[];
+        newRuns: TextRun[];
+    } | null {
+
+        const paragraph =
+            this.getParagraphById(paragraphId);
+
+        if (!paragraph) {
+            return null;
+        }
+
+        if (startOffset === endOffset) {
+            return null;
+        }
+
+        const contentLength =
+            paragraph.content.length;
+
+        const start =
+            Math.max(
+                0,
+                Math.min(startOffset, contentLength)
+            );
+
+        const end =
+            Math.max(
+                0,
+                Math.min(endOffset, contentLength)
+            );
+
+        if (start >= end) {
+            return null;
+        }
+
+        const previousRuns =
+            structuredClone(
+                paragraph.getRuns()
+            );
+
+        const selectedRuns: TextRun[] = [];
+
+        let currentOffset = 0;
+
+        for (const run of paragraph.getRuns()) {
+
+            const runStart =
+                currentOffset;
+
+            const runEnd =
+                currentOffset + run.text.length;
+
+            currentOffset =
+                runEnd;
+
+            if (
+                runEnd <= start ||
+                runStart >= end
+            ) {
+                continue;
+            }
+
+            selectedRuns.push(run);
+
+        }
+
+        const allSelectedUnderline =
+            selectedRuns.length > 0 &&
+            selectedRuns.every(
+                run => run.underline === true
+            );
+
+        const newRuns: TextRun[] = [];
+
+        currentOffset = 0;
+
+        for (const run of paragraph.getRuns()) {
+
+            const runStart =
+                currentOffset;
+
+            const runEnd =
+                currentOffset + run.text.length;
+
+            currentOffset =
+                runEnd;
+
+            if (
+                runEnd <= start ||
+                runStart >= end
+            ) {
+
+                newRuns.push(
+                    structuredClone(run)
+                );
+
+                continue;
+            }
+
+            // Parte antes da seleção
+            if (runStart < start) {
+
+                newRuns.push({
+
+                    ...structuredClone(run),
+
+                    text:
+                        run.text.slice(
+                            0,
+                            start - runStart
+                        ),
+
+                });
+
+            }
+
+            // Parte selecionada
+            const selectedStart =
+                Math.max(
+                    start,
+                    runStart
+                );
+
+            const selectedEnd =
+                Math.min(
+                    end,
+                    runEnd
+                );
+
+            newRuns.push({
+
+                ...structuredClone(run),
+
+                text:
+                    run.text.slice(
+                        selectedStart - runStart,
+                        selectedEnd - runStart
+                    ),
+
+                underline:
+                    !allSelectedUnderline,
+
+            });
+
+            // Parte depois da seleção
+            if (runEnd > end) {
+
+                newRuns.push({
+
+                    ...structuredClone(run),
+
+                    text:
+                        run.text.slice(
+                            end - runStart
+                        ),
+
+                });
+
+            }
+
+        }
+
+        paragraph.setRuns(newRuns);
+
+        return {
+
+            previousRuns,
+
+            newRuns:
+                structuredClone(
+                    paragraph.getRuns()
+                ),
+
+        };
+
+    }
+
+    // toggleStrike //
+    public toggleStrike(
+        paragraphId: number,
+        startOffset: number,
+        endOffset: number
+    ): {
+        previousRuns: TextRun[];
+        newRuns: TextRun[];
+    } | null {
+
+        const paragraph =
+            this.getParagraphById(paragraphId);
+
+        if (!paragraph) {
+            return null;
+        }
+
+        if (startOffset === endOffset) {
+            return null;
+        }
+
+        const contentLength =
+            paragraph.content.length;
+
+        const start =
+            Math.max(
+                0,
+                Math.min(startOffset, contentLength)
+            );
+
+        const end =
+            Math.max(
+                0,
+                Math.min(endOffset, contentLength)
+            );
+
+        if (start >= end) {
+            return null;
+        }
+
+        const previousRuns =
+            structuredClone(
+                paragraph.getRuns()
+            );
+
+        const selectedRuns: TextRun[] = [];
+
+        let currentOffset = 0;
+
+        for (const run of paragraph.getRuns()) {
+
+            const runStart =
+                currentOffset;
+
+            const runEnd =
+                currentOffset + run.text.length;
+
+            currentOffset =
+                runEnd;
+
+            if (
+                runEnd <= start ||
+                runStart >= end
+            ) {
+                continue;
+            }
+
+            selectedRuns.push(run);
+
+        }
+
+        const allSelectedStrike =
+            selectedRuns.length > 0 &&
+            selectedRuns.every(
+                run => run.strike === true
+            );
+
+        const newRuns: TextRun[] = [];
+
+        currentOffset = 0;
+
+        for (const run of paragraph.getRuns()) {
+
+            const runStart =
+                currentOffset;
+
+            const runEnd =
+                currentOffset + run.text.length;
+
+            currentOffset =
+                runEnd;
+
+            if (
+                runEnd <= start ||
+                runStart >= end
+            ) {
+
+                newRuns.push(
+                    structuredClone(run)
+                );
+
+                continue;
+            }
+
+            // Parte antes da seleção
+            if (runStart < start) {
+
+                newRuns.push({
+
+                    ...structuredClone(run),
+
+                    text:
+                        run.text.slice(
+                            0,
+                            start - runStart
+                        ),
+
+                });
+
+            }
+
+            // Parte selecionada
+            const selectedStart =
+                Math.max(
+                    start,
+                    runStart
+                );
+
+            const selectedEnd =
+                Math.min(
+                    end,
+                    runEnd
+                );
+
+            newRuns.push({
+
+                ...structuredClone(run),
+
+                text:
+                    run.text.slice(
+                        selectedStart - runStart,
+                        selectedEnd - runStart
+                    ),
+
+                strike:
+                    !allSelectedStrike,
+
+            });
+
+            // Parte depois da seleção
+            if (runEnd > end) {
+
+                newRuns.push({
+
+                    ...structuredClone(run),
+
+                    text:
+                        run.text.slice(
+                            end - runStart
+                        ),
+
+                });
+
+            }
+
+        }
+
+        paragraph.setRuns(newRuns);
+
+        return {
+
+            previousRuns,
+
+            newRuns:
+                structuredClone(
+                    paragraph.getRuns()
+                ),
 
         };
 

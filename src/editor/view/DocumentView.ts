@@ -1024,8 +1024,7 @@ export class DocumentView {
         p.style.lineHeight =
             `${layout.lineHeight}px`;
 
-        p.style.textAlign =
-            layout.align;
+        p.style.textAlign = paragraph.alignment ?? layout.align;
 
         p.dataset.id =
             String(paragraph.id);
@@ -2862,8 +2861,7 @@ export class DocumentView {
                         fragment.style.marginLeft =
                             "0px";
 
-                        fragment.style.textAlign =
-                            layout.align;
+                        fragment.style.textAlign = paragraph.alignment ?? layout.align;
 
                         // -----------------------------------------------------
                         // WRAPPER DO FRAGMENTO
@@ -3180,8 +3178,7 @@ export class DocumentView {
                         fragment.style.marginLeft =
                             "0px";
 
-                        fragment.style.textAlign =
-                            layout.align;
+                        fragment.style.textAlign = paragraph.alignment ?? layout.align;
 
                         const fragmentWrapper =
                             this.createFragmentWrapper(

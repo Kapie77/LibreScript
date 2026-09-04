@@ -541,3 +541,111 @@
     background: var(--border-color) !important;
 
 }
+
+/* =========================================================
+   FERRAMENTAS DE FORMATAÇÃO
+========================================================= */
+
+.filebar-format-tools {
+
+  position: absolute;
+
+  left: 50%;
+
+  transform: translateX(-50%);
+
+  height: 100%;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 2px;
+
+  white-space: nowrap;
+
+}
+
+
+/* =========================================================
+   BOTÃO DE FORMATAÇÃO
+========================================================= */
+
+.format-tool-button {
+
+  width: 34px !important;
+  min-width: 34px !important;
+
+  height: 34px !important;
+  min-height: 34px !important;
+
+  padding: 0 !important;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid transparent !important;
+
+  border-radius: 7px !important;
+
+  background: transparent !important;
+
+  color: var(--text-main);
+
+  font-size: 15px;
+
+  cursor: pointer;
+
+  box-shadow: none !important;
+
+  transform: none !important;
+
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+
+.format-tool-button:hover:not(:disabled) {
+
+  background: var(--bg-hover) !important;
+
+  border-color: var(--border-color) !important;
+
+}
+
+
+.format-tool-button:active:not(:disabled) {
+
+  background: var(--border-color) !important;
+
+}
+
+
+.format-tool-button:disabled {
+
+  opacity: 0.35;
+
+  cursor: default;
+
+}
+
+
+/* =========================================================
+   SEPARADOR
+========================================================= */
+
+.format-tool-separator {
+
+  width: 1px;
+
+  height: 24px;
+
+  margin: 0 6px;
+
+  background: var(--border-color);
+
+}

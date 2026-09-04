@@ -6,6 +6,7 @@
 import { useEffect, useState, useRef } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import type { SearchResult } from "../../services/SearchService";
+import type { ParagraphAlignment } from "../../../types/script";
 // -------------------------------------- //
 type Props = {
   onNew: () => void;
@@ -15,6 +16,13 @@ type Props = {
   onUndo: () => void;
   onRedo: () => void;
   onExportPDF: () => void;
+  onToggleBold: () => void;
+  onToggleItalic: () => void;
+  onToggleUnderline: () => void;
+  onToggleStrike: () => void;
+  onSetParagraphAlignment: (
+      alignment: ParagraphAlignment
+  ) => void;
   searchTerm: string;
   setSearchTerm: (value: string) => void;
   searchResults: SearchResult[];
@@ -80,6 +88,11 @@ export default function FileBar({
   onUndo,
   onRedo,
   onExportPDF,
+  onToggleBold,
+  onToggleItalic,
+  onToggleUnderline,
+  onToggleStrike,
+  onSetParagraphAlignment,
   searchTerm,
   setSearchTerm,
   searchResults,
@@ -507,6 +520,106 @@ useEffect(() => {
       >
         ↷  {/* refazer */}
       </button>
+
+      {/* FERRAMENTAS DE FORMATAÇÃO */}
+      <div className="filebar-format-tools">
+
+        <button
+          type="button"
+          className="format-tool-button"
+          title="Negrito (Ctrl+B)"
+          onMouseDown={(e) =>
+            e.preventDefault()
+          }
+          onClick={onToggleBold}
+        >
+          <strong>B</strong>
+        </button>
+
+        <button
+            type="button"
+            className="format-tool-button"
+            title="Itálico (Ctrl+I)"
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={onToggleItalic}
+        >
+            <em>I</em>
+        </button>
+
+        <button
+            type="button"
+            className="format-tool-button"
+            title="Sublinhado (Ctrl+U)"
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={onToggleUnderline}
+        >
+            <u>U</u>
+        </button>
+
+        <button
+            type="button"
+            className="format-tool-button"
+            title="Tachado (Ctrl+Shift+X)"
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={onToggleStrike}
+        >
+            <s>S</s>
+        </button>
+
+        <span className="format-tool-separator" />
+
+        {/* BOTÕES DE ALINHAMENTO */}
+        <button
+            type="button"
+            className="format-tool-button"
+            title="Alinhar à esquerda"
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={() =>
+                onSetParagraphAlignment("left")
+            }
+        >
+            ≡
+        </button>
+
+        <button
+            type="button"
+            className="format-tool-button"
+            title="Centralizar"
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={() =>
+                onSetParagraphAlignment("center")
+            }
+        >
+            ≡
+        </button>
+
+        <button
+            type="button"
+            className="format-tool-button"
+            title="Alinhar à direita"
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={() =>
+                onSetParagraphAlignment("right")
+            }
+        >
+            ≡
+        </button>
+
+        <button
+            type="button"
+            className="format-tool-button"
+            title="Justificar"
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={() =>
+                onSetParagraphAlignment("justify")
+            }
+        >
+            ≡
+        </button>
+        {/*FIM DOS BOTÕES DE ALINHAMENTO*/}
+
+      </div>
+      {/* FIM FERRAMENTAS DE FORMATAÇÃO */}
 
 
     <div className="search-container">

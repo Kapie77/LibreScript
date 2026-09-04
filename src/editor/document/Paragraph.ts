@@ -1,12 +1,15 @@
 // Paragraph.ts
 // src/editor/document/
 
-import type { ScriptBlock } from "../../types/script";
+import type { ScriptBlock, ParagraphAlignment } from "../../types/script";
 import type { TextRun } from "./TextRun";
+
 // --------------------------------------------------------- //
+
 export class Paragraph {
 
     private block: ScriptBlock;
+
     private runs: TextRun[];
 
     // constructor //
@@ -16,13 +19,17 @@ export class Paragraph {
 
         this.block = block;
 
-        this.runs = [
+        this.runs = block.runs
 
-            {
-                text: block.content
-            }
+            ? structuredClone(block.runs)
 
-        ];
+            : [
+
+                {
+                    text: block.content
+                }
+
+            ];
 
     }
 
@@ -49,7 +56,9 @@ export class Paragraph {
     get content() {
 
         return this.runs
+
             .map(run => run.text)
+
             .join("");
 
     }
@@ -67,6 +76,14 @@ export class Paragraph {
 
         this.block.content = value;
 
+        this.block.runs = [
+
+            {
+                text: value
+            }
+
+        ];
+
     }
 
     // getRuns //
@@ -79,11 +96,15 @@ export class Paragraph {
     // setRuns //
     setRuns(runs: TextRun[]) {
 
-        this.runs = runs;
+        this.runs = structuredClone(runs);
 
-        this.block.content = runs
+        this.block.content = this.runs
+
             .map(run => run.text)
+
             .join("");
+
+        this.block.runs = structuredClone(this.runs);
 
     }
 
@@ -91,6 +112,8 @@ export class Paragraph {
     syncContent() {
 
         this.block.content = this.content;
+
+        this.block.runs = structuredClone(this.runs);
 
     }
 
@@ -101,6 +124,7 @@ export class Paragraph {
 
     }
 
+    // updateContent //
     updateContent(
 
         content: string
@@ -111,6 +135,7 @@ export class Paragraph {
 
     }
 
+    // updateType //
     updateType(
 
         type: ScriptBlock["type"]
@@ -119,6 +144,16 @@ export class Paragraph {
 
         this.type = type;
 
+    }
+
+    // get alignment //
+    get alignment(): ParagraphAlignment {
+        return this.block.alignment ?? "left";
+    }
+
+    // set alignment //
+    set alignment(value: ParagraphAlignment) {
+        this.block.alignment = value;
     }
 
 }

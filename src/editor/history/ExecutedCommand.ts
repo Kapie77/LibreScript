@@ -5,6 +5,7 @@ import type {
     CaretSnapshot,
     SelectionSnapshot,
     ContentUndoData,
+    FormatRunsUndoData,
     SplitParagraphUndoData,
     MergeParagraphUndoData,
     ReplaceSelectionMultiUndoData,
@@ -14,6 +15,7 @@ import type {
     MoveParagraphUndoData,
     DeleteParagraphUndoData,
     ReplaceAllUndoData,
+    ParagraphAlignmentUndoData,
 } from "./UndoData";
 // ------------------------------------------------------------------- //
 export interface ExecutedCommand {
@@ -22,6 +24,7 @@ export interface ExecutedCommand {
 
     undoData:
         | ContentUndoData
+        | FormatRunsUndoData
         | SplitParagraphUndoData
         | MergeParagraphUndoData
         | ReplaceSelectionMultiUndoData
@@ -30,7 +33,8 @@ export interface ExecutedCommand {
         | ChangeParagraphTypeUndoData
         | MoveParagraphUndoData
         | DeleteParagraphUndoData
-        | ReplaceAllUndoData;
+        | ReplaceAllUndoData
+        | ParagraphAlignmentUndoData;
 
     selectionBefore?: SelectionSnapshot;
     selectionAfter?: SelectionSnapshot;

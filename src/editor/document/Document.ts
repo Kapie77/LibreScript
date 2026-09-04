@@ -63,6 +63,7 @@ export class Document {
 
     }
 
+    // toScriptBlocks//
     toScriptBlocks(): ScriptBlock[] {
 
         return this.paragraphs.map(
@@ -70,10 +71,10 @@ export class Document {
             paragraph => ({
 
                 id: paragraph.id,
-
                 type: paragraph.type,
-
                 content: paragraph.content,
+                runs: structuredClone(paragraph.getRuns()),
+                alignment: paragraph.alignment,
 
             })
 
@@ -81,6 +82,7 @@ export class Document {
 
     }
 
+    // updateParagraph //
     updateParagraph(
 
         id: number,
@@ -267,6 +269,7 @@ export class Document {
 
     }
 
+    // splitParagraph //
     splitParagraph(
 
         id: number,
@@ -291,25 +294,106 @@ export class Document {
 
         const paragraph = this.paragraphs[index];
 
-        const before =
+        const runs = paragraph.getRuns();
 
-            paragraph.content.slice(
+        const beforeRuns: typeof runs = [];
 
-                0,
+        const afterRuns: typeof runs = [];
 
-                offset
+        let currentOffset = 0;
 
-            );
+        for (const run of runs) {
 
-        const after =
+            const runStart = currentOffset;
 
-            paragraph.content.slice(
+            const runEnd =
 
-                offset
+                currentOffset +
 
-            );
+                run.text.length;
 
-        paragraph.updateContent(before);
+            // Run inteiro antes do ponto de divisão
+            if (runEnd <= offset) {
+
+                beforeRuns.push(
+
+                    structuredClone(run)
+
+                );
+
+            }
+
+            // Run inteiro depois do ponto de divisão
+            else if (runStart >= offset) {
+
+                afterRuns.push(
+
+                    structuredClone(run)
+
+                );
+
+            }
+
+            // O ponto de divisão está dentro deste run
+            else {
+
+                const splitOffset =
+
+                    offset - runStart;
+
+                const beforeText =
+
+                    run.text.slice(
+
+                        0,
+
+                        splitOffset
+
+                    );
+
+                const afterText =
+
+                    run.text.slice(
+
+                        splitOffset
+
+                    );
+
+                if (beforeText.length > 0) {
+
+                    beforeRuns.push({
+
+                        ...structuredClone(run),
+
+                        text: beforeText,
+
+                    });
+
+                }
+
+                if (afterText.length > 0) {
+
+                    afterRuns.push({
+
+                        ...structuredClone(run),
+
+                        text: afterText,
+
+                    });
+
+                }
+
+            }
+
+            currentOffset = runEnd;
+
+        }
+
+        paragraph.setRuns(
+
+            beforeRuns
+
+        );
 
         const newParagraph = new Paragraph({
 
@@ -317,7 +401,13 @@ export class Document {
 
             type: paragraph.type,
 
-            content: after,
+            content: afterRuns
+
+                .map(run => run.text)
+
+                .join(""),
+
+            runs: afterRuns,
 
         });
 
@@ -361,14 +451,32 @@ export class Document {
         }
 
         const previous = this.paragraphs[index - 1];
+
         const current = this.paragraphs[index];
 
         const caretPosition =
+
             previous.content.length;
 
-        previous.updateContent(
+        const mergedRuns = [
 
-            previous.content + current.content
+            ...structuredClone(
+
+                previous.getRuns()
+
+            ),
+
+            ...structuredClone(
+
+                current.getRuns()
+
+            ),
+
+        ];
+
+        previous.setRuns(
+
+            mergedRuns
 
         );
 
@@ -390,8 +498,9 @@ export class Document {
 
     }
     // ------------------------ //
+    // ------------------------ //
 
-    // merge with previous
+    // merge with next //
     mergeWithNext(
 
         id: number
@@ -434,11 +543,25 @@ export class Document {
 
             current.content.length;
 
-        current.updateContent(
+        const mergedRuns = [
 
-            current.content +
+            ...structuredClone(
 
-            next.content
+                current.getRuns()
+
+            ),
+
+            ...structuredClone(
+
+                next.getRuns()
+
+            ),
+
+        ];
+
+        current.setRuns(
+
+            mergedRuns
 
         );
 
@@ -463,5 +586,7 @@ export class Document {
         };
 
     }
+    // ------------------------ //
+    // ---------------------------- //
 
 }

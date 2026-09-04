@@ -1,6 +1,6 @@
 // EditorCommands.ts (comandos do editor)
 // src/editor/commands/
-import type { ScriptBlock } from "../../types/script";
+import type { ScriptBlock, ParagraphAlignment } from "../../types/script";
 import type { InsertTextCommand } from "./text/InsertTextCommand";
 import type { DeleteTextCommand } from "./text/DeleteTextCommand";
 import type { ReplaceSelectionCommand } from "./text/ReplaceSelectionCommand";
@@ -90,6 +90,55 @@ export interface ReplaceTextCommand {
 
 }
 
+export interface ToggleBoldCommand {
+
+    type: "TOGGLE_BOLD";
+
+    selection: {
+        anchorParagraphId: number;
+        anchorOffset: number;
+        focusParagraphId: number;
+        focusOffset: number;
+    };
+
+}
+
+export interface ToggleItalicCommand {
+    type: "TOGGLE_ITALIC";
+    selection: {
+        anchorParagraphId: number;
+        anchorOffset: number;
+        focusParagraphId: number;
+        focusOffset: number;
+    };
+}
+
+export interface ToggleUnderlineCommand {
+    type: "TOGGLE_UNDERLINE";
+    selection: {
+        anchorParagraphId: number;
+        anchorOffset: number;
+        focusParagraphId: number;
+        focusOffset: number;
+    };
+}
+
+export interface ToggleStrikeCommand {
+    type: "TOGGLE_STRIKE";
+    selection: {
+        anchorParagraphId: number;
+        anchorOffset: number;
+        focusParagraphId: number;
+        focusOffset: number;
+    };
+}
+
+export interface SetParagraphAlignmentCommand {
+    type: "SET_PARAGRAPH_ALIGNMENT";
+    paragraphId: number;
+    alignment: ParagraphAlignment;
+}
+
 export type EditorCommand =
 
     | InsertParagraphCommand
@@ -107,4 +156,9 @@ export type EditorCommand =
     | ReplaceSelectionCommand
     | ReplaceSelectionMultiCommand
     | PasteMultiParagraphCommand
-    | ReplaceAllCommand;
+    | ReplaceAllCommand
+    | ToggleBoldCommand
+    | ToggleItalicCommand
+    | ToggleUnderlineCommand
+    | ToggleStrikeCommand
+    | SetParagraphAlignmentCommand;

@@ -127,6 +127,126 @@ export class EditController {
 
                 }
 
+                case "b": {
+
+                    this.selection.syncControllerFromDOM();
+
+                    const currentSelection =
+                        this.selection.getCurrentSelection();
+
+                    if (!currentSelection) {
+
+                        return;
+
+                    }
+
+                    event.preventDefault();
+
+                    this.engine.execute({
+
+                        type: "TOGGLE_BOLD",
+
+                        selection: {
+
+                            anchorParagraphId:
+                                currentSelection.anchor.paragraphId,
+
+                            anchorOffset:
+                                currentSelection.anchor.offset,
+
+                            focusParagraphId:
+                                currentSelection.focus.paragraphId,
+
+                            focusOffset:
+                                currentSelection.focus.offset,
+
+                        },
+
+                    });
+
+                    return;
+
+                }
+
+                case "i": {
+
+                    this.selection.syncControllerFromDOM();
+
+                    const currentSelection =
+                        this.selection.getCurrentSelection();
+
+                    if (!currentSelection) {
+                        return;
+                    }
+
+                    event.preventDefault();
+
+                    this.engine.execute({
+
+                        type: "TOGGLE_ITALIC",
+
+                        selection: {
+
+                            anchorParagraphId:
+                                currentSelection.anchor.paragraphId,
+
+                            anchorOffset:
+                                currentSelection.anchor.offset,
+
+                            focusParagraphId:
+                                currentSelection.focus.paragraphId,
+
+                            focusOffset:
+                                currentSelection.focus.offset,
+
+                        },
+
+                    });
+
+                    return;
+
+                }
+
+                // case "u" //
+                case "u": {
+
+                    this.selection.syncControllerFromDOM();
+
+                    const currentSelection =
+                        this.selection.getCurrentSelection();
+
+                    if (!currentSelection) {
+                        return;
+                    }
+
+                    event.preventDefault();
+
+                    this.engine.execute({
+
+                        type: "TOGGLE_UNDERLINE",
+
+                        selection: {
+
+                            anchorParagraphId:
+                                currentSelection.anchor.paragraphId,
+
+                            anchorOffset:
+                                currentSelection.anchor.offset,
+
+                            focusParagraphId:
+                                currentSelection.focus.paragraphId,
+
+                            focusOffset:
+                                currentSelection.focus.offset,
+
+                        },
+
+                    });
+
+                    return;
+
+                }
+
                 case "c": {
 
                     this.selection.syncControllerFromDOM();
@@ -146,6 +266,45 @@ export class EditController {
                 }
 
                 case "x": {
+
+                    if (event.shiftKey) {
+
+                        this.selection.syncControllerFromDOM();
+
+                        const currentSelection =
+                            this.selection.getCurrentSelection();
+
+                        if (!currentSelection) {
+                            return;
+                        }
+
+                        event.preventDefault();
+
+                        this.engine.execute({
+
+                            type: "TOGGLE_STRIKE",
+
+                            selection: {
+
+                                anchorParagraphId:
+                                    currentSelection.anchor.paragraphId,
+
+                                anchorOffset:
+                                    currentSelection.anchor.offset,
+
+                                focusParagraphId:
+                                    currentSelection.focus.paragraphId,
+
+                                focusOffset:
+                                    currentSelection.focus.offset,
+
+                            },
+
+                        });
+
+                        return;
+
+                    }
 
                     this.selection.syncControllerFromDOM();
 

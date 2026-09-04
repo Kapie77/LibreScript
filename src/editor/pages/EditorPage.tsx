@@ -281,6 +281,27 @@ export default function EditorPage({
           onSave={saveProject}
           onSaveAs={saveProjectAs}
           onOpen={openProject}
+
+          onToggleBold={() =>
+                engine.toggleBold()
+          }
+
+          onToggleItalic={() =>
+                engine.toggleItalic()
+          }
+
+          onToggleUnderline={() =>
+                engine.toggleUnderline()
+          }
+
+          onToggleStrike={() =>
+                engine.toggleStrike()
+          }
+
+          onSetParagraphAlignment={(alignment) =>
+                engine.setParagraphAlignment(alignment)
+          }
+
           onCover={() =>
                 setShowTitlePageDialog(true)
           }
@@ -405,35 +426,6 @@ export default function EditorPage({
               }))
           }
         />
-        
-        
-        {/*TITULO E AUTOR*
-        <div className="project-header">
-          <input
-            className="project-title"
-            placeholder="Título do Projeto"
-            value={project.title}
-            onChange={(e) =>
-              setProject({
-                ...project,
-                title: e.target.value,
-              })
-            }
-          />
-
-          <input
-            className="project-author"
-            placeholder="Autor"
-            value={project.author}
-            onChange={(e) =>
-              setProject({
-                ...project,
-                author: e.target.value,
-              })
-            }
-          />
-        </div>
-        */}
 
     {/* SIDEBAR NAVEGAR ENTRE CENAS */}
     <SceneList

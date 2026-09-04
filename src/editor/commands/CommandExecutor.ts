@@ -15,8 +15,14 @@ import type {
     MergeNextCommand, 
     MergePreviousCommand,
     DeleteParagraphCommand, 
-    SplitParagraphCommand
+    SplitParagraphCommand,
+    ToggleBoldCommand,
+    ToggleItalicCommand,
+    ToggleUnderlineCommand,
+    ToggleStrikeCommand,
+    SetParagraphAlignmentCommand
 } from "./EditorCommands";
+
 import type { PasteMultiParagraphCommand } from "./text/PasteMultiParagraphCommand";
 
 import type { ReplaceAllCommand } from "./text/ReplaceAllCommand";
@@ -220,6 +226,184 @@ public applyPasteMultiParagraph(
         command.position,
         command.text
 
+    );
+
+}
+
+// applyToggleBold //
+public applyToggleBold(
+
+    command: ToggleBoldCommand
+
+) {
+
+    const { selection } =
+        command;
+
+    if (
+        selection.anchorParagraphId !==
+        selection.focusParagraphId
+    ) {
+
+        return null;
+
+    }
+
+    const start =
+        Math.min(
+            selection.anchorOffset,
+            selection.focusOffset
+        );
+
+    const end =
+        Math.max(
+            selection.anchorOffset,
+            selection.focusOffset
+        );
+
+    return this.model.toggleBold(
+
+        selection.anchorParagraphId,
+
+        start,
+
+        end
+
+    );
+
+}
+
+// applyToggleItalic //
+public applyToggleItalic(
+    command: ToggleItalicCommand
+) {
+
+    const { selection } =
+        command;
+
+    if (
+        selection.anchorParagraphId !==
+        selection.focusParagraphId
+    ) {
+
+        return null;
+
+    }
+
+    const start =
+        Math.min(
+            selection.anchorOffset,
+            selection.focusOffset
+        );
+
+    const end =
+        Math.max(
+            selection.anchorOffset,
+            selection.focusOffset
+        );
+
+    return this.model.toggleItalic(
+
+        selection.anchorParagraphId,
+
+        start,
+
+        end
+
+    );
+
+}
+
+// applyToggleUnderline
+public applyToggleUnderline(
+    command: ToggleUnderlineCommand
+) {
+
+    const { selection } =
+        command;
+
+    if (
+        selection.anchorParagraphId !==
+        selection.focusParagraphId
+    ) {
+
+        return null;
+
+    }
+
+    const start =
+        Math.min(
+            selection.anchorOffset,
+            selection.focusOffset
+        );
+
+    const end =
+        Math.max(
+            selection.anchorOffset,
+            selection.focusOffset
+        );
+
+    return this.model.toggleUnderline(
+
+        selection.anchorParagraphId,
+
+        start,
+
+        end
+
+    );
+
+}
+
+// applyToggleStrike
+public applyToggleStrike(
+    command: ToggleStrikeCommand
+) {
+
+    const { selection } =
+        command;
+
+    if (
+        selection.anchorParagraphId !==
+        selection.focusParagraphId
+    ) {
+
+        return null;
+
+    }
+
+    const start =
+        Math.min(
+            selection.anchorOffset,
+            selection.focusOffset
+        );
+
+    const end =
+        Math.max(
+            selection.anchorOffset,
+            selection.focusOffset
+        );
+
+    return this.model.toggleStrike(
+
+        selection.anchorParagraphId,
+
+        start,
+
+        end
+
+    );
+
+}
+
+// applySetParagraphAlignment //
+public applySetParagraphAlignment(
+    command: SetParagraphAlignmentCommand
+) {
+
+    return this.model.setParagraphAlignment(
+        command.paragraphId,
+        command.alignment
     );
 
 }
@@ -888,6 +1072,262 @@ public applyPasteMultiParagraph(
 
             }
             // -------------------------- //
+
+            // TOGGLE BOLD //
+            case "TOGGLE_BOLD": {
+
+                const result =
+                    this.applyToggleBold(
+                        command
+                    );
+
+                if (!result) {
+
+                    return null;
+
+                }
+
+                return {
+
+                    command,
+
+                    undoData: {
+
+                        paragraphs: [
+
+                            {
+
+                                paragraphId:
+                                    command.selection.anchorParagraphId,
+
+                                previousRuns:
+                                    result.previousRuns,
+
+                                newRuns:
+                                    result.newRuns,
+
+                            },
+
+                        ],
+
+                    },
+
+                    selectionAfter: {
+
+                        anchorParagraphId:
+                            command.selection.anchorParagraphId,
+
+                        anchorOffset:
+                            command.selection.anchorOffset,
+
+                        focusParagraphId:
+                            command.selection.focusParagraphId,
+
+                        focusOffset:
+                            command.selection.focusOffset,
+
+                    },
+
+                    timestamp:
+                        Date.now(),
+
+                };
+
+            }
+
+            // TOGGLE ITALIC //
+            case "TOGGLE_ITALIC": {
+
+                const result =
+                    this.applyToggleItalic(command);
+
+                if (!result) {
+
+                    return null;
+
+                }
+
+                return {
+
+                    command,
+
+                    undoData: {
+
+                        paragraphs: [{
+
+                            paragraphId:
+                                command.selection.anchorParagraphId,
+
+                            previousRuns:
+                                result.previousRuns,
+
+                            newRuns:
+                                result.newRuns,
+
+                        }],
+
+                    },
+
+                    selectionAfter: {
+
+                        anchorParagraphId:
+                            command.selection.anchorParagraphId,
+
+                        anchorOffset:
+                            command.selection.anchorOffset,
+
+                        focusParagraphId:
+                            command.selection.focusParagraphId,
+
+                        focusOffset:
+                            command.selection.focusOffset,
+
+                    },
+
+                    timestamp: Date.now(),
+
+                };
+
+            }
+
+            //  TOGGLE UNDERLINE //
+            case "TOGGLE_UNDERLINE": {
+
+                const result =
+                    this.applyToggleUnderline(command);
+
+                if (!result) {
+                    return null;
+                }
+
+                return {
+
+                    command,
+
+                    undoData: {
+
+                        paragraphs: [{
+
+                            paragraphId:
+                                command.selection.anchorParagraphId,
+
+                            previousRuns:
+                                result.previousRuns,
+
+                            newRuns:
+                                result.newRuns,
+
+                        }],
+
+                    },
+
+                    selectionAfter: {
+
+                        anchorParagraphId:
+                            command.selection.anchorParagraphId,
+
+                        anchorOffset:
+                            command.selection.anchorOffset,
+
+                        focusParagraphId:
+                            command.selection.focusParagraphId,
+
+                        focusOffset:
+                            command.selection.focusOffset,
+
+                    },
+
+                    timestamp: Date.now(),
+
+                };
+
+            }
+
+            // TOGGLE STRIKE //
+            case "TOGGLE_STRIKE": {
+
+                const result =
+                    this.applyToggleStrike(command);
+
+                if (!result) {
+                    return null;
+                }
+
+                return {
+
+                    command,
+
+                    undoData: {
+
+                        paragraphs: [{
+
+                            paragraphId:
+                                command.selection.anchorParagraphId,
+
+                            previousRuns:
+                                result.previousRuns,
+
+                            newRuns:
+                                result.newRuns,
+
+                        }],
+
+                    },
+
+                    selectionAfter: {
+
+                        anchorParagraphId:
+                            command.selection.anchorParagraphId,
+
+                        anchorOffset:
+                            command.selection.anchorOffset,
+
+                        focusParagraphId:
+                            command.selection.focusParagraphId,
+
+                        focusOffset:
+                            command.selection.focusOffset,
+
+                    },
+
+                    timestamp: Date.now(),
+
+                };
+
+            }
+
+            // SET PARAGRAPH ALIGNMENT //
+            case "SET_PARAGRAPH_ALIGNMENT": {
+
+                const result =
+                    this.applySetParagraphAlignment(command);
+
+                if (!result) {
+                    return null;
+                }
+
+                return {
+
+                    command,
+
+                    undoData: {
+
+                        paragraphId:
+                            command.paragraphId,
+
+                        previousAlignment:
+                            result.previousAlignment,
+
+                        newAlignment:
+                            result.newAlignment,
+
+                    },
+
+                    timestamp: Date.now(),
+
+                };
+
+            }
 
             // REPLACE ALL //
             case "REPLACE_ALL": {
