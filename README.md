@@ -159,23 +159,6 @@ Por exemplo:
     }
 ```
 
-1. Instalar API JS do Tauri
-```cd C:\Users\User\LibreScript```
-```npm install @tauri-apps/api```
-
-2. Instalar outras dependencias
-```
-npm install @tauri-apps/plugin-dialog @tauri-apps/plugin-fs
-```
-
-```
-npm run tauri add dialog
-```
-
-```
-npm run tauri add fs
-```
-
 ### default.json
 Mude o arquivo ```src-tauri/capabilities/default.json``` para isso:
 ```bash
@@ -213,7 +196,8 @@ Mude o arquivo ```src-tauri/capabilities/default.json``` para isso:
 }
 ```
 
-3. Configurando para iniciar maximizado
+### tauri.conf.json
+Configurando para iniciar maximizado
 Abra o arquivo **tauri.conf.json** na pasta "src-tauri" e acrescente ```"maximized": true``` depois de fullscreen, exemplo de como deve ficar:
 ```bash
 {
@@ -226,7 +210,24 @@ Abra o arquivo **tauri.conf.json** na pasta "src-tauri" e acrescente ```"maximiz
 }
 ```
 
-4. Precisamos apenas garantir que os pacotes JavaScript correspondentes também estejam instalados agora:
+1. Instalar API JS do Tauri
+```cd C:\Users\User\LibreScript```
+```npm install @tauri-apps/api```
+
+2. Instalar outras dependencias
+```
+npm install @tauri-apps/plugin-dialog @tauri-apps/plugin-fs
+```
+
+```
+npm run tauri add dialog
+```
+
+```
+npm run tauri add fs
+```
+
+3. Precisamos apenas garantir que os pacotes JavaScript correspondentes também estejam instalados agora:
 ```bash
 npm install @tauri-apps/plugin-dialog @tauri-apps/plugin-fs
 ```
