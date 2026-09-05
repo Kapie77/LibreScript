@@ -124,14 +124,16 @@ Ele vai fazer algumas perguntas no terminal. Não responda aleatoriamente, porqu
 - What is your frontend build command? › npm run build
 
 ## Configurando os arquivos
-1. O identificador ainda está como padrão:
+### tauri.conf.json
+O identificador ainda está como padrão:
 ```"identifier": "com.tauri.dev"```
 Vamos trocar para algo próprio do LibreScript, por exemplo:
 ```"identifier": "com.librescript.app"```
 No **tauri.conf.json**, na pasta "src-tauri", altere somente essa linha.
 Depois salve.
 
-2. Abra o **package.json** do LibreScript e procure:
+### package.json
+Abra o **package.json** do LibreScript e procure:
 "scripts": {
 
 Provavelmente está parecido com:
@@ -157,11 +159,11 @@ Por exemplo:
     }
 ```
 
-3. Instalar API JS do Tauri
+1. Instalar API JS do Tauri
 ```cd C:\Users\User\LibreScript```
 ```npm install @tauri-apps/api```
 
-4. Instalar outras dependencias
+2. Instalar outras dependencias
 ```
 npm install @tauri-apps/plugin-dialog @tauri-apps/plugin-fs
 ```
@@ -174,7 +176,8 @@ npm run tauri add dialog
 npm run tauri add fs
 ```
 
-5. Mude o arquivo ```src-tauri/capabilities/default.json``` para isso:
+### default.json
+Mude o arquivo ```src-tauri/capabilities/default.json``` para isso:
 ```bash
 {
     "$schema": "../gen/schemas/desktop-schema.json",
@@ -187,15 +190,30 @@ npm run tauri add fs
     "permissions": [
         "core:default",
         "dialog:default",
+        "dialog:allow-confirm",
+
         "fs:allow-read-text-file",
+        "fs:allow-read-file",
         "fs:allow-write-text-file",
         "fs:allow-write-file",
+        "fs:allow-mkdir",
+        "fs:allow-copy-file",
+
+        {
+            "identifier": "fs:scope",
+            "allow": [
+                {
+                    "path": "$HOME/**/*"
+                }
+            ]
+        },
+
         "core:window:allow-set-title"
     ]
 }
 ```
 
-6. Configurando para iniciar maximizado
+3. Configurando para iniciar maximizado
 Abra o arquivo **tauri.conf.json** na pasta "src-tauri" e acrescente ```"maximized": true``` depois de fullscreen, exemplo de como deve ficar:
 ```bash
 {
@@ -208,7 +226,7 @@ Abra o arquivo **tauri.conf.json** na pasta "src-tauri" e acrescente ```"maximiz
 }
 ```
 
-7. Precisamos apenas garantir que os pacotes JavaScript correspondentes também estejam instalados agora:
+4. Precisamos apenas garantir que os pacotes JavaScript correspondentes também estejam instalados agora:
 ```bash
 npm install @tauri-apps/plugin-dialog @tauri-apps/plugin-fs
 ```
