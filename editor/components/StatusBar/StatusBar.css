@@ -1,0 +1,106 @@
+/* =========================================================
+   STATUS BAR
+========================================================= */
+
+.statusbar {
+    position: fixed;
+
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    height: 40px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    box-sizing: border-box;
+
+    padding: 0 16px;
+
+    background: var(--bg-card);
+
+    border-top: 1px solid var(--border-color);
+
+    box-shadow: var(--shadow);
+
+    z-index: 5000;
+}
+
+.statusbar span {
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
+.statusbar button {
+    border: none;
+    background: transparent;
+
+    color: var(--text-main);
+
+    cursor: pointer;
+
+    font-size: 13px;
+
+    padding: 4px 8px;
+}
+
+.statusbar button:hover {
+    color: var(--accent-color);
+}
+
+.statusbar-left,
+.statusbar-right {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+/* =========================================================
+   ZOOM
+========================================================= */
+.statusbar-zoom {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: 8px;
+}
+
+.statusbar-zoom button {
+    width: 26px;
+    height: 26px;
+
+    padding: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+
+    background: transparent;
+    color: var(--text-main);
+
+    cursor: pointer;
+
+    font-size: 16px;
+    line-height: 1;
+}
+
+.statusbar-zoom button:hover:not(:disabled) {
+    background: var(--bg-hover);
+}
+
+.statusbar-zoom button:disabled {
+    opacity: 0.35;
+    cursor: default;
+}
+
+.statusbar-zoom-value {
+    min-width: 42px;
+    text-align: center;
+    color: var(--text-main) !important;
+    font-size: 13px !important;
+}
