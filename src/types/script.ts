@@ -12,7 +12,16 @@ export type BlockType =
   | "dialogue"
   | "parenthetical"
   | "shot"
-  | "transition";
+  | "close_up"
+  | "wide_shot"
+  | "pov"
+  | "over_the_shoulder"
+  | "transition"
+  | "cut_to"
+  | "fade_out"
+  | "fade_in"
+  | "dissolve_to"
+  | "smash_cut_to";
 
 export type ParagraphAlignment =
     | "left"

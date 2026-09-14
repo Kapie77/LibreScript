@@ -161,31 +161,33 @@ function App() {
       {/* MENU */}
       <header className="topbar">
 
-        <h1>LibreScript</h1>
+        <div className="topbar-content">
 
-        <nav>
-          <Link to="/">✍️ Editor</Link>
-          <Link to="/guide">📖 Guia</Link>
-          <Link to="/repository">📦 Repositório</Link>
-          <Link to="/settings">⚙️ Configurações</Link>
-        </nav>
+          <nav>
+            <Link to="/">✍️ Editor</Link>
+            <Link to="/guide">📖 Guia</Link>
+            <Link to="/repository">📦 Repositório</Link>
+            <Link to="/settings">⚙️ Configurações</Link>
+          </nav>
 
-        <button
-          className="theme-toggle"
-          onClick={() =>
-            setSettings({
-              ...settings,
-              theme:
-                settings.theme === "dark"
-                  ? "light"
-                  : "dark",
-            })
-          }
-        >
-          {settings.theme === "dark"
-            ? "☀️"
-            : "🌙"}
-        </button>
+          <button
+            className="theme-toggle"
+            onClick={() =>
+              setSettings({
+                ...settings,
+                theme:
+                  settings.theme === "dark"
+                    ? "light"
+                    : "dark",
+              })
+            }
+          >
+            {settings.theme === "dark"
+              ? "☀️"
+              : "🌙"}
+          </button>
+
+        </div>
 
       </header>
       {/* FIM DO MENU */}

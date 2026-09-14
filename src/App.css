@@ -11,14 +11,21 @@ src/
         TOPBAR
 ====================== */
 .topbar {
-  height: 70px;
+  height: 48px;
+  position: relative;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 24px;
   background: var(--bg-header);
   color: var(--text-main);
-  border-bottom: 1px solid var(--border-color);
+  box-sizing: border-box;
+}
+
+.topbar-content {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   box-sizing: border-box;
 }
 
@@ -31,19 +38,17 @@ src/
 ====================== */
 .topbar nav {
   display: flex;
-  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
 }
 
 .topbar a {
-  padding: 10px 14px;
-
+  padding: 7px 10px;
   border-radius: 6px;
-
   text-decoration: none;
-
-  background: var(--bg-card);
+  background: transparent;
   color: var(--text-main);
-
   transition: 0.2s;
 }
 
@@ -57,9 +62,7 @@ src/
 .content {
   padding: 0;
   background: var(--bg-main);
-
-  height: calc(100vh - 70px);
-
+  height: calc(100vh - 104px);
   overflow: hidden;
 }
 
@@ -67,17 +70,14 @@ src/
     BOTÃO TROCAR DE TEMA
 ============================ */
 .theme-toggle {
+  position: absolute;
+  right: 20px;
   border: none;
-
-  background: var(--bg-card);
+  background: transparent;
   color: var(--text-main);
-
-  padding: 10px 12px;
-
-  border-radius: 8px;
-
+  padding: 7px 9px;
+  border-radius: 6px;
   cursor: pointer;
-
   transition: .2s;
 }
 

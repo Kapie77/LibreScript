@@ -284,6 +284,10 @@ export function getPdfBlockLayout(
         // =================================================
 
         case "shot":
+        case "close_up":
+        case "wide_shot":
+        case "pov":
+        case "over_the_shoulder":
 
             return {
 
@@ -315,6 +319,11 @@ export function getPdfBlockLayout(
         // =================================================
 
         case "transition":
+        case "cut_to":
+        case "fade_out":
+        case "fade_in":
+        case "dissolve_to":
+        case "smash_cut_to":
 
             return {
 

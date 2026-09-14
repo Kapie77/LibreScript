@@ -317,25 +317,15 @@ export function getEditorBlockLayout(
             return {
 
                 className: "dialogue",
-
                 uppercase: false,
-
                 bold: false,
-
                 italic: false,
-
                 align: "left",
-
                 width: DIALOGUE_WIDTH,
-
                 maxWidth: DIALOGUE_WIDTH,
-
                 marginLeft: CONTENT_OFFSET + DIALOGUE_MARGIN_LEFT,
-
                 marginTop: DIALOGUE_MARGIN_TOP,
-
                 marginBottom: DIALOGUE_MARGIN_BOTTOM,
-
                 lineHeight: 22,
 
             };
@@ -345,29 +335,23 @@ export function getEditorBlockLayout(
         // =================================================
 
         case "shot":
+        case "close_up":
+        case "wide_shot":
+        case "pov":
+        case "over_the_shoulder":
 
             return {
 
                 className: "shot",
-
                 uppercase: true,
-
                 bold: true,
-
                 italic: false,
-
                 align: "left",
-
                 width: FULL_WIDTH,
-
                 maxWidth: FULL_WIDTH,
-
                 marginLeft: CONTENT_OFFSET,
-
                 marginTop: 0,
-
                 marginBottom: BLOCK_MARGIN_BOTTOM,
-
                 lineHeight: 22,
 
             };
@@ -377,29 +361,24 @@ export function getEditorBlockLayout(
         // =================================================
 
         case "transition":
+        case "cut_to":
+        case "fade_out":
+        case "fade_in":
+        case "dissolve_to":
+        case "smash_cut_to":
 
             return {
 
                 className: "transition",
-
                 uppercase: true,
-
                 bold: true,
-
                 italic: false,
-
                 align: "right",
-
                 width: FULL_WIDTH,
-
                 maxWidth: FULL_WIDTH,
-
                 marginLeft: CONTENT_OFFSET,
-
                 marginTop: 0,
-
                 marginBottom: BLOCK_MARGIN_BOTTOM,
-
                 lineHeight: 22,
 
             };
