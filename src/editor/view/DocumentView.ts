@@ -144,10 +144,40 @@ export class DocumentView {
 
     }
 
+    // handleEditorScroll
     private handleEditorScroll = (): void => {
-        this.updateVisualCaret(false);
-    };
 
+        console.log("SCROLL → recalculando caret");
+
+        const selection = this.selection.save();
+
+        console.log("SCROLL → selection", selection);
+
+        if (!selection) {
+            console.log("SCROLL → SEM SELECTION");
+            this.hideVisualCaret();
+            return;
+        }
+
+        const isCaret =
+            selection.anchorParagraphId === selection.focusParagraphId &&
+            selection.anchorOffset === selection.focusOffset;
+
+        console.log("SCROLL → isCaret", isCaret);
+
+        if (!isCaret) {
+            this.hideVisualCaret();
+            return;
+        }
+
+        this.updateVisualCaretFromLogicalPosition(
+            selection.anchorParagraphId,
+            selection.anchorOffset,
+            false
+        );
+    };
+    
+    // handleWindowResize
     private handleWindowResize = (): void => {
         this.updateVisualCaret(false);
     };
@@ -1172,6 +1202,78 @@ export class DocumentView {
     }
 
     // =========================================================
+    // PLACEHOLDER
+    // =========================================================
+    private getParagraphPlaceholder(
+        type: Paragraph["type"]
+    ): string | null {
+
+        switch (type) {
+
+            case "scene":
+                return "INT. LOCAL - DAY/NIGHT";
+
+            case "action":
+                return "Type the action...";
+
+            case "character":
+                return "CHARACTER";
+
+            case "character_contd":
+                return "CHARACTER (CONT'D)";
+
+            case "character_os":
+                return "CHARACTER (O.S.)";
+
+            case "character_vo":
+                return "CHARACTER (V.O.)";
+
+            case "dialogue":
+                return "Type the dialogue...";
+
+            case "parenthetical":
+                return "(parenthetical)";
+
+            case "shot":
+                return "SHOT:";
+            
+            case "close_up":
+                return "CLOSE_UP:";
+
+            case "wide_shot":
+                return "WIDE_SHOT:";
+
+            case "pov":
+                return "POV:";
+
+            case "over_the_shoulder":
+                return "OVER THE SHOULDER:";
+
+            case "transition":
+                return "TRANSITION:";
+
+            case "cut_to":
+                return "CUT TO:";
+
+            case "fade_out":
+                return "FADE OUT:";
+
+            case "fade_in":
+                return "FADE IN:";
+
+            case "dissolve_to":
+                return "DISSOLVE TO:";
+
+            case "smash_cut_to":
+                return "SMASH CUT TO:";
+
+            default:
+                return null;
+        }
+
+    }
+
+    // =========================================================
     // CREATE PARAGRAPH
     // =========================================================
 
@@ -1231,16 +1333,29 @@ export class DocumentView {
         p.style.marginBottom =
             `${layout.marginBottom}px`;
 
-        p.style.lineHeight =
-            `${layout.lineHeight}px`;
+        p.style.lineHeight = `${layout.lineHeight}px`;
 
         p.style.textAlign = paragraph.alignment ?? layout.align;
 
-        p.dataset.id =
-            String(paragraph.id);
+        p.dataset.id = String(paragraph.id);
 
-        p.contentEditable =
-            "true";
+        p.contentEditable = "true";
+
+        if (paragraph.content.length === 0) {
+
+        const placeholder =
+            this.getParagraphPlaceholder(
+                paragraph.type
+            );
+
+        if (placeholder) {
+
+            p.dataset.placeholder =
+                placeholder;
+
+        }
+
+    }
 
         this.renderRuns(
             p,
@@ -1509,8 +1624,31 @@ export class DocumentView {
         element.style.lineHeight =
             `${layout.lineHeight}px`;
 
-        element.style.textAlign =
-            layout.align;
+        element.style.textAlign = layout.align;
+
+        if (paragraph.content.length === 0) {
+
+            const placeholder =
+                this.getParagraphPlaceholder(
+                    paragraph.type
+                );
+
+            if (placeholder) {
+
+                element.dataset.placeholder =
+                    placeholder;
+
+            } else {
+
+                delete element.dataset.placeholder;
+
+            }
+
+        } else {
+
+            delete element.dataset.placeholder;
+
+        }
 
         /*
         Mantemos o comportamento atual.
@@ -1564,6 +1702,7 @@ export class DocumentView {
             );
 
         if (!fragment) {
+            console.log("CARET VISUAL → SEM FRAGMENT");
             this.hideVisualCaret();
             return;
         }
@@ -1574,6 +1713,7 @@ export class DocumentView {
             );
 
         if (!page) {
+            console.log("CARET VISUAL → SEM PAGE");
             this.hideVisualCaret();
             return;
         }
@@ -1581,13 +1721,95 @@ export class DocumentView {
         const rect =
             range.getBoundingClientRect();
 
+        let caretLeft = rect.left;
+        let caretTop = rect.top;
+        let caretHeight = rect.height;
+
         if (
             rect.height <= 0 ||
             !Number.isFinite(rect.x) ||
             !Number.isFinite(rect.y)
         ) {
-            this.hideVisualCaret();
-            return;
+
+            // =====================================================
+            // BLOCO VAZIO
+            // =====================================================
+
+            if (fragment.textContent?.length === 0) {
+
+                const fragmentRect =
+                    fragment.getBoundingClientRect();
+
+                if (
+                    fragmentRect.width <= 0 ||
+                    fragmentRect.height <= 0 ||
+                    !Number.isFinite(fragmentRect.left) ||
+                    !Number.isFinite(fragmentRect.top)
+                ) {
+                    this.hideVisualCaret();
+                    return;
+                }
+
+                const paragraph =
+                    this.paragraphs.find(
+                        item =>
+                            item.id === Number(
+                                fragment.dataset.paragraphId
+                            )
+                    );
+
+                if (!paragraph) {
+                    this.hideVisualCaret();
+                    return;
+                }
+
+                const layout =
+                    getEditorBlockLayout(
+                        paragraph.type
+                    );
+
+                caretTop =
+                    fragmentRect.top;
+
+                caretHeight =
+                    layout.lineHeight;
+
+                switch (layout.align) {
+
+                    case "center":
+
+                        caretLeft =
+                            fragmentRect.left +
+                            fragmentRect.width / 2;
+
+                        break;
+
+                    case "right":
+
+                        caretLeft =
+                            fragmentRect.right;
+
+                        break;
+
+                    case "left":
+                    default:
+
+                        caretLeft =
+                            fragmentRect.left;
+
+                        break;
+
+                }
+
+            } else {
+
+                console.log(
+                    "CARET VISUAL → RECT INVÁLIDO"
+                );
+
+                this.hideVisualCaret();
+                return;
+            }
         }
 
         const editorRect =
@@ -1595,10 +1817,10 @@ export class DocumentView {
 
         if (
             !editorRect ||
-            rect.bottom <= editorRect.top ||
-            rect.top >= editorRect.bottom ||
-            rect.right <= editorRect.left ||
-            rect.left >= editorRect.right
+            caretTop + caretHeight <= editorRect.top ||
+            caretTop >= editorRect.bottom ||
+            caretLeft <= editorRect.left ||
+            caretLeft >= editorRect.right
         ) {
             this.hideVisualCaret();
             return;
@@ -1618,13 +1840,13 @@ export class DocumentView {
         }
 
         this.caretElement.style.left =
-            `${rect.left}px`;
+            `${caretLeft}px`;
 
         this.caretElement.style.top =
-            `${rect.top}px`;
+            `${caretTop}px`;
 
         this.caretElement.style.height =
-            `${rect.height}px`;
+            `${caretHeight}px`;
 
         this.caretElement.style.display =
             "block";
@@ -1685,28 +1907,156 @@ export class DocumentView {
         const rect =
             range.getBoundingClientRect();
 
+        let caretLeft = rect.left;
+        let caretTop = rect.top;
+        let caretHeight = rect.height;
+
+        // =====================================================
+        // RANGE VÁLIDO
+        // =====================================================
+
         if (
-            rect.height <= 0 ||
-            !Number.isFinite(rect.x) ||
-            !Number.isFinite(rect.y)
+            rect.height > 0 &&
+            Number.isFinite(rect.x) &&
+            Number.isFinite(rect.y)
         ) {
-            this.hideVisualCaret();
-            return;
+
+            caretLeft = rect.left;
+            caretTop = rect.top;
+            caretHeight = rect.height;
+
         }
+
+        // =====================================================
+        // BLOCO VAZIO
+        //
+        // Um Range dentro de TextNode vazio não possui
+        // coordenadas físicas confiáveis.
+        //
+        // Nesse caso usamos a caixa visual do fragmento.
+        // =====================================================
+
+        else {
+
+            const fragmentRect =
+                fragment.getBoundingClientRect();
+
+            if (
+                fragmentRect.width <= 0 ||
+                fragmentRect.height <= 0 ||
+                !Number.isFinite(fragmentRect.left) ||
+                !Number.isFinite(fragmentRect.top)
+            ) {
+                this.hideVisualCaret();
+                return;
+            }
+
+            const paragraph =
+                this.paragraphs.find(
+                    item =>
+                        item.id === paragraphId
+                );
+
+            if (!paragraph) {
+                this.hideVisualCaret();
+                return;
+            }
+
+            const layout =
+                getEditorBlockLayout(
+                    paragraph.type
+                );
+
+            // -------------------------------------------------
+            // POSIÇÃO VERTICAL
+            // -------------------------------------------------
+            //
+            // O fragmento já possui o marginTop aplicado,
+            // então usamos o topo físico dele.
+            // -------------------------------------------------
+
+            caretTop =
+                fragmentRect.top;
+
+            // -------------------------------------------------
+            // ALTURA
+            // -------------------------------------------------
+
+            caretHeight =
+                layout.lineHeight;
+
+            // -------------------------------------------------
+            // POSIÇÃO HORIZONTAL
+            // -------------------------------------------------
+
+            switch (layout.align) {
+
+                case "center":
+
+                    caretLeft =
+                        fragmentRect.left +
+                        fragmentRect.width / 2;
+
+                    break;
+
+                case "right":
+
+                    caretLeft =
+                        fragmentRect.right;
+
+                    break;
+
+                case "left":
+                default:
+
+                    caretLeft =
+                        fragmentRect.left;
+
+                    break;
+
+            }
+
+        }
+
+        // =====================================================
+        // VIEWPORT DO EDITOR
+        // =====================================================
 
         const editorRect =
             this.editorScrollContainer?.getBoundingClientRect();
 
-        if (
-            !editorRect ||
-            rect.bottom <= editorRect.top ||
-            rect.top >= editorRect.bottom ||
-            rect.right <= editorRect.left ||
-            rect.left >= editorRect.right
-        ) {
+        if (!editorRect) {
             this.hideVisualCaret();
             return;
         }
+
+        if (
+            caretTop + caretHeight <= editorRect.top ||
+            caretTop >= editorRect.bottom ||
+            caretLeft < editorRect.left ||
+            caretLeft > editorRect.right
+        ) {
+            console.log("CARET → FORA DO EDITOR", {
+                caretLeft,
+                caretTop,
+                caretHeight,
+                editor: {
+                    left: editorRect.left,
+                    top: editorRect.top,
+                    right: editorRect.right,
+                    bottom: editorRect.bottom,
+                },
+                paragraphId,
+                offset,
+            });
+
+            this.hideVisualCaret();
+            return;
+        }
+
+        // =====================================================
+        // CRIA CARET
+        // =====================================================
 
         if (!this.caretElement) {
 
@@ -1719,16 +2069,17 @@ export class DocumentView {
             document.body.appendChild(
                 this.caretElement
             );
+
         }
 
         this.caretElement.style.left =
-            `${rect.left}px`;
+            `${caretLeft}px`;
 
         this.caretElement.style.top =
-            `${rect.top}px`;
+            `${caretTop}px`;
 
         this.caretElement.style.height =
-            `${rect.height}px`;
+            `${caretHeight}px`;
 
         this.caretElement.style.display =
             "block";
@@ -1736,6 +2087,7 @@ export class DocumentView {
         if (restartBlink) {
             this.restartCaretBlink();
         }
+
     }
 
     // restartCaretBlink //
@@ -2011,6 +2363,36 @@ export class DocumentView {
 
         fragment.dataset.endOffset =
             String(endOffset);
+
+        // -----------------------------------------------------
+        // PRESERVA PLACEHOLDER
+        // -----------------------------------------------------
+
+        if (original.dataset.placeholder) {
+
+            fragment.dataset.placeholder =
+                original.dataset.placeholder;
+
+        }
+
+        // -----------------------------------------------------
+        // PARÁGRAFO VAZIO
+        // -----------------------------------------------------
+
+        if (
+            startOffset === 0 &&
+            endOffset === 0 &&
+            (original.textContent ?? "").length === 0
+        ) {
+
+            // TextNode real para permitir posicionar o caret.
+            fragment.appendChild(
+                document.createTextNode("")
+            );
+
+            return fragment;
+
+        }
 
         // -----------------------------------------------------
         // COPIA O CONTEÚDO DO RANGE
@@ -3195,26 +3577,80 @@ export class DocumentView {
                     element
                 );
 
+             const layout =
+                getEditorBlockLayout(
+                    paragraph.type
+                );
+
             // -------------------------------------------------
             // BLOCO VAZIO
             // -------------------------------------------------
 
-            if (
-                lineOffsets.length === 0
-            ) {
-
-                currentPage.appendChild(
-                    wrapper
+            if (lineOffsets.length === 0) {
+                const emptyFragment = this.createParagraphFragment(
+                    element,
+                    0,
+                    0,
+                    true
                 );
 
-                currentHeight +=
-                    wrapper.getBoundingClientRect()
-                        .height;
+                emptyFragment.style.marginTop = `${layout.marginTop}px`;
+                emptyFragment.style.marginBottom = `${layout.marginBottom}px`;
+                emptyFragment.style.lineHeight = `${layout.lineHeight}px`;
+                emptyFragment.style.width = `${layout.width}px`;
+                emptyFragment.style.maxWidth = `${layout.maxWidth}px`;
+                emptyFragment.style.marginLeft = "0px";
+                emptyFragment.style.textAlign = layout.align;
+
+                const emptyFragmentWrapper = this.createFragmentWrapper(
+                    paragraph,
+                    true
+                );
+
+                emptyFragmentWrapper.style.width = `${layout.width}px`;
+                emptyFragmentWrapper.style.maxWidth = `${layout.maxWidth}px`;
+                emptyFragmentWrapper.style.marginLeft = `${layout.marginLeft}px`;
+
+                emptyFragmentWrapper.appendChild(emptyFragment);
+
+                // Mede o bloco vazio antes de decidir em qual página ele ficará.
+                currentPage.appendChild(emptyFragmentWrapper);
+
+                const emptyFragmentHeight =
+                    emptyFragmentWrapper.getBoundingClientRect().height;
+
+                const PAGINATION_SAFETY = 4;
+
+                const availableHeight =
+                    PAGE_EDITOR.contentHeight -
+                    currentHeight -
+                    PAGINATION_SAFETY;
+
+                const fitsCurrentPage =
+                    currentHeight === 0 ||
+                    emptyFragmentHeight <= availableHeight;
+
+                if (!fitsCurrentPage) {
+                    // Remove da página atual.
+                    emptyFragmentWrapper.remove();
+
+                    // Cria uma nova página.
+                    currentPage = this.createPage(this.pages.length + 1);
+                    currentHeight = 0;
+
+                    // Adiciona o bloco vazio à nova página.
+                    currentPage.appendChild(emptyFragmentWrapper);
+                }
+
+                this.positionParagraphActions(
+                    emptyFragmentWrapper,
+                    emptyFragment
+                );
+
+                currentHeight += emptyFragmentWrapper.getBoundingClientRect().height;
 
                 continue;
-
             }
-
             // -------------------------------------------------
             // PROCESSA CADA LINHA
             // -------------------------------------------------
@@ -3229,11 +3665,6 @@ export class DocumentView {
                 const remaining =
                     lineOffsets.length -
                     lineIndex;
-
-                const layout =
-                    getEditorBlockLayout(
-                        paragraph.type
-                    );
 
                 // Começamos tentando colocar
                 // todas as linhas restantes.
@@ -3885,16 +4316,37 @@ export class DocumentView {
     // RESTORE CARET
     // =========================================================
 
-    restoreCaret(
-        caret: CaretSnapshot | null
-    ) {
+    restoreCaret(caret: CaretSnapshot | null) {
+        this.editorActive = true;
 
-        this.cursor.restoreCaret(
-            caret
-        );
+        if (!caret) {
+            this.hideVisualCaret();
+            this.root.blur();
+            return;
+        }
 
+        // Mantemos preventScroll para impedir que o foco
+        // faça o navegador puxar a página para uma posição errada.
+        this.root.focus({ preventScroll: true });
+
+        this.cursor.restoreCaret(caret);
+
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+
+                this.selection.ensureLogicalCaretVisible(
+                    caret.paragraphId,
+                    caret.offset
+                );
+
+                this.updateVisualCaretFromLogicalPosition(
+                    caret.paragraphId,
+                    caret.offset
+                );
+
+            });
+        });
     }
-
     // =========================================================
     // RESTORE SELECTION
     // =========================================================
@@ -3914,14 +4366,8 @@ export class DocumentView {
     // =========================================================
 
     private handleSelectionChange = () => {
-
-        if (this.rendering) {
-            return;
-        }
-
-        if (this.zooming) {
-            return;
-        }
+        if (this.rendering) return;
+        if (this.zooming) return;
 
         if (
             document.activeElement !== this.root &&
@@ -3933,7 +4379,26 @@ export class DocumentView {
 
         this.selection.syncControllerFromDOM();
 
-        this.updateVisualCaret();
+        const selection = this.selection.save();
+
+        if (!selection) {
+            this.hideVisualCaret();
+            return;
+        }
+
+        const isCaret =
+            selection.anchorParagraphId === selection.focusParagraphId &&
+            selection.anchorOffset === selection.focusOffset;
+
+        if (isCaret) {
+            this.updateVisualCaretFromLogicalPosition(
+                selection.anchorParagraphId,
+                selection.anchorOffset
+            );
+            return;
+        }
+
+        this.hideVisualCaret();
     };
 
     // =========================================================

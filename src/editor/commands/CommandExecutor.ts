@@ -592,7 +592,6 @@ public applyChangeBlockType(
                 };
 
             }
-            // -------- //
 
             // PASTE MULTI PARAGRAPH //
             case "PASTE_MULTI_PARAGRAPH": {

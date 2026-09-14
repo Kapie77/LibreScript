@@ -1108,7 +1108,6 @@ saveProject() {
         });
 
     }
-    // ------------------- //
 
     // insertBlock //
     public insertBlock(
@@ -1163,7 +1162,9 @@ saveProject() {
                     this.document.getBlocks();
 
                 const finalContent =
-                    content || getDefaultBlockContent(type);
+                    content !== undefined
+                        ? content
+                        : getDefaultBlockContent(type);
 
                 // -----------------------------------------
                 // Descobre o parágrafo atual do caret

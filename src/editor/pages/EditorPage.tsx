@@ -25,6 +25,7 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import TitlePageDialog from "../components/TitlePageDialog/TitlePageDialog";
 import { mapExecutedCommandToHistoryEntry, } from "../history/HistoryEntryMapper";
 import type { EditorEngine } from "../engine/EditorEngine";
+import { exportProjectToODT } from "../../odt/odtExporter";
 
 // HOOKS //
 import { useProjectFile } from "../hooks/useProjectFile";
@@ -332,6 +333,17 @@ export default function EditorPage({
                     filePath
                 );
            }}
+
+        onExportODT={() => {
+            void exportProjectToODT(
+                project,
+                settings.pageNumberPosition,
+                filePath
+            );
+        }}
+
+        settings={settings}
+        setSettings={setSettings}
 
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}

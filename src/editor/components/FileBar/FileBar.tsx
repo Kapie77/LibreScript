@@ -4,9 +4,10 @@
 // Barra superior com as opções file, view, etc
 
 import { useEffect, useState, useRef } from "react";
-import type { Dispatch, SetStateAction } from "react";
+import { Link } from "react-router-dom";
 import type { SearchResult } from "../../services/SearchService";
-import type { ScriptBlock, BlockType, ParagraphAlignment } from "../../../types/script";
+import type { BlockType, ParagraphAlignment } from "../../../types/script";
+import type { Settings } from "../../../types/settings";
 // -------------------------------------- //
 type Props = {
   onNew: () => void;
@@ -16,6 +17,7 @@ type Props = {
   onUndo: () => void;
   onRedo: () => void;
   onExportPDF: () => void;
+  onExportODT: () => void;
   onToggleBold: () => void;
   onToggleItalic: () => void;
   onToggleUnderline: () => void;
@@ -70,6 +72,12 @@ type Props = {
       | "none"
   ) => void;
 
+  settings: Settings;
+
+  setSettings: React.Dispatch<
+    React.SetStateAction<Settings>
+  >;
+
   caseSensitive: boolean;
 
   setCaseSensitive:
@@ -93,6 +101,7 @@ export default function FileBar({
   onUndo,
   onRedo,
   onExportPDF,
+  onExportODT,
   onToggleBold,
   onToggleItalic,
   onToggleUnderline,
@@ -109,6 +118,8 @@ export default function FileBar({
   onPrevResult,
   onToggleNavigator,
   onCover,
+  settings,
+  setSettings,
 
   showNavigator,
   showToolbar,
@@ -152,6 +163,12 @@ const [showPageNumberMenu, setShowPageNumberMenu] =
 // substituir termos pesquisados
 const [showReplace, setShowReplace] =
     useState(false);
+  
+// função para fechar menu ao abrir/clicar em algo
+const closeMenus = () => {
+  setActiveMenu(null);
+  setShowPageNumberMenu(false);
+};
 
   // Fechar o menu dropdown ao clicar fora
   const menuRef = useRef<HTMLDivElement>(null);
@@ -233,156 +250,254 @@ useEffect(() => {
 
 
 // ------------------------------------------------- //  
-  return (
+    return (
     <div
       className="filebar"
       ref={menuRef}
     >
 
-      {/* BOTÕES */}
+      {/* =====================================================
+          NAVEGAÇÃO PRINCIPAL
+      ====================================================== */}
+
+      <div className="filebar-navigation">
+
+        <Link
+          to="/"
+          className="filebar-home"
+          title="Editor"
+        >
+          ✍️
+        </Link>
+
+      </div>
+
+
+      {/* =====================================================
+          FILE
+      ====================================================== */}
+
       <div className="filebar-menu">
 
         <button
           className="menu-button"
           onClick={() => {
 
-              if (activeMenu === "file") {
+            if (activeMenu === "file") {
 
-                setActiveMenu(null);
-                setShowPageNumberMenu(false);
-
-                return;
-
-              }
-
-              setActiveMenu("file");
+              setActiveMenu(null);
               setShowPageNumberMenu(false);
 
-            }}
+              return;
 
+            }
+
+            setActiveMenu("file");
+            setShowPageNumberMenu(false);
+
+          }}
           onMouseEnter={() => {
+
             if (activeMenu)
               setActiveMenu("file");
+
           }}
         >
           File
         </button>
 
         {activeMenu === "file" && (
+
           <div className="filebar-dropdown">
 
-            <button onClick={onNew}>
+            <button
+              onClick={() => {
+                closeMenus();
+                onNew();
+              }}
+            >
               Novo
             </button>
 
-            <button onClick={onOpen}>
+            <button
+              onClick={() => {
+                closeMenus();
+                onOpen();
+              }}
+            >
               Abrir
             </button>
 
-            <button onClick={onSave}>
+            <button
+              onClick={() => {
+                closeMenus();
+                onSave();
+              }}
+            >
               Salvar
             </button>
 
             <button
-                type="button"
-                onClick={() => {
-                    void onSaveAs();
-                }}
+              type="button"
+              onClick={() => {
+                closeMenus();
+                void onSaveAs();
+              }}
             >
-                Salvar como
+              Salvar como
             </button>
 
             <hr />
 
-            <button
-              onClick={() => {
-                onExportPDF();
-              }}
-            >
-              Exportar PDF
-            </button>
+          {/* EXPORTAR */}
+          <div className="file-menu-item submenu-wrapper">
+              <button
+                  type="button"
+                  className="file-menu-button submenu-trigger"
+              >
+                  <span>Exportar</span>
+                  <span className="submenu-arrow">▶</span>
+              </button>
+
+              <div className="file-submenu">
+                  <button
+                      type="button"
+                      className="file-menu-button"
+                      onClick={() => {
+                          closeMenus();
+                          onExportPDF();
+                      }}
+                  >
+                      📄 PDF
+                  </button>
+
+                  <button
+                      type="button"
+                      className="file-menu-button"
+                      onClick={() => {
+                          closeMenus();
+                          onExportODT();
+                      }}
+                  >
+                      📝 ODT (LibreOffice)
+                  </button>
+              </div>
+          </div>
+          {/* FIM DO EXPORTAR */}
 
           </div>
+
         )}
 
       </div>
-    
-    <div className="filebar-menu">
 
-      <button
-        className="menu-button"
-        onClick={() => {
 
-          if (activeMenu === "view") {
+      {/* =====================================================
+          VIEW
+      ====================================================== */}
 
-            setActiveMenu(null);
-            setShowPageNumberMenu(false);
+      <div className="filebar-menu">
 
-            return;
+        <button
+          className="menu-button"
+          onClick={() => {
 
-          }
+            if (activeMenu === "view") {
 
-          setActiveMenu("view");
+              setActiveMenu(null);
+              setShowPageNumberMenu(false);
 
-        }}
+              return;
 
-        onMouseEnter={() => {
-          if (activeMenu)
+            }
+
             setActiveMenu("view");
-        }}
-      >
-        View
-      </button>
 
-      {activeMenu === "view" && (
-        <div className="filebar-dropdown">
+          }}
+          onMouseEnter={() => {
 
-          <button
-            className="view-menu-item"
-            onClick={onToggleNavigator}
-          >
-            <span>👁 Cenas</span>
-            <span>{showNavigator ? "✓" : ""}</span>
-          </button>
+            if (activeMenu)
+              setActiveMenu("view");
 
-          <button
-            className="view-menu-item"
-            onClick={onToggleToolbar}
-          >
-            <span>🛠 Barra de Ferramentas</span>
-            <span>{showToolbar ? "✓" : ""}</span>
-          </button>
+          }}
+        >
+          View
+        </button>
 
-          <button
-            className="view-menu-item"
-            onClick={onToggleStatusBar}
-          >
-            <span>📊 Barra de Status</span>
-            <span>{showStatusBar ? "✓" : ""}</span>
-          </button>
+        {activeMenu === "view" && (
 
-          <button
-            className="view-menu-item"
-            onClick={onToggleMoveBlocks}
-          >
-            <span>↕ Mover blocos</span>
-            <span>
-              {allowMoveBlocks ? "✓" : ""}
-            </span>
-          </button>
+          <div className="filebar-dropdown">
 
-          <button
-            className="view-menu-item"
-            onClick={onToggleDeleteBlocks}
-          >
-            <span>🗑️ Excluir blocos</span>
-            <span>
-              {allowDeleteBlocks ? "✓" : ""}
-            </span>
-          </button>
+            <button
+                className="view-menu-item"
+                onClick={() => {
+                  closeMenus();
+                  onToggleNavigator();
+                }}
+              >
+              <span>👁 Cenas</span>
+              <span>
+                {showNavigator ? "✓" : ""}
+              </span>
+            </button>
 
-          {/* NUMERAÇÃO PÁGINA */}
-          <hr />
+            <button
+                className="view-menu-item"
+                onClick={() => {
+                  closeMenus();
+                  onToggleNavigator();
+                }}
+              >
+              <span>🛠 Barra de Ferramentas</span>
+              <span>
+                {showToolbar ? "✓" : ""}
+              </span>
+            </button>
+
+            <button
+                className="view-menu-item"
+                onClick={() => {
+                  closeMenus();
+                  onToggleNavigator();
+                }}
+              >
+              <span>📊 Barra de Status</span>
+              <span>
+                {showStatusBar ? "✓" : ""}
+              </span>
+            </button>
+
+            <button
+                className="view-menu-item"
+                onClick={() => {
+                  closeMenus();
+                  onToggleNavigator();
+                }}
+              >
+              <span>↕ Mover blocos</span>
+              <span>
+                {allowMoveBlocks ? "✓" : ""}
+              </span>
+            </button>
+
+            <button
+                className="view-menu-item"
+                onClick={() => {
+                  closeMenus();
+                  onToggleNavigator();
+                }}
+              >
+              <span>🗑️ Excluir blocos</span>
+              <span>
+                {allowDeleteBlocks ? "✓" : ""}
+              </span>
+            </button>
+
+
+            {/* NUMERAÇÃO DA PÁGINA */}
+
+            <hr />
+
             <div className="page-number-menu-wrapper">
 
               <button
@@ -396,6 +511,7 @@ useEffect(() => {
               </button>
 
               {showPageNumberMenu && (
+
                 <div
                   className="page-number-position-menu"
                   onMouseEnter={() =>
@@ -406,131 +522,187 @@ useEffect(() => {
                   }
                 >
 
-                <button
-                  className="view-menu-item"
-                  onClick={() =>
-                    onChangePageNumberPosition(
-                      "top-right"
-                    )
-                  }
-                >
-                  <span>
-                    Superior direito
-                    <small className="default-option">
-                      (Padrão)
-                    </small>
-                  </span>
+                  <button
+                    className="view-menu-item"
+                    onClick={() => {
+                      closeMenus();
+                      onChangePageNumberPosition("top-right");
+                    }}
+                  >
+                    <span>
+                      Superior direito
+                      <small className="default-option">
+                        (Padrão)
+                      </small>
+                    </span>
 
-                  <span>
-                    {pageNumberPosition === "top-right"
-                      ? "✓"
-                      : ""}
-                  </span>
-                </button>
+                    <span>
+                      {pageNumberPosition === "top-right"
+                        ? "✓"
+                        : ""}
+                    </span>
+                  </button>
 
-                <button
-                  className="view-menu-item"
-                  onClick={() =>
-                    onChangePageNumberPosition(
-                      "top-left"
-                    )
-                  }
-                >
-                  <span>Superior esquerdo</span>
-                  <span>
-                    {pageNumberPosition === "top-left"
-                      ? "✓"
-                      : ""}
-                  </span>
-                </button>
+                  <button
+                    className="view-menu-item"
+                    onClick={() => {
+                      closeMenus();
+                      onChangePageNumberPosition("top-left");
+                    }}
+                  >
+                    <span>
+                      Superior esquerdo
+                    </span>
 
-                <button
-                  className="view-menu-item"
-                  onClick={() =>
-                    onChangePageNumberPosition(
-                      "bottom-right"
-                    )
-                  }
-                >
-                  <span>Inferior direito</span>
-                  <span>
-                    {pageNumberPosition === "bottom-right"
-                      ? "✓"
-                      : ""}
-                  </span>
-                </button>
+                    <span>
+                      {pageNumberPosition === "top-left"
+                        ? "✓"
+                        : ""}
+                    </span>
+                  </button>
 
-                <button
-                  className="view-menu-item"
-                  onClick={() =>
-                    onChangePageNumberPosition(
-                      "bottom-left"
-                    )
-                  }
-                >
-                  <span>Inferior esquerdo</span>
-                  <span>
-                    {pageNumberPosition === "bottom-left"
-                      ? "✓"
-                      : ""}
-                  </span>
-                </button>
+                  <button
+                    className="view-menu-item"
+                    onClick={() => {
+                      closeMenus();
+                      onChangePageNumberPosition("bottom-right");
+                    }}
+                  >
+                    <span>
+                      Inferior direito
+                    </span>
 
-                <button
-                  className="view-menu-item"
-                  onClick={() =>
-                    onChangePageNumberPosition(
-                      "none"
-                    )
-                  }
-                >
-                  <span>Não mostrar</span>
-                  <span>
-                    {pageNumberPosition === "none"
-                      ? "✓"
-                      : ""}
-                  </span>
-                </button>
+                    <span>
+                      {pageNumberPosition === "bottom-right"
+                        ? "✓"
+                        : ""}
+                    </span>
+                  </button>
 
-              </div>
-            )}
+                  <button
+                    className="view-menu-item"
+                    onClick={() => {
+                      closeMenus();
+                      onChangePageNumberPosition("bottom-left");
+                    }}
+                  >
+                    <span>
+                      Inferior esquerdo
+                    </span>
+
+                    <span>
+                      {pageNumberPosition === "bottom-left"
+                        ? "✓"
+                        : ""}
+                    </span>
+                  </button>
+
+                  <button
+                    className="view-menu-item"
+                    onClick={() => {
+                      closeMenus();
+                      onChangePageNumberPosition("none");
+                    }}
+                  >
+                    <span>
+                      Não mostrar
+                    </span>
+
+                    <span>
+                      {pageNumberPosition === "none"
+                        ? "✓"
+                        : ""}
+                    </span>
+                  </button>
+
+                </div>
+
+              )}
+
+            </div>
+
+            {/* FIM NUMERAÇÃO DA PÁGINA */}
+
           </div>
-          {/* FIM NUMERAÇÃO PÁGINA*/}
 
-        </div>
-      )}
+        )}
+
       </div>
 
-      {/* CAPA */}
-       <button
+
+      {/* =====================================================
+          TITLE PAGE
+      ====================================================== */}
+
+      <button
+        className="filebar-title-page-button"
         onClick={() => {
 
-          setActiveMenu(null);
-
+          closeMenus();
           onCover();
 
-          }}
-          >
-          Title Page
-        </button>
-        {/* FIM DA CAPA */}
-
-      <button
-        onMouseDown={(e) => e.preventDefault()}
-        onClick={onUndo}
+        }}
       >
-        ↶ {/* desfazer */}
+        Title Page
       </button>
 
-      <button
-        onMouseDown={(e) => e.preventDefault()}
-        onClick={onRedo}
-      >
-        ↷  {/* refazer */}
-      </button>
 
-      {/* FERRAMENTAS DE FORMATAÇÃO */}
+      {/* =====================================================
+          UNDO / REDO
+      ====================================================== */}
+
+      <div className="filebar-history-tools">
+
+         <Link
+          to="/guide"
+          className="filebar-navigation-link"
+        >
+          Guia
+        </Link>
+
+        <Link
+          to="/repository"
+          className="filebar-navigation-link"
+        >
+          Repositório
+        </Link>
+
+        <Link
+          to="/settings"
+          className="filebar-navigation-link"
+        >
+          Configurações
+        </Link>
+
+      </div>
+
+      {/* =====================================================
+          FERRAMENTAS DE FORMATAÇÃO
+      ====================================================== */}
+
       <div className="filebar-format-tools">
+
+        <button
+          onMouseDown={(e) =>
+            e.preventDefault()
+          }
+          onClick={onUndo}
+          title="Desfazer"
+        >
+          ↶
+        </button>
+
+        <button
+          onMouseDown={(e) =>
+            e.preventDefault()
+          }
+          onClick={onRedo}
+          title="Refazer"
+        >
+          ↷
+        </button>
+
+        {/* BOLD */}
 
         <button
           type="button"
@@ -544,285 +716,395 @@ useEffect(() => {
           <strong>B</strong>
         </button>
 
-        <button
-            type="button"
-            className="format-tool-button"
-            title="Itálico (Ctrl+I)"
-            onMouseDown={(event) => event.preventDefault()}
-            onClick={onToggleItalic}
-        >
-            <em>I</em>
-        </button>
+
+        {/* ITÁLICO */}
 
         <button
-            type="button"
-            className="format-tool-button"
-            title="Sublinhado (Ctrl+U)"
-            onMouseDown={(event) => event.preventDefault()}
-            onClick={onToggleUnderline}
+          type="button"
+          className="format-tool-button"
+          title="Itálico (Ctrl+I)"
+          onMouseDown={(event) =>
+            event.preventDefault()
+          }
+          onClick={onToggleItalic}
         >
-            <u>U</u>
+          <em>I</em>
         </button>
 
+
+        {/* SUBLINHADO */}
+
         <button
-            type="button"
-            className="format-tool-button"
-            title="Tachado (Ctrl+Shift+X)"
-            onMouseDown={(event) => event.preventDefault()}
-            onClick={onToggleStrike}
+          type="button"
+          className="format-tool-button"
+          title="Sublinhado (Ctrl+U)"
+          onMouseDown={(event) =>
+            event.preventDefault()
+          }
+          onClick={onToggleUnderline}
         >
-            <s>S</s>
+          <u>U</u>
         </button>
+
+
+        {/* TACHADO */}
+
+        <button
+          type="button"
+          className="format-tool-button"
+          title="Tachado (Ctrl+Shift+X)"
+          onMouseDown={(event) =>
+            event.preventDefault()
+          }
+          onClick={onToggleStrike}
+        >
+          <s>S</s>
+        </button>
+
 
         <span className="format-tool-separator" />
 
-        {/* BOTÕES DE ALINHAMENTO */}
+
+        {/* ALINHAMENTO */}
+
         <button
-            type="button"
-            className="format-tool-button"
-            title="Alinhar à esquerda"
-            onMouseDown={(event) => event.preventDefault()}
-            onClick={() =>
-                onSetParagraphAlignment("left")
-            }
+          type="button"
+          className="format-tool-button"
+          title="Alinhar à esquerda"
+          onMouseDown={(event) =>
+            event.preventDefault()
+          }
+          onClick={() =>
+            onSetParagraphAlignment("left")
+          }
         >
-            ≡
+          ≡
         </button>
 
         <button
-            type="button"
-            className="format-tool-button"
-            title="Centralizar"
-            onMouseDown={(event) => event.preventDefault()}
-            onClick={() =>
-                onSetParagraphAlignment("center")
-            }
+          type="button"
+          className="format-tool-button"
+          title="Centralizar"
+          onMouseDown={(event) =>
+            event.preventDefault()
+          }
+          onClick={() =>
+            onSetParagraphAlignment("center")
+          }
         >
-            ≡
+          ≡
         </button>
 
         <button
-            type="button"
-            className="format-tool-button"
-            title="Alinhar à direita"
-            onMouseDown={(event) => event.preventDefault()}
-            onClick={() =>
-                onSetParagraphAlignment("right")
-            }
+          type="button"
+          className="format-tool-button"
+          title="Alinhar à direita"
+          onMouseDown={(event) =>
+            event.preventDefault()
+          }
+          onClick={() =>
+            onSetParagraphAlignment("right")
+          }
         >
-            ≡
+          ≡
         </button>
 
         <button
-            type="button"
-            className="format-tool-button"
-            title="Justificar"
-            onMouseDown={(event) => event.preventDefault()}
-            onClick={() =>
-                onSetParagraphAlignment("justify")
-            }
+          type="button"
+          className="format-tool-button"
+          title="Justificar"
+          onMouseDown={(event) =>
+            event.preventDefault()
+          }
+          onClick={() =>
+            onSetParagraphAlignment("justify")
+          }
         >
-            ≡
+          ≡
         </button>
-        {/*FIM DOS BOTÕES DE ALINHAMENTO*/}
 
-        {/*MAIUSCULO E MINUSCULO*/}
+
+        {/* MAIÚSCULA / MINÚSCULA */}
+
         <span className="format-tool-separator" />
 
         <button
-            type="button"
-            className="format-tool-button"
-            title="Transformar em minúsculas"
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={onLowercaseText}
+          type="button"
+          className="format-tool-button"
+          title="Transformar em minúsculas"
+          onMouseDown={(e) =>
+            e.preventDefault()
+          }
+          onClick={onLowercaseText}
         >
-            <span style={{ fontSize: "13px" }}>a</span>
+          <span style={{ fontSize: "13px" }}>
+            a
+          </span>
         </button>
 
         <button
-            type="button"
-            className="format-tool-button"
-            title="Transformar em maiúsculas"
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={onUppercaseText}
+          type="button"
+          className="format-tool-button"
+          title="Transformar em maiúsculas"
+          onMouseDown={(e) =>
+            e.preventDefault()
+          }
+          onClick={onUppercaseText}
         >
-            <span style={{ fontSize: "13px" }}>A</span>
+          <span style={{ fontSize: "13px" }}>
+            A
+          </span>
         </button>
-        {/*FIM DO MAIUSCULO E MINUSCULO*/}
 
-        {/*MUDAR TIPO DE BLOCO*/}
+
+        {/* TYPE */}
+
         <span className="format-tool-separator" />
-        
+
         <select
-            className="format-block-type-select"
-            title="Tipo do bloco"
-            defaultValue=""
-            onMouseDown={(e) => e.stopPropagation()}
-            onChange={(e) => {
-                const value = e.target.value as BlockType;
+          className="format-block-type-select"
+          title="Tipo do bloco"
+          defaultValue=""
+          onMouseDown={(e) =>
+            e.stopPropagation()
+          }
+          onChange={(e) => {
 
-                if (!value) {
-                    return;
-                }
+            const value =
+              e.target.value as BlockType;
 
-                onChangeBlockType(value);
+            if (!value) {
+              return;
+            }
 
-                e.target.value = "";
-            }}
+            onChangeBlockType(value);
+
+            e.target.value = "";
+
+          }}
         >
-            <option value="">Type</option>
-            <option value="scene">Scene</option>
-            <option value="action">Action</option>
-            <option value="character">Character</option>
-            <option value="dialogue">Dialogue</option>
-            <option value="parenthetical">Parenthetical</option>
-            <option value="shot">Shot</option>
-            <option value="transition">Transition</option>
+          <option value="">
+            Type
+          </option>
+
+          <option value="scene">
+            Scene
+          </option>
+
+          <option value="action">
+            Action
+          </option>
+
+          <option value="character">
+            Character
+          </option>
+
+          <option value="dialogue">
+            Dialogue
+          </option>
+
+          <option value="parenthetical">
+            Parenthetical
+          </option>
+
+          <option value="shot">
+            Shot
+          </option>
+
+          <option value="transition">
+            Transition
+          </option>
+
         </select>
-        {/*FIM DO MUDAR TIPODE  BLOCO*/}
 
       </div>
-      {/* FIM FERRAMENTAS DE FORMATAÇÃO */}
 
 
-    <div className="search-container">
+      {/* =====================================================
+          BUSCA
+      ====================================================== */}
 
-      {/*BOTÃO DE EXPANDIR*/}
+      <div className="search-container">
+
         <button
-            className={
-                `search-expand-button ${
-                    showReplace
-                        ? "active"
-                        : ""
-                }`
-            }
-            onMouseDown={(e) =>
-                e.preventDefault()
-            }
-            onClick={() =>
-                setShowReplace(
-                    previous => !previous
-                )
-            }
-            title="Mostrar opções de substituição"
-        >
-            &gt;
-        </button>
-        
-      {/*FILEBAR-SEARCH*/}
-      <div className="filebar-search">
-
-        {/*BARRA DE BUSCA*/}
-        <input
-          id="search-input"
-          type="text"
-          placeholder="Buscar..."
-          value={searchTerm}
-          onChange={(e) =>
-            setSearchTerm(e.target.value)
+          className={
+            `search-expand-button ${
+              showReplace
+                ? "active"
+                : ""
+            }`
           }
-        />
+          onMouseDown={(e) =>
+            e.preventDefault()
+          }
+          onClick={() =>
+            setShowReplace(
+              previous => !previous
+            )
+          }
+          title="Mostrar opções de substituição"
+        >
+          &gt;
+        </button>
 
-        {/*MAIÚSCULA/MINÚSCULA E ACENTOS BOTÕES*/}
-        <button
+
+        <div className="filebar-search">
+
+          <input
+            id="search-input"
+            type="text"
+            placeholder="Buscar..."
+            value={searchTerm}
+            onChange={(e) =>
+              setSearchTerm(e.target.value)
+            }
+          />
+
+          <button
             type="button"
             className={
-                `search-option-button ${
-                    caseSensitive
-                        ? "active"
-                        : ""
-                }`
+              `search-option-button ${
+                caseSensitive
+                  ? "active"
+                  : ""
+              }`
             }
             title="Diferenciar maiúsculas e minúsculas"
             onMouseDown={(e) =>
-                e.preventDefault()
+              e.preventDefault()
             }
             onClick={() =>
-                setCaseSensitive(
-                    prev => !prev
-                )
+              setCaseSensitive(
+                prev => !prev
+              )
             }
-        >
+          >
             Aa
-        </button>
+          </button>
 
-        <button
+          <button
             type="button"
             className={
-                `search-option-button ${
-                    ignoreAccents
-                        ? "active"
-                        : ""
-                }`
+              `search-option-button ${
+                ignoreAccents
+                  ? "active"
+                  : ""
+              }`
             }
             title="Ignorar acentos"
             onMouseDown={(e) =>
-                e.preventDefault()
+              e.preventDefault()
             }
             onClick={() =>
-                setIgnoreAccents(
-                    prev => !prev
-                )
+              setIgnoreAccents(
+                prev => !prev
+              )
             }
-        >
+          >
             á
-        </button>
+          </button>
 
-      </div>
-    {/*FIM DO FILEBAR-SEARCH*/}
+        </div>
 
-        {/*CONTADOR DE RESULTADOS*/}
+
+        {/* CONTADOR */}
+
         <span className="search-counter">
+
           {searchResults.length === 0
             ? "0 / 0"
             : `${currentResultIndex + 1} / ${searchResults.length}`}
 
         </span>
 
-        {/*BOTÕES PRÓXIMO E ANTERIOR*/}
-        <button className="search-nav-button" onClick={onPrevResult}>
+
+        {/* NAVEGAÇÃO DA BUSCA */}
+
+        <button
+          className="search-nav-button"
+          onClick={onPrevResult}
+        >
           ▲
         </button>
 
-        <button className="search-nav-button" onClick={onNextResult}>
+        <button
+          className="search-nav-button"
+          onClick={onNextResult}
+        >
           ▼
         </button>
 
-      {showReplace && (
+
+        {/* SUBSTITUIÇÃO */}
+
+        {showReplace && (
+
           <div className="search-replace-panel">
 
-              <input
-                  type="text"
-                  className="replace-input"
-                  placeholder="Substituir por..."
-                  value={replaceTerm}
-                  onChange={(e) =>
-                      setReplaceTerm(
-                          e.target.value
-                      )
-                  }
-              />
+            <input
+              type="text"
+              className="replace-input"
+              placeholder="Substituir por..."
+              value={replaceTerm}
+              onChange={(e) =>
+                setReplaceTerm(
+                  e.target.value
+                )
+              }
+            />
 
-              <button
-                  className="replace-button"
-                  title="Substituir resultado atual"
-                  onClick={onReplace}
-              >
-                  Substituir
-              </button>
+            <button
+              className="replace-button"
+              title="Substituir resultado atual"
+              onClick={onReplace}
+            >
+              Substituir
+            </button>
 
-              <button
-                  className="replace-all-button"
-                  title="Substituir todos os resultados"
-                  onClick={onReplaceAll}
-              >
-                  Substituir todos
-              </button>
+            <button
+              className="replace-all-button"
+              title="Substituir todos os resultados"
+              onClick={onReplaceAll}
+            >
+              Substituir todos
+            </button>
 
           </div>
-      )}
-      
+
+        )}
+
       </div>
+
+      {/* =====================================================
+          TEMA
+      ===================================================== */}
+
+      <button
+        type="button"
+        className="filebar-theme-button"
+        onClick={() =>
+          setSettings({
+            ...settings,
+            theme:
+              settings.theme === "dark"
+                ? "light"
+                : "dark",
+          })
+        }
+        title={
+          settings.theme === "dark"
+            ? "Modo claro"
+            : "Modo escuro"
+        }
+      >
+        {settings.theme === "dark"
+          ? "☀️"
+          : "🌙"}
+      </button>
+
+
+
     </div>
   );
+  
 }

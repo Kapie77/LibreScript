@@ -130,8 +130,6 @@ export class CursorController {
 
     }
 
-    // ---------------------------------- //
-
     // setVerticalPosition //
     private setVerticalPosition(
         paragraphId: number,

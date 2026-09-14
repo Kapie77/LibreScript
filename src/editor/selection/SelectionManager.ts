@@ -2296,11 +2296,149 @@ export class SelectionManager {
 
     }
 
+    // ensureLogicalCaretVisible
+    public ensureLogicalCaretVisible(
+        paragraphId: number,
+        offset: number
+    ): void {
+
+        const point =
+            this.getDomPointFromOffset(
+                paragraphId,
+                offset
+            );
+
+        if (!point) {
+            return;
+        }
+
+        const range =
+            document.createRange();
+
+        try {
+            range.setStart(
+                point.node,
+                point.offset
+            );
+
+            range.collapse(true);
+        } catch {
+            return;
+        }
+
+        let rect =
+            range.getBoundingClientRect();
+
+        // ------------------------------------------------------------
+        // CARET NORMAL
+        // ------------------------------------------------------------
+
+        if (
+            rect.width === 0 &&
+            rect.height === 0
+        ) {
+            const rects =
+                range.getClientRects();
+
+            if (rects.length > 0) {
+                rect =
+                    rects[rects.length - 1];
+            }
+        }
+
+        // ------------------------------------------------------------
+        // BLOCO VAZIO
+        // ------------------------------------------------------------
+
+        if (
+            rect.width === 0 &&
+            rect.height === 0
+        ) {
+            const fragment =
+                point.node.parentElement?.closest<HTMLElement>(
+                    "p[data-paragraph-id]"
+                );
+
+            if (!fragment) {
+                return;
+            }
+
+            const fragmentRect =
+                fragment.getBoundingClientRect();
+
+            if (
+                fragmentRect.width <= 0 ||
+                fragmentRect.height <= 0
+            ) {
+                return;
+            }
+
+            rect = fragmentRect;
+        }
+
+        // ------------------------------------------------------------
+        // CONTAINER DO EDITOR
+        // ------------------------------------------------------------
+
+        const fragment =
+            point.node.parentElement?.closest<HTMLElement>(
+                "p[data-paragraph-id]"
+            );
+
+        if (!fragment) {
+            return;
+        }
+
+        const container =
+            fragment.closest<HTMLElement>(
+                ".document-editor"
+            );
+
+        if (!container) {
+            return;
+        }
+
+        const containerRect =
+            container.getBoundingClientRect();
+
+        const margin = 30;
+
+        // ------------------------------------------------------------
+        // CARET ACIMA
+        // ------------------------------------------------------------
+
+        if (
+            rect.top <
+            containerRect.top + margin
+        ) {
+            container.scrollTop -=
+                containerRect.top +
+                margin -
+                rect.top;
+
+            return;
+        }
+
+        // ------------------------------------------------------------
+        // CARET ABAIXO
+        // ------------------------------------------------------------
+
+        if (
+            rect.bottom >
+            containerRect.bottom - margin
+        ) {
+            container.scrollTop +=
+                rect.bottom -
+                containerRect.bottom +
+                margin;
+        }
+    }
+
     // ================================================================
     // GARANTIR QUE O CARET FIQUE VISÍVEL
     // ================================================================
 
-    private ensureCaretVisible(): void {
+    public ensureCaretVisible(): void {
 
         const selection =
             window.getSelection();
@@ -2563,6 +2701,15 @@ export class SelectionManager {
             range.collapse(true);
 
             selection.addRange(range);
+
+            const editable =
+                anchorParagraph.closest<HTMLParagraphElement>(
+                    "p[contenteditable='true']"
+                );
+
+            editable?.focus({
+                preventScroll: true
+            });
 
             return;
         }

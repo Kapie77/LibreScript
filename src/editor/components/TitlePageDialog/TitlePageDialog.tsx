@@ -779,7 +779,8 @@ export default function TitlePageDialog({
                         <div className="title-page-field">
                             <label>Draft</label>
 
-                            <select
+                            <input
+                                type="text"
                                 value={draft.titlePage.draft}
                                 onChange={(event) =>
                                     updateTitlePage(
@@ -787,40 +788,8 @@ export default function TitlePageDialog({
                                         event.target.value
                                     )
                                 }
-                            >
-                                <option value="">Nenhum</option>
-
-                                <option value="First Draft">First Draft</option>
-                                <option value="Second Draft">Second Draft</option>
-                                <option value="Third Draft">Third Draft</option>
-                                <option value="Fourth Draft">Fourth Draft</option>
-                                <option value="Fifth Draft">Fifth Draft</option>
-                                <option value="Sixth Draft">Sixth Draft</option>
-                                <option value="Seventh Draft">Seventh Draft</option>
-                                <option value="Eighth Draft">Eighth Draft</option>
-                                <option value="Ninth Draft">Ninth Draft</option>
-                                <option value="Tenth Draft">Tenth Draft</option>
-                                <option value="Eleventh Draft">Eleventh Draft</option>
-                                <option value="Twelfth Draft">Twelfth Draft</option>
-                                <option value="Thirteenth Draft">Thirteenth Draft</option>
-                                <option value="Fourteenth Draft">Fourteenth Draft</option>
-                                <option value="Fifteenth Draft">Fifteenth Draft</option>
-                                <option value="Sixteenth Draft">Sixteenth Draft</option>
-                                <option value="Seventeenth Draft">Seventeenth Draft</option>
-                                <option value="Eighteenth Draft">Eighteenth Draft</option>
-                                <option value="Nineteenth Draft">Nineteenth Draft</option>
-                                <option value="Twentieth Draft">Twentieth Draft</option>
-                                <option value="Twenty-First Draft">Twenty-First Draft</option>
-                                <option value="Twenty-Second Draft">Twenty-Second Draft</option>
-                                <option value="Twenty-Third Draft">Twenty-Third Draft</option>
-                                <option value="Twenty-Fourth Draft">Twenty-Fourth Draft</option>
-                                <option value="Twenty-Fifth Draft">Twenty-Fifth Draft</option>
-                                <option value="Twenty-Sixth Draft">Twenty-Sixth Draft</option>
-                                <option value="Twenty-Seventh Draft">Twenty-Seventh Draft</option>
-                                <option value="Twenty-Eighth Draft">Twenty-Eighth Draft</option>
-                                <option value="Twenty-Ninth Draft">Twenty-Ninth Draft</option>
-                                <option value="Thirtieth Draft">Thirtieth Draft</option>
-                            </select>
+                                placeholder="Ex.: First Draft"
+                            />
                         </div>
 
                         <div className="title-page-field">
